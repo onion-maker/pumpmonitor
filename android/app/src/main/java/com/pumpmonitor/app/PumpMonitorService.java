@@ -38,6 +38,9 @@ public class PumpMonitorService extends Service {
 
     private static boolean running = false;
 
+    /** 上次發送的警報訊息（用於去重，避免每輪重複通知） */
+    private String lastAlarmMessage = "";
+
     private Handler handler;
     private final Runnable checkRunnable = new Runnable() {
         @Override
@@ -94,6 +97,7 @@ public class PumpMonitorService extends Service {
     @Override
     public void onDestroy() {
         running = false;
+        lastAlarmMessage = "";
         handler.removeCallbacks(checkRunnable);
         Log.d(TAG, "前景服務已停止");
         super.onDestroy();
@@ -201,7 +205,14 @@ public class PumpMonitorService extends Service {
             prefs.edit().putString("previousPumpStates", newPumpStates.toString()).apply();
 
             if (alarmCount > 0) {
-                sendAlarmNotification(alarmCount + " 個站點觸發警報", alarmMsg.toString());
+                String msg = alarmMsg.toString();
+                // 只有當警報內容有變化時才發通知（避免每輪重複逼聲）
+                if (!msg.equals(lastAlarmMessage)) {
+                    lastAlarmMessage = msg;
+                    sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
+                }
+            } else {
+                lastAlarmMessage = "";
             }
 
         } catch (Exception e) {

@@ -114,14 +114,19 @@ export default function SettingsPage({ onLogout }: Props) {
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">背景檢查設定</h2>
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm font-medium text-gray-900">背景檢查頻率</p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  設定手機休眠時，背景服務每隔多久檢查一次水位與機組狀態
+                  手機休眠時，每隔多久檢查一次水位與機組狀態
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setBackgroundIntervalSec(Math.max(30, backgroundIntervalSec - 10))}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-lg font-bold"
+                >−</button>
                 <input
                   type="number"
                   value={backgroundIntervalSec}
@@ -134,12 +139,34 @@ export default function SettingsPage({ onLogout }: Props) {
                   min={30}
                   max={600}
                   step={10}
-                  className="w-16 px-1.5 py-1 text-sm font-mono border border-gray-300 rounded text-center outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-300"
+                  className="w-16 h-8 px-1 text-sm font-mono border border-gray-300 rounded text-center outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-300"
                 />
-                <span className="text-sm text-gray-500">秒</span>
+                <button
+                  type="button"
+                  onClick={() => setBackgroundIntervalSec(Math.min(600, backgroundIntervalSec + 10))}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-lg font-bold"
+                >+</button>
+                <span className="text-sm text-gray-500 ml-1">秒</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1.5">
+
+            {/* 橫向滑軌 */}
+            <input
+              type="range"
+              min={30}
+              max={600}
+              step={10}
+              value={backgroundIntervalSec}
+              onChange={(e) => setBackgroundIntervalSec(parseInt(e.target.value, 10))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2"
+            />
+            <div className="flex justify-between text-xs text-gray-400 px-0.5">
+              <span>30秒</span>
+              <span>300秒</span>
+              <span>600秒（10分）</span>
+            </div>
+
+            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1.5 mt-3">
               <span>⚠</span>
               <span>
                 頻率越高越耗電，建議 60~300 秒。最小值 30 秒，預設 {DEFAULT_BACKGROUND_INTERVAL_SEC} 秒。
