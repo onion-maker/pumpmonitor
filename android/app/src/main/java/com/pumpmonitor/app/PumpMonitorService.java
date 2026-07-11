@@ -75,9 +75,11 @@ public class PumpMonitorService extends Service {
         scheduleHeartbeat(context);
     }
 
-    /** 每 5 分鐘用 AlarmManager 喚醒檢查服務是否存活（抵抗電池最佳化殺服務） */
+    /** 每 5 分鐘用 AlarmManager 喚醒（不需任何特殊權限） */
     private static void scheduleHeartbeat(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
         Intent intent = new Intent(context, PumpMonitorService.class);
         intent.setAction("com.pumpmonitor.HEARTBEAT");
         PendingIntent pi = PendingIntent.getService(context, 0, intent,
@@ -85,9 +87,9 @@ public class PumpMonitorService extends Service {
 
         long interval = 5 * 60 * 1000L;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // setWindow 不需要 SCHEDULE_EXACT_ALARM 權限，且可應付 Doze 模式
-            am.setWindow(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + interval, interval, pi);
+            // set() 為非精確鬧鐘，不需要 SCHEDULE_EXACT_ALARM 權限
+            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + interval, pi);
         } else {
             am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + interval, interval, pi);
@@ -110,13 +112,21 @@ public class PumpMonitorService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         running = true;
 
-        // 重新排程 AlarmManager 心跳（抵抗省電機制）
-        scheduleHeartbeat(this);
-
+        // ⚠️ 先呼叫 startForeground，確保服務不會被系統殺掉
         Notification notification = buildServiceNotification();
         startForeground(NOTIFY_SERVICE, notification);
+
+        // 恢復定時檢查
         handler.removeCallbacks(checkRunnable);
         handler.post(checkRunnable);
+
+        // 排程心跳（後呼叫 + try-catch，避免異常影響 startForeground）
+        try {
+            scheduleHeartbeat(this);
+        } catch (Exception e) {
+            Log.e(TAG, "排程心跳失敗（不影響服務運行）", e);
+        }
+
         long ms = getIntervalMs(this);
         Log.d(TAG, "前景服務已啟動，每 " + (ms / 1000) + " 秒檢查水位");
         return START_STICKY;
