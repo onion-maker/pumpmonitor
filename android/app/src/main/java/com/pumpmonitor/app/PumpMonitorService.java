@@ -81,11 +81,11 @@ public class PumpMonitorService extends Service {
         PendingIntent pi = PendingIntent.getService(context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // 每 5 分鐘喚醒一次
         long interval = 5 * 60 * 1000L;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + interval, pi);
+            // setWindow 不需要 SCHEDULE_EXACT_ALARM 權限，且可應付 Doze 模式
+            am.setWindow(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + interval, interval, pi);
         } else {
             am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + interval, interval, pi);
