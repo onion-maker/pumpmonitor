@@ -41,6 +41,7 @@ public class PumpMonitorService extends Service {
     private static final int REQUEST_HEARTBEAT = 2;
 
     private static boolean running = false;
+
     private String lastAlarmMessage = "";
 
     private static long getIntervalMs(Context context) {
@@ -159,21 +160,21 @@ public class PumpMonitorService extends Service {
 
         if (action.equals("com.pumpmonitor.CHECK")) {
             // 定時檢查觸發（setAlarmClock 是單次鬧鐘，檢查完重新排程）
-            doCheck();
+            new Thread(this::doCheck).start();
             scheduleNextCheck(this);
         } else if (action.equals("com.pumpmonitor.RELOAD")) {
             // 間隔變更 → 取消舊排程 + 重設新排程 + 立即檢查
             cancelAlarms(this);
-            doCheck();
+            new Thread(this::doCheck).start();
             scheduleNextCheck(this);
             scheduleHeartbeat(this);
         } else if (action.equals("com.pumpmonitor.HEARTBEAT")) {
             // 心跳 → 執行檢查 → 再排程心跳
-            doCheck();
+            new Thread(this::doCheck).start();
             scheduleHeartbeat(this);
         } else {
             // 首次啟動 → 立即檢查 + 排程兩者
-            doCheck();
+            new Thread(this::doCheck).start();
             scheduleNextCheck(this);
             scheduleHeartbeat(this);
         }
