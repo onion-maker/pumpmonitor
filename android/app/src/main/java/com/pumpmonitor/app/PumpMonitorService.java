@@ -103,7 +103,7 @@ public class PumpMonitorService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
     }
 
-    /** 排程下一次定時檢查 */
+    /** 排程定時檢查（使用 setAlarmClock，HyperOS/Android 15+ 最可靠的喚醒方式） */
     private static void scheduleNextCheck(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
@@ -113,15 +113,19 @@ public class PumpMonitorService extends Service {
         PendingIntent pi = PendingIntent.getService(context, REQUEST_CHECK, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // setInexactRepeating 在 Doze 模式下會批次處理，但比 set() 可靠
-            am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + intervalMs, intervalMs, pi);
+        long triggerTime = SystemClock.elapsedRealtime() + intervalMs;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // setAlarmClock 是所有製造商（含 Xiaomi）最保證觸發的方式
+            AlarmManager.AlarmClockInfo alarmInfo =
+                    new AlarmManager.AlarmClockInfo(triggerTime,
+                            PendingIntent.getActivity(context, 0,
+                                    context.getPackageManager().getLaunchIntentForPackage(context.getPackageName()),
+                                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            am.setAlarmClock(alarmInfo, pi);
         } else {
-            am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + intervalMs, intervalMs, pi);
+            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pi);
         }
-        Log.d(TAG, "定時檢查排程: " + (intervalMs / 1000) + " 秒");
+        Log.d(TAG, "排程檢查: " + (intervalMs / 1000) + " 秒後");
     }
 
     /** 每 5 分鐘心跳備援（單次，重新排程） */
@@ -153,8 +157,9 @@ public class PumpMonitorService extends Service {
         String action = intent != null ? intent.getAction() : "";
 
         if (action.equals("com.pumpmonitor.CHECK")) {
-            // 定時檢查觸發（setInexactRepeating 自動重複，不需再排程）
+            // 定時檢查觸發（setAlarmClock 是單次鬧鐘，檢查完重新排程）
             doCheck();
+            scheduleNextCheck(this);
         } else if (action.equals("com.pumpmonitor.RELOAD")) {
             // 間隔變更 → 取消舊排程 + 重設新排程 + 立即檢查
             cancelAlarms(this);
