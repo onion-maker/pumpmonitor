@@ -20,6 +20,7 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const sessionCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null);
+  const lastSyncedRef = useRef('');
 
   /** 被踢出處理 */
   const handleKickedOut = useCallback(async (reason?: string) => {
@@ -97,7 +98,7 @@ export default function App() {
     return () => { cancelled = true; };
   }, [isReady, isLoggedIn]);
 
-  // 設定變更時同步到 Native 背景服務（防抖 1 秒）
+  // 設定變更時同步到 Native 背景服務（防抖 1 秒，僅設定實際有變時才同步）
   useEffect(() => {
     if (!isNative() || !isLoggedIn) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -105,6 +106,14 @@ export default function App() {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         const state = useStore.getState();
+        const snapshot = JSON.stringify({
+          selectedStations: state.selectedStations,
+          stationAlarmLevels: state.stationAlarmLevels,
+          backgroundIntervalSec: state.backgroundIntervalSec,
+        });
+        // 設定沒變就不同步（避免每輪 poll 觸發）
+        if (snapshot === lastSyncedRef.current) return;
+        lastSyncedRef.current = snapshot;
         syncSettingsToNative({
           selectedStations: state.selectedStations,
           stationAlarmLevels: state.stationAlarmLevels,

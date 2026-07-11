@@ -1,24 +1,21 @@
 package com.pumpmonitor.app;
 
 import android.app.Activity;
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
 
 import androidx.core.content.FileProvider;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -33,7 +30,6 @@ import java.net.URL;
 public class AppUpdateHelper {
 
     private static final String TAG = "AppUpdate";
-    private static long downloadId = -1;
 
     /** GitHub API 最新 Release 的回傳結果 */
     public static class UpdateInfo {
@@ -46,10 +42,6 @@ public class AppUpdateHelper {
 
     /**
      * 檢查 GitHub Release 是否有新版本
-     *
-     * @param owner    GitHub 擁有者（使用者或組織）
-     * @param repo     GitHub 專案名稱
-     * @param callback 回傳 UpdateInfo
      */
     public static void checkForUpdate(Context context, String owner, String repo,
                                       final OnCheckComplete callback) {
@@ -84,7 +76,7 @@ public class AppUpdateHelper {
                 String body = json.optString("body", "");
                 String apkUrl = findApkUrl(json);
 
-                // tag_name 格式：v{versionCode}，例如 "v14" 代表 versionCode=14
+                // tag_name 格式：v{versionCode}
                 int latestVersion = 0;
                 String tag = tagName.startsWith("v") ? tagName.substring(1) : tagName;
                 try {
@@ -115,7 +107,6 @@ public class AppUpdateHelper {
     /** 從 GitHub Release JSON 中找出第一個 APK 的下載網址 */
     private static String findApkUrl(JSONObject releaseJson) {
         try {
-            // assets -> [ { name: "app-debug.apk", browser_download_url: "..." } ]
             var assets = releaseJson.optJSONArray("assets");
             if (assets != null) {
                 for (int i = 0; i < assets.length(); i++) {
@@ -132,49 +123,60 @@ public class AppUpdateHelper {
 
     /**
      * 下載 APK 並觸發安裝
-     * 使用 DownloadManager 下載到 App 私有目錄，再用 FileProvider 安裝
+     * 直接使用 HTTP 下載到 App cache，不透過 DownloadManager（避免權限問題）
      */
     public static void downloadAndInstall(Activity activity, String apkUrl) {
-        // 下載到 App 私有目錄（不需任何執行時期權限）
-        final File apkFile = new File(activity.getExternalFilesDir("Updates"), "pump-monitor-update.apk");
-        if (apkFile.exists()) apkFile.delete();
+        new Thread(() -> {
+            try {
+                // 下載到 App cache 目錄（一定可讀寫）
+                File cacheDir = new File(activity.getCacheDir(), "updates");
+                cacheDir.mkdirs();
+                File apkFile = new File(cacheDir, "pump-monitor-update.apk");
+                if (apkFile.exists()) apkFile.delete();
 
-        // 註冊廣播接收器監聽下載完成
-        BroadcastReceiver onComplete = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                if (id != downloadId) return;
-                context.unregisterReceiver(this);
+                Log.d(TAG, "開始下載: " + apkUrl);
 
-                if (apkFile.exists() && apkFile.length() > 0) {
-                    installApk(activity, apkFile);
-                } else {
-                    Log.e(TAG, "下載檔案不存在或為空");
+                // HTTP 下載
+                URL url = new URL(apkUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(15000);
+                conn.setInstanceFollowRedirects(true);
+
+                BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
+                FileOutputStream out = new FileOutputStream(apkFile);
+
+                byte[] buffer = new byte[8192];
+                int count;
+                while ((count = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, count);
                 }
+                out.flush();
+                out.close();
+                in.close();
+
+                Log.d(TAG, "下載完成，大小: " + apkFile.length() + " bytes");
+
+                // 下載完成後在 UI 執行緒安裝
+                activity.runOnUiThread(() -> installApk(activity, apkFile));
+
+            } catch (Exception e) {
+                Log.e(TAG, "下載失敗", e);
             }
-        };
-        activity.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                Context.RECEIVER_EXPORTED);
-
-        // 開始下載
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(apkUrl));
-        request.setTitle("水位監控系統更新");
-        request.setDescription("下載更新檔中…");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(activity, "Updates", "pump-monitor-update.apk");
-
-        DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
-        downloadId = dm.enqueue(request);
+        }).start();
     }
 
     /** 安裝 APK */
     private static void installApk(Activity activity, File apkFile) {
+        if (!apkFile.exists() || apkFile.length() == 0) {
+            Log.e(TAG, "APK 檔案不存在或為空");
+            return;
+        }
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri apkUri;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            // Android 7+ 使用 FileProvider
             apkUri = FileProvider.getUriForFile(activity,
                     activity.getPackageName() + ".fileprovider", apkFile);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

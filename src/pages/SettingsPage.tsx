@@ -218,9 +218,14 @@ export default function SettingsPage({ onLogout }: Props) {
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">關於</h2>
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">應用程式版本</span>
               <span className="text-sm font-mono text-gray-900">{appVersion}</span>
+            </div>
+            <div className="pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-400 text-center">
+                Copyright © 2026 抽水小工 Onion. All rights reserved.
+              </p>
             </div>
           </div>
         </div>
