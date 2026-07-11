@@ -30,7 +30,7 @@ import java.util.Locale;
 public class PumpMonitorService extends Service {
 
     private static final String TAG = "PumpMonitor";
-    private static final String CHANNEL_SERVICE = "pump_service_channel";
+    private static final String CHANNEL_SERVICE = "pump_service_silent";
     private static final String CHANNEL_ALARM = "pump_alarm_silent";
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
@@ -251,11 +251,13 @@ public class PumpMonitorService extends Service {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager mgr = getSystemService(NotificationManager.class);
 
-        // 前景服務通道 — 用 DEFAULT 確保通知欄可見
+        // 前景服務通道 — 顯示通知欄但不發出聲音
         NotificationChannel svc = new NotificationChannel(
                 CHANNEL_SERVICE, "監控背景服務", NotificationManager.IMPORTANCE_DEFAULT);
         svc.setDescription("水位監控背景執行中");
         svc.setShowBadge(false);
+        svc.setSound(null, null);
+        svc.enableVibration(false);
         mgr.createNotificationChannel(svc);
 
         // 警報通道 — 僅顯示通知列（不發出聲音）
