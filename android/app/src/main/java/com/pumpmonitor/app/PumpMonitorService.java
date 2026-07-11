@@ -70,7 +70,7 @@ public class PumpMonitorService extends Service {
     /** 重新載入間隔設定（讓前台變更立即生效） */
     public static void reloadInterval(Context context) {
         Intent intent = new Intent(context, PumpMonitorService.class);
-        intent.setAction("com.pumpmonitor.CHECK");
+        intent.setAction("com.pumpmonitor.RELOAD");
         context.startService(intent);
     }
 
@@ -103,7 +103,7 @@ public class PumpMonitorService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
     }
 
-    /** 排程下一次定時檢查（AlarmManager 取代 Handler，可在 Doze 模式喚醒） */
+    /** 排程下一次定時檢查 */
     private static void scheduleNextCheck(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
@@ -112,12 +112,19 @@ public class PumpMonitorService extends Service {
         intent.setAction("com.pumpmonitor.CHECK");
         PendingIntent pi = PendingIntent.getService(context, REQUEST_CHECK, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + intervalMs, pi);
-        Log.d(TAG, "下次檢查: " + (intervalMs / 1000) + " 秒後");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // setInexactRepeating 在 Doze 模式下會批次處理，但比 set() 可靠
+            am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + intervalMs, intervalMs, pi);
+        } else {
+            am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + intervalMs, intervalMs, pi);
+        }
+        Log.d(TAG, "定時檢查排程: " + (intervalMs / 1000) + " 秒");
     }
 
-    /** 每 5 分鐘心跳備援 */
+    /** 每 5 分鐘心跳備援（單次，重新排程） */
     private static void scheduleHeartbeat(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
@@ -127,7 +134,6 @@ public class PumpMonitorService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + 5 * 60 * 1000L, pi);
-        Log.d(TAG, "心跳排程: 5 分鐘後");
     }
 
     @Override
@@ -147,9 +153,14 @@ public class PumpMonitorService extends Service {
         String action = intent != null ? intent.getAction() : "";
 
         if (action.equals("com.pumpmonitor.CHECK")) {
-            // 定時檢查或 reload → 執行檢查 → 排程下一次
+            // 定時檢查觸發（setInexactRepeating 自動重複，不需再排程）
+            doCheck();
+        } else if (action.equals("com.pumpmonitor.RELOAD")) {
+            // 間隔變更 → 取消舊排程 + 重設新排程 + 立即檢查
+            cancelAlarms(this);
             doCheck();
             scheduleNextCheck(this);
+            scheduleHeartbeat(this);
         } else if (action.equals("com.pumpmonitor.HEARTBEAT")) {
             // 心跳 → 執行檢查 → 再排程心跳
             doCheck();
