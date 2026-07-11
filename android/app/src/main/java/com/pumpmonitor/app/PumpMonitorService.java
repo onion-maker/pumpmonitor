@@ -31,7 +31,7 @@ public class PumpMonitorService extends Service {
 
     private static final String TAG = "PumpMonitor";
     private static final String CHANNEL_SERVICE = "pump_service_channel";
-    private static final String CHANNEL_ALARM = "pump_alarm_channel";
+    private static final String CHANNEL_ALARM = "pump_alarm_silent";
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
     private static final String PREFS_NAME = "pump-monitor-settings";
@@ -258,12 +258,13 @@ public class PumpMonitorService extends Service {
         svc.setShowBadge(false);
         mgr.createNotificationChannel(svc);
 
-        // 警報通道 — 高優先級 + 可繞過勿擾
+        // 警報通道 — 僅顯示通知列（不發出聲音）
+        // 前端 mp3 警報音負責實際提醒，避免與系統通知重複
         NotificationChannel alarm = new NotificationChannel(
-                CHANNEL_ALARM, "水位警報", NotificationManager.IMPORTANCE_HIGH);
-        alarm.setDescription("抽水站水位警報");
-        alarm.enableVibration(true);
-        alarm.setBypassDnd(true);
+                CHANNEL_ALARM, "水位警報", NotificationManager.IMPORTANCE_DEFAULT);
+        alarm.setDescription("抽水站水位警報（靜音，由前端播放警報音）");
+        alarm.enableVibration(false);
+        alarm.setSound(null, null);
         mgr.createNotificationChannel(alarm);
     }
 
