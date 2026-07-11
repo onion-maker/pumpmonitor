@@ -128,6 +128,48 @@ export default function App() {
     };
   }, [isLoggedIn]);
 
+  // ── 檢查背景服務是否存活（定時 60 秒 + App 回到前景時重啟） ──
+  useEffect(() => {
+    if (!isNative() || !isLoggedIn) return;
+
+    const ensureService = async () => {
+      try {
+        const bridge = (window as any).AndroidPump;
+        if (bridge && typeof bridge.isServiceRunning === 'function') {
+          if (!bridge.isServiceRunning()) {
+            // 服務被系統殺掉了，重新啟動
+            const state = useStore.getState();
+            syncSettingsToNative({
+              selectedStations: state.selectedStations,
+              stationAlarmLevels: state.stationAlarmLevels,
+              backgroundIntervalSec: state.backgroundIntervalSec,
+            });
+            startBackgroundService();
+          }
+        }
+      } catch { /* ignore */ }
+    };
+
+    // 前景切換時檢查
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        ensureService();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // 定時檢查（每 60 秒）
+    const timer = setInterval(ensureService, 60000);
+
+    // 啟動時也檢查一次
+    ensureService();
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      clearInterval(timer);
+    };
+  }, [isLoggedIn]);
+
   // ── Session 驗證：定時檢查（每 30 秒） + App 回到前景時檢查 ──
   useEffect(() => {
     if (!isLoggedIn) return;

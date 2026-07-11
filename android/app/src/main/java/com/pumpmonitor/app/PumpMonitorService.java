@@ -1,5 +1,6 @@
 package com.pumpmonitor.app;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -68,6 +70,26 @@ public class PumpMonitorService extends Service {
         } else {
             context.startService(intent);
         }
+        scheduleHeartbeat(context);
+    }
+
+    /** 每 5 分鐘用 AlarmManager 喚醒檢查服務是否存活（抵抗電池最佳化殺服務） */
+    private static void scheduleHeartbeat(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, PumpMonitorService.class);
+        intent.setAction("com.pumpmonitor.HEARTBEAT");
+        PendingIntent pi = PendingIntent.getService(context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // 每 5 分鐘喚醒一次
+        long interval = 5 * 60 * 1000L;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + interval, pi);
+        } else {
+            am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + interval, interval, pi);
+        }
     }
 
     public static void stop(Context context) {
@@ -85,6 +107,10 @@ public class PumpMonitorService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         running = true;
+
+        // 重新排程 AlarmManager 心跳（抵抗省電機制）
+        scheduleHeartbeat(this);
+
         Notification notification = buildServiceNotification();
         startForeground(NOTIFY_SERVICE, notification);
         handler.removeCallbacks(checkRunnable);
