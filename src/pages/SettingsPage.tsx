@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import StationSelector from '../components/StationSelector';
-import { PUMP_STATUS_LABEL } from '../config/stations';
+import { PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 
 interface Props {
   onLogout: () => void;
@@ -12,8 +12,11 @@ export default function SettingsPage({ onLogout }: Props) {
   const biometricEnabled = useStore((s) => s.biometricEnabled);
   const setSelectedStations = useStore((s) => s.setSelectedStations);
   const setBiometricEnabled = useStore((s) => s.setBiometricEnabled);
+  const backgroundIntervalSec = useStore((s) => s.backgroundIntervalSec);
+  const setBackgroundIntervalSec = useStore((s) => s.setBackgroundIntervalSec);
   const setPage = useStore((s) => s.setPage);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [appVersion, setAppVersion] = useState('');
 
   useEffect(() => {
     try {
@@ -23,6 +26,21 @@ export default function SettingsPage({ onLogout }: Props) {
       }
     } catch {
       // 非 Android 環境
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const bridge = (window as any).AndroidPump;
+      if (bridge && typeof bridge.getAppVersionName === 'function') {
+        const v = bridge.getAppVersionName();
+        const c = bridge.getAppVersionCode();
+        setAppVersion(`v${v} (${c})`);
+      } else {
+        setAppVersion('v1.0.0 (開發版)');
+      }
+    } catch {
+      setAppVersion('v1.0.0 (開發版)');
     }
   }, []);
 
@@ -90,6 +108,48 @@ export default function SettingsPage({ onLogout }: Props) {
           </div>
         )}
 
+        <hr className="border-gray-200 my-6" />
+
+        {/* 背景服務檢查頻率 */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">背景檢查設定</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-sm font-medium text-gray-900">背景檢查頻率</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  設定手機休眠時，背景服務每隔多久檢查一次水位與機組狀態
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <input
+                  type="number"
+                  value={backgroundIntervalSec}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (!isNaN(v) && v >= 10 && v <= 600) {
+                      setBackgroundIntervalSec(v);
+                    }
+                  }}
+                  min={10}
+                  max={600}
+                  step={10}
+                  className="w-16 px-1.5 py-1 text-sm font-mono border border-gray-300 rounded text-center outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-300"
+                />
+                <span className="text-sm text-gray-500">秒</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1.5">
+              <span>⚠</span>
+              <span>
+                頻率越高越耗電，建議 60~300 秒。預設 {DEFAULT_BACKGROUND_INTERVAL_SEC} 秒。
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <hr className="border-gray-200 my-6" />
+
         {/* 抽水機狀態顏色對照表 */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">抽水機狀態顏色說明</h2>
@@ -123,6 +183,17 @@ export default function SettingsPage({ onLogout }: Props) {
                   <p className="text-xs text-gray-400">現場人員手動操作運轉</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* App 版本號 */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">關於</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">應用程式版本</span>
+              <span className="text-sm font-mono text-gray-900">{appVersion}</span>
             </div>
           </div>
         </div>

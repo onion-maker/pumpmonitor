@@ -35,7 +35,6 @@ public class PumpMonitorService extends Service {
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
     private static final String PREFS_NAME = "pump-monitor-settings";
-    private static final long INTERVAL_MS = 2 * 60 * 1000L;
 
     private static boolean running = false;
 
@@ -44,9 +43,16 @@ public class PumpMonitorService extends Service {
         @Override
         public void run() {
             doCheck();
-            handler.postDelayed(this, INTERVAL_MS);
+            long intervalMs = getIntervalMs(getApplicationContext());
+            handler.postDelayed(this, intervalMs);
         }
     };
+
+    private static long getIntervalMs(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        int sec = prefs.getInt("backgroundIntervalSec", 120);
+        return Math.max(10000, sec * 1000L); // 最少 10 秒
+    }
 
     public static boolean isRunning() {
         return running;
@@ -80,7 +86,8 @@ public class PumpMonitorService extends Service {
         startForeground(NOTIFY_SERVICE, notification);
         handler.removeCallbacks(checkRunnable);
         handler.post(checkRunnable);
-        Log.d(TAG, "前景服務已啟動，每 2 分鐘檢查水位");
+        long ms = getIntervalMs(this);
+        Log.d(TAG, "前景服務已啟動，每 " + (ms / 1000) + " 秒檢查水位");
         return START_STICKY;
     }
 
@@ -103,11 +110,20 @@ public class PumpMonitorService extends Service {
             prefs.edit()
                 .putString("stationAlarmLevels", json.optString("stationAlarmLevels", "{}"))
                 .putString("selectedStations", json.optString("selectedStations", "[]"))
+                .putInt("backgroundIntervalSec", json.optInt("backgroundIntervalSec", 120))
                 .apply();
-            Log.d(TAG, "設定已同步至背景服務");
+            int sec = json.optInt("backgroundIntervalSec", 120);
+            Log.d(TAG, "設定已同步至背景服務（間隔 " + sec + " 秒）");
         } catch (Exception e) {
             Log.e(TAG, "同步設定失敗", e);
         }
+    }
+
+    /** 重新載入間隔設定（讓前台變更立即生效） */
+    public static void reloadInterval(Context context) {
+        // 透過 Intent 重新觸發 onStartCommand，用新的間隔重啟 timer
+        Intent intent = new Intent(context, PumpMonitorService.class);
+        context.startService(intent);
     }
 
     private void doCheck() {
@@ -244,10 +260,15 @@ public class PumpMonitorService extends Service {
         Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         PendingIntent pi = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        long intervalMs = getIntervalMs(this);
+        int sec = (int)(intervalMs / 1000);
+        String desc = "每 " + sec + " 秒檢查抽水站水位與機組狀態";
+
         return new NotificationCompat.Builder(this, CHANNEL_SERVICE)
                 .setSmallIcon(android.R.drawable.ic_menu_compass)
                 .setContentTitle("水位監控背景執行中")
-                .setContentText("每 2 分鐘檢查抽水站水位與機組狀態")
+                .setContentText(desc)
                 .setOngoing(true)
                 .setContentIntent(pi)
                 .build();

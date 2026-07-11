@@ -54,6 +54,7 @@ export function isBackgroundServiceRunning(): boolean {
 export function syncSettingsToNative(params: {
   selectedStations: string[];
   stationAlarmLevels: Record<string, number>;
+  backgroundIntervalSec: number;
 }): void {
   const bridge = getBridge();
   if (!bridge) return;
@@ -61,6 +62,7 @@ export function syncSettingsToNative(params: {
   const payload = JSON.stringify({
     selectedStations: JSON.stringify(params.selectedStations),
     stationAlarmLevels: JSON.stringify(params.stationAlarmLevels),
+    backgroundIntervalSec: params.backgroundIntervalSec,
   });
 
   bridge.syncSettings(payload);

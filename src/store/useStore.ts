@@ -7,7 +7,7 @@ import type {
   PumpStatusMap,
   PumpStatus,
 } from '../types';
-import { DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL } from '../config/stations';
+import { DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 import { playStationAlarm, stopStationAlarm, stopAllAlarms } from '../utils/audio';
 
 // ── 儲存 key ──
@@ -21,6 +21,7 @@ interface UserSettings {
   stationAlarmLevels: Record<string, number>;
   stationAlarmAudios: Record<string, string>;
   biometricEnabled: boolean;
+  backgroundIntervalSec: number;
 }
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
@@ -28,6 +29,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   stationAlarmLevels: {},
   stationAlarmAudios: {},
   biometricEnabled: false,
+  backgroundIntervalSec: DEFAULT_BACKGROUND_INTERVAL_SEC,
 };
 
 export interface AppStore {
@@ -56,12 +58,14 @@ export interface AppStore {
   stationAlarmLevels: Record<string, number>;
   stationAlarmAudios: Record<string, string>;
   biometricEnabled: boolean;
+  backgroundIntervalSec: number;
 
   setSelectedStations: (ids: string[]) => void;
   setStationAlarmLevel: (stationno: string, level: number) => void;
   setStationAlarmAudio: (stationno: string, base64: string) => void;
   clearStationAlarmAudio: (stationno: string) => void;
   setBiometricEnabled: (v: boolean) => void;
+  setBackgroundIntervalSec: (sec: number) => void;
 
   /** 載入指定使用者的設定（登入成功時呼叫） */
   loadUserSettings: (uid: string) => void;
@@ -136,6 +140,7 @@ export const useStore = create<AppStore>()((set, get) => ({
       return { stationAlarmAudios: next };
     }),
   setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
+  setBackgroundIntervalSec: (backgroundIntervalSec) => set({ backgroundIntervalSec }),
 
   loadUserSettings: (uid) => {
     try {
@@ -148,6 +153,7 @@ export const useStore = create<AppStore>()((set, get) => ({
           stationAlarmLevels: data.stationAlarmLevels ?? {},
           stationAlarmAudios: data.stationAlarmAudios ?? {},
           biometricEnabled: data.biometricEnabled ?? false,
+          backgroundIntervalSec: data.backgroundIntervalSec ?? DEFAULT_BACKGROUND_INTERVAL_SEC,
         });
       } else {
         // 首次登入，使用預設值
@@ -159,13 +165,14 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   saveUserSettings: () => {
-    const { currentUid, selectedStations, stationAlarmLevels, stationAlarmAudios, biometricEnabled } = get();
+    const { currentUid, selectedStations, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec } = get();
     if (!currentUid) return;
     const payload: UserSettings = {
       selectedStations,
       stationAlarmLevels,
       stationAlarmAudios,
       biometricEnabled,
+      backgroundIntervalSec,
     };
     try {
       localStorage.setItem(storageKey(currentUid), JSON.stringify(payload));
@@ -322,6 +329,7 @@ useStore.subscribe((state) => {
         stationAlarmLevels: state.stationAlarmLevels,
         stationAlarmAudios: state.stationAlarmAudios,
         biometricEnabled: state.biometricEnabled,
+        backgroundIntervalSec: state.backgroundIntervalSec,
       };
       try {
         localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));

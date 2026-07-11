@@ -175,6 +175,8 @@ public class MainActivity extends BridgeActivity {
         @JavascriptInterface
         public void syncSettings(String json) {
             PumpMonitorService.syncSettings(getApplicationContext(), json);
+            // 設定變更後讓 timer 立即以新間隔重啟
+            PumpMonitorService.reloadInterval(getApplicationContext());
         }
 
         // ── App 更新 ──

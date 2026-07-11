@@ -60,7 +60,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
           </div>
         </div>
 
-        {/* 第二行：系統時間 + 連線狀態 + 更新時間 */}
+        {/* 第二行：系統時間 + 連線狀態 */}
         <div className="flex items-center gap-3 text-xs text-gray-400">
           {/* 系統時間 */}
           <span>🕐 {clock}</span>
@@ -71,12 +71,16 @@ export default function Header({ onRefresh, isLoading }: Props) {
             {isConnected ? '連線正常' : '連線異常'}
           </span>
 
-          {/* 最後更新時間 */}
-          {lastUpdateTime && <span>最後更新：{lastUpdateTime}</span>}
-
           {/* 錯誤訊息 */}
           {fetchError && <span className="text-red-500">⚠ {fetchError}</span>}
         </div>
+
+        {/* 第三行：最後更新時間（獨立一行，避免因時間長度跳動） */}
+        {lastUpdateTime && (
+          <div className="text-xs text-gray-400 mt-0.5">
+            最後更新：{lastUpdateTime}
+          </div>
+        )}
       </div>
     </header>
   );

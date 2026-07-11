@@ -65,6 +65,7 @@ export default function App() {
               syncSettingsToNative({
                 selectedStations: state.selectedStations,
                 stationAlarmLevels: state.stationAlarmLevels,
+                backgroundIntervalSec: state.backgroundIntervalSec,
               });
               startBackgroundService();
             }
@@ -107,6 +108,7 @@ export default function App() {
         syncSettingsToNative({
           selectedStations: state.selectedStations,
           stationAlarmLevels: state.stationAlarmLevels,
+          backgroundIntervalSec: state.backgroundIntervalSec,
         });
       }, 1000);
     };

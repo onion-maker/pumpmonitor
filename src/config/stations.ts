@@ -32,6 +32,9 @@ export const DEFAULT_ALARM_LEVEL = 1.0;
 /** 輪詢間隔 (ms) */
 export const POLL_INTERVAL_MS = 30000;
 
+/** 預設背景服務檢查間隔（秒），預設 120 秒 = 2 分鐘 */
+export const DEFAULT_BACKGROUND_INTERVAL_SEC = 120;
+
 /** 預設警報音頻 URL（放在 public/ 目錄下） */
 export const DEFAULT_ALARM_AUDIO_URL = './freesound_community-security-alarm-63578.mp3';
 
@@ -53,4 +56,4 @@ export const PUMP_STATUS_LABEL: Record<string, string> = {
 
 /** GitHub Releases 設定（用於 App 自動更新檢查） */
 export const GITHUB_OWNER = 'onion-maker';
-export const GITHUB_REPO = '水位機組警報系統';
+export const GITHUB_REPO = 'pumpmonitor';
