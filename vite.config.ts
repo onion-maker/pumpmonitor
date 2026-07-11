@@ -12,6 +12,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/cia/WebLayout'),
       },
+      '/api2': {
+        target: 'https://heovcenter2.gov.taipei',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api2/, '/cia/WebLayout'),
+      },
     },
   },
 })

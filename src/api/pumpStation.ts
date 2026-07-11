@@ -2,6 +2,7 @@ import type { PumpStationData, RawStationData, PumpStatus, DoorStatus, ApiRespon
 import { STATION_NAMES, VALID_STATIONS, PUMP_FIELDS, DOOR_FIELDS } from '../config/stations';
 
 const API_URL = 'https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo';
+const API_URL_BACKUP = 'https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo';
 
 export class ApiError extends Error {
   constructor(
@@ -77,7 +78,15 @@ async function nativeFetch(url: string): Promise<ApiResponse> {
 
 /** 在瀏覽器環境下，透過 fetch + Vite proxy 發送請求 */
 async function browserFetch(url: string): Promise<ApiResponse> {
-  const actualUrl = import.meta.env.DEV ? '/api/GetLastestAutoPumpPGInfo' : url;
+  // dev mode 時使用 proxy 路徑
+  let actualUrl = url;
+  if (import.meta.env.DEV) {
+    if (url.includes('heovcenter2')) {
+      actualUrl = '/api2/GetLastestAutoPumpPGInfo';
+    } else {
+      actualUrl = '/api/GetLastestAutoPumpPGInfo';
+    }
+  }
 
   let response: Response;
   try {
@@ -109,15 +118,57 @@ function isNative(): boolean {
   }
 }
 
-/** 取得最新抽水站資料，過濾 101~115 */
-export async function fetchAllStations(): Promise<PumpStationData[]> {
-  const json = isNative() ? await nativeFetch(API_URL) : await browserFetch(API_URL);
+/**
+ * 從指定 URL 抓取 API 資料，回傳原始站點列表，失敗則回傳 null
+ */
+async function fetchRawStations(url: string): Promise<RawStationData[] | null> {
+  try {
+    const json = isNative() ? await nativeFetch(url) : await browserFetch(url);
+    if (!json.d || !Array.isArray(json.d)) return null;
+    return json.d.filter((r) => VALID_STATIONS.includes(r.stationno));
+  } catch {
+    return null;
+  }
+}
 
-  if (!json.d || !Array.isArray(json.d)) {
-    throw new ApiError('API 回傳結構異常');
+/**
+ * 取兩個 API 中對每個站點最新的資料做合併
+ * 站點以 rectime 較新者為準
+ */
+function mergeStations(
+  primary: RawStationData[] | null,
+  backup: RawStationData[] | null,
+): RawStationData[] {
+  const map = new Map<string, RawStationData>();
+
+  const add = (list: RawStationData[] | null) => {
+    if (!list) return;
+    for (const s of list) {
+      const existing = map.get(s.stationno);
+      if (!existing || (s.rectime && (!existing.rectime || s.rectime > existing.rectime))) {
+        map.set(s.stationno, s);
+      }
+    }
+  };
+
+  add(primary);
+  add(backup);
+
+  return Array.from(map.values());
+}
+
+/** 取得最新抽水站資料，從雙 API 中取最新的 */
+export async function fetchAllStations(): Promise<PumpStationData[]> {
+  // 同時請求兩個 API
+  const [raw1, raw2] = await Promise.all([
+    fetchRawStations(API_URL),
+    fetchRawStations(API_URL_BACKUP),
+  ]);
+
+  if (!raw1 && !raw2) {
+    throw new ApiError('無法連線至伺服器，請檢查網路');
   }
 
-  return json.d
-    .filter((r) => VALID_STATIONS.includes(r.stationno))
-    .map(normalizeStation);
+  const merged = mergeStations(raw1, raw2);
+  return merged.map(normalizeStation);
 }

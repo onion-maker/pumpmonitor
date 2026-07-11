@@ -37,6 +37,8 @@ public class PumpMonitorService extends Service {
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
     private static final String PREFS_NAME = "pump-monitor-settings";
+    private static final String API_URL = "https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
+    private static final String API_URL_BACKUP = "https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
 
     private static boolean running = false;
 
@@ -172,19 +174,27 @@ public class PumpMonitorService extends Service {
             JSONArray selected = new JSONArray(selectedJson);
             JSONObject prevPumpStates = new JSONObject(prevPumpJson);
 
-            String jsonResponse = fetchApi();
-            if (jsonResponse == null) return;
+            // 同時取兩個 API
+            JSONArray primary = fetchApiAsArray(API_URL);
+            JSONArray backup = fetchApiAsArray(API_URL_BACKUP);
 
-            JSONObject root = new JSONObject(jsonResponse);
-            JSONArray d = root.getJSONArray("d");
+            if (primary == null && backup == null) {
+                Log.e(TAG, "兩個 API 都無法連線");
+                return;
+            }
+
+            // 按站點合併，取 rectime 最新的
+            JSONObject merged = new JSONObject();
+            mergeArray(merged, primary);
+            mergeArray(merged, backup);
 
             StringBuilder alarmMsg = new StringBuilder();
             int alarmCount = 0;
             JSONObject newPumpStates = new JSONObject();
 
-            for (int i = 0; i < d.length(); i++) {
-                JSONObject station = d.getJSONObject(i);
-                String stationNo = station.getString("stationno");
+            for (int i = 0; i < merged.length(); i++) {
+                String stationNo = merged.names().getString(i);
+                JSONObject station = merged.getJSONObject(stationNo);
                 if (!contains(selected, stationNo)) continue;
 
                 double alarmLevel = 1.0;
@@ -246,9 +256,9 @@ public class PumpMonitorService extends Service {
         }
     }
 
-    private String fetchApi() {
+    private JSONArray fetchApiAsArray(String urlStr) {
         try {
-            URL url = new URL("https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo");
+            URL url = new URL(urlStr);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(10000);
@@ -259,10 +269,36 @@ public class PumpMonitorService extends Service {
             String line;
             while ((line = r.readLine()) != null) sb.append(line);
             r.close();
-            return sb.toString();
+
+            JSONObject root = new JSONObject(sb.toString());
+            return root.optJSONArray("d");
         } catch (Exception e) {
-            Log.e(TAG, "HTTP 失敗", e);
+            Log.e(TAG, "HTTP 失敗: " + urlStr, e);
             return null;
+        }
+    }
+
+    /** 將 API 回傳的陣列按 stationno 合併到 merged 中，保留 rectime 較新的 */
+    private void mergeArray(JSONObject merged, JSONArray arr) {
+        if (arr == null) return;
+        for (int i = 0; i < arr.length(); i++) {
+            try {
+                JSONObject station = arr.getJSONObject(i);
+                String no = station.optString("stationno", "");
+                if (no.isEmpty()) continue;
+
+                JSONObject existing = merged.optJSONObject(no);
+                if (existing == null) {
+                    merged.put(no, station);
+                } else {
+                    // 比較 rectime，取最新的
+                    String newTime = station.optString("rectime", "0");
+                    String oldTime = existing.optString("rectime", "0");
+                    if (newTime.compareTo(oldTime) > 0) {
+                        merged.put(no, station);
+                    }
+                }
+            } catch (Exception ignored) { }
         }
     }
 
