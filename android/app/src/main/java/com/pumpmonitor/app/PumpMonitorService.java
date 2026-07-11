@@ -51,7 +51,7 @@ public class PumpMonitorService extends Service {
     private static long getIntervalMs(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         int sec = prefs.getInt("backgroundIntervalSec", 120);
-        return Math.max(10000, sec * 1000L); // 最少 10 秒
+        return Math.max(30000, sec * 1000L); // 最少 30 秒
     }
 
     public static boolean isRunning() {

@@ -260,13 +260,16 @@ export const useStore = create<AppStore>()((set, get) => ({
 
     // ── 音頻管理 ──
     const newNos = new Set(newAlarming.map((a) => a.stationno));
-    for (const alarm of newAlarming) {
-      if (!prevAlarmingNos.has(alarm.stationno)) {
-        playStationAlarm(alarm.stationno, DEFAULT_ALARM_AUDIO_URL);
+    const isFirstCheck = Object.keys(previousPumpMap).length === 0;
+    if (!isFirstCheck) {
+      for (const alarm of newAlarming) {
+        if (!prevAlarmingNos.has(alarm.stationno)) {
+          playStationAlarm(alarm.stationno, DEFAULT_ALARM_AUDIO_URL);
+        }
       }
-    }
-    for (const prevNo of prevAlarmingNos) {
-      if (!newNos.has(prevNo)) stopStationAlarm(prevNo);
+      for (const prevNo of prevAlarmingNos) {
+        if (!newNos.has(prevNo)) stopStationAlarm(prevNo);
+      }
     }
 
     set({

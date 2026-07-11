@@ -127,11 +127,11 @@ export default function SettingsPage({ onLogout }: Props) {
                   value={backgroundIntervalSec}
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
-                    if (!isNaN(v) && v >= 10 && v <= 600) {
+                    if (!isNaN(v) && v >= 30 && v <= 600) {
                       setBackgroundIntervalSec(v);
                     }
                   }}
-                  min={10}
+                  min={30}
                   max={600}
                   step={10}
                   className="w-16 px-1.5 py-1 text-sm font-mono border border-gray-300 rounded text-center outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-300"
@@ -142,7 +142,7 @@ export default function SettingsPage({ onLogout }: Props) {
             <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1.5">
               <span>⚠</span>
               <span>
-                頻率越高越耗電，建議 60~300 秒。預設 {DEFAULT_BACKGROUND_INTERVAL_SEC} 秒。
+                頻率越高越耗電，建議 60~300 秒。最小值 30 秒，預設 {DEFAULT_BACKGROUND_INTERVAL_SEC} 秒。
               </span>
             </div>
           </div>
