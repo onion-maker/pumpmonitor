@@ -255,6 +255,18 @@ export const useStore = create<AppStore>()((set, get) => ({
 
       if (reasons.length > 0) {
         newAlarming.push({ stationno: station.stationno, stationName: station.stationName, reasons });
+      } else if (prevAlarmingNos.has(station.stationno)) {
+        // ── 保留仍在警報條件中的既有警報 ──
+        const prevAlarm = state.alarmingStations.find(a => a.stationno === station.stationno);
+        if (prevAlarm) {
+          const hasWaterAlarm = station.level_in !== null && station.level_in > level;
+          const hasRunningPump = station.pumps.some(p => p.status === '1' || p.status === '2' || p.status === '3');
+          const hadWaterReason = prevAlarm.reasons.some(r => r.type === 'water_level');
+          const hadPumpReason = prevAlarm.reasons.some(r => r.type === 'pump_start' || r.type === 'pump_stop');
+          if ((hadWaterReason && hasWaterAlarm) || (hadPumpReason && hasRunningPump)) {
+            newAlarming.push(prevAlarm);
+          }
+        }
       }
     }
 
