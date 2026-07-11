@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PumpStationData, AlarmReason } from '../types';
+import type { PumpStationData, AlarmReason, GateAlarmSwitches } from '../types';
 import { useStore } from '../store/useStore';
 import { DEFAULT_ALARM_LEVEL } from '../config/stations';
 import WaterLevelBar from './WaterLevelBar';
@@ -14,6 +14,8 @@ const REASON_ICONS: Record<string, string> = {
   water_level: '🚨',
   pump_start: '🟢',
   pump_stop: '🔴',
+  gate_high_inner: '⬆',
+  gate_low_inner: '⬇',
 };
 
 /** 單一警報原因 badge */
@@ -23,6 +25,8 @@ function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
     water_level: 'bg-red-100 text-red-700 border-red-300',
     pump_start: 'bg-yellow-100 text-yellow-700 border-yellow-300',
     pump_stop: 'bg-orange-100 text-orange-700 border-orange-300',
+    gate_high_inner: 'bg-purple-100 text-purple-700 border-purple-300',
+    gate_low_inner: 'bg-blue-100 text-blue-700 border-blue-300',
   };
   return (
     <span
@@ -31,6 +35,66 @@ function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
     >
       {icon} {reason.detail}
     </span>
+  );
+}
+
+/** 閘門警報開關元件 */
+function GateAlarmToggle({ station }: Props) {
+  const stationGateAlarmSwitches = useStore((s) => s.stationGateAlarmSwitches);
+  const setStationGateAlarmSwitch = useStore((s) => s.setStationGateAlarmSwitch);
+
+  const current: GateAlarmSwitches = stationGateAlarmSwitches[station.stationno] ?? {
+    innerHighAlarm: false,
+    outerHighAlarm: false,
+  };
+
+  const toggle = (key: keyof GateAlarmSwitches) => {
+    setStationGateAlarmSwitch(station.stationno, {
+      ...current,
+      [key]: !current[key],
+    });
+  };
+
+  return (
+    <div className="mt-2 pt-2 border-t border-gray-100 space-y-1.5">
+      <p className="text-xs text-gray-500 font-medium">閘門警報條件</p>
+      <label className="flex items-center justify-between cursor-pointer">
+        <span className="text-xs text-gray-600">內高外低閘門未開時告警</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={current.innerHighAlarm}
+          onClick={() => toggle('innerHighAlarm')}
+          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+            current.innerHighAlarm ? 'bg-purple-500' : 'bg-gray-200'
+          }`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
+              current.innerHighAlarm ? 'translate-x-4' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </label>
+      <label className="flex items-center justify-between cursor-pointer">
+        <span className="text-xs text-gray-600">內低外高閘門未關時告警</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={current.outerHighAlarm}
+          onClick={() => toggle('outerHighAlarm')}
+          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+            current.outerHighAlarm ? 'bg-blue-500' : 'bg-gray-200'
+          }`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
+              current.outerHighAlarm ? 'translate-x-4' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </label>
+    </div>
   );
 }
 
@@ -159,6 +223,9 @@ export default function StationCard({ station }: Props) {
 
       {/* 閘門 */}
       <DoorGrid doors={station.doors} />
+
+      {/* 閘門警報開關 */}
+      <GateAlarmToggle station={station} />
     </div>
   );
 }

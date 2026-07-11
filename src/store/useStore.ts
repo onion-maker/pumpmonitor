@@ -6,6 +6,7 @@ import type {
   AlarmReason,
   PumpStatusMap,
   PumpStatus,
+  GateAlarmSwitches,
 } from '../types';
 import { DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 import { playStationAlarm, stopStationAlarm, stopAllAlarms } from '../utils/audio';
@@ -22,6 +23,7 @@ interface UserSettings {
   stationAlarmAudios: Record<string, string>;
   biometricEnabled: boolean;
   backgroundIntervalSec: number;
+  stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
 }
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
@@ -30,6 +32,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   stationAlarmAudios: {},
   biometricEnabled: false,
   backgroundIntervalSec: DEFAULT_BACKGROUND_INTERVAL_SEC,
+  stationGateAlarmSwitches: {},
 };
 
 export interface AppStore {
@@ -59,6 +62,7 @@ export interface AppStore {
   stationAlarmAudios: Record<string, string>;
   biometricEnabled: boolean;
   backgroundIntervalSec: number;
+  stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
 
   setSelectedStations: (ids: string[]) => void;
   setStationAlarmLevel: (stationno: string, level: number) => void;
@@ -66,6 +70,7 @@ export interface AppStore {
   clearStationAlarmAudio: (stationno: string) => void;
   setBiometricEnabled: (v: boolean) => void;
   setBackgroundIntervalSec: (sec: number) => void;
+  setStationGateAlarmSwitch: (stationno: string, switches: GateAlarmSwitches) => void;
 
   /** 載入指定使用者的設定（登入成功時呼叫） */
   loadUserSettings: (uid: string) => void;
@@ -141,6 +146,10 @@ export const useStore = create<AppStore>()((set, get) => ({
     }),
   setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
   setBackgroundIntervalSec: (backgroundIntervalSec) => set({ backgroundIntervalSec }),
+  setStationGateAlarmSwitch: (stationno, switches) =>
+    set((s) => ({
+      stationGateAlarmSwitches: { ...s.stationGateAlarmSwitches, [stationno]: switches },
+    })),
 
   loadUserSettings: (uid) => {
     try {
@@ -154,6 +163,7 @@ export const useStore = create<AppStore>()((set, get) => ({
           stationAlarmAudios: data.stationAlarmAudios ?? {},
           biometricEnabled: data.biometricEnabled ?? false,
           backgroundIntervalSec: data.backgroundIntervalSec ?? DEFAULT_BACKGROUND_INTERVAL_SEC,
+          stationGateAlarmSwitches: data.stationGateAlarmSwitches ?? {},
         });
       } else {
         // 首次登入，使用預設值
@@ -165,7 +175,7 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   saveUserSettings: () => {
-    const { currentUid, selectedStations, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec } = get();
+    const { currentUid, selectedStations, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches } = get();
     if (!currentUid) return;
     const payload: UserSettings = {
       selectedStations,
@@ -173,6 +183,7 @@ export const useStore = create<AppStore>()((set, get) => ({
       stationAlarmAudios,
       biometricEnabled,
       backgroundIntervalSec,
+      stationGateAlarmSwitches,
     };
     try {
       localStorage.setItem(storageKey(currentUid), JSON.stringify(payload));
@@ -196,7 +207,7 @@ export const useStore = create<AppStore>()((set, get) => ({
 
   checkAlarm: (data) => {
     const state = get();
-    const { selectedStations, stationAlarmLevels, previousPumpMap, lastAlarmedLevels } = state;
+    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, previousPumpMap, lastAlarmedLevels } = state;
     const newAlarming: StationAlarmInfo[] = [];
     const newPumpMap: Record<string, PumpStatusMap> = {};
     const newLastAlarmed = { ...lastAlarmedLevels };
@@ -253,6 +264,29 @@ export const useStore = create<AppStore>()((set, get) => ({
         }
       }
 
+      // ── 閘門警報檢查 ──
+      const gateSwitches = stationGateAlarmSwitches[station.stationno];
+      const levelOut = station.level_out;
+
+      if (gateSwitches && levelIn !== null && levelOut !== null) {
+        const allDoorsClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
+        const anyDoorNotClosed = station.doors.some(d => d.status !== '1');
+
+        if (gateSwitches.innerHighAlarm && levelIn > levelOut && allDoorsClosed) {
+          reasons.push({
+            type: 'gate_high_inner',
+            detail: `內水位 ${levelIn.toFixed(2)}m 高於外水位 ${levelOut.toFixed(2)}m，閘門全閉`,
+          });
+        }
+
+        if (gateSwitches.outerHighAlarm && levelIn < levelOut && anyDoorNotClosed) {
+          reasons.push({
+            type: 'gate_low_inner',
+            detail: `內水位 ${levelIn.toFixed(2)}m 低於外水位 ${levelOut.toFixed(2)}m，閘門未全閉`,
+          });
+        }
+      }
+
       if (reasons.length > 0) {
         newAlarming.push({ stationno: station.stationno, stationName: station.stationName, reasons });
       } else if (prevAlarmingNos.has(station.stationno)) {
@@ -263,7 +297,22 @@ export const useStore = create<AppStore>()((set, get) => ({
           const hasRunningPump = station.pumps.some(p => p.status === '1' || p.status === '2' || p.status === '3');
           const hadWaterReason = prevAlarm.reasons.some(r => r.type === 'water_level');
           const hadPumpReason = prevAlarm.reasons.some(r => r.type === 'pump_start' || r.type === 'pump_stop');
-          if ((hadWaterReason && hasWaterAlarm) || (hadPumpReason && hasRunningPump)) {
+          const hadGateReason = prevAlarm.reasons.some(r => r.type === 'gate_high_inner' || r.type === 'gate_low_inner');
+
+          let keep = (hadWaterReason && hasWaterAlarm) || (hadPumpReason && hasRunningPump);
+          if (hadGateReason) {
+            const gateSwitches2 = stationGateAlarmSwitches[station.stationno];
+            if (gateSwitches2) {
+              const li = station.level_in;
+              const lo = station.level_out;
+              const allClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
+              const anyNotClosed = station.doors.some(d => d.status !== '1');
+              keep = keep ||
+                (gateSwitches2.innerHighAlarm && li !== null && lo !== null && li > lo && allClosed) ||
+                (gateSwitches2.outerHighAlarm && li !== null && lo !== null && li < lo && anyNotClosed);
+            }
+          }
+          if (keep) {
             newAlarming.push(prevAlarm);
           }
         }
@@ -342,6 +391,7 @@ useStore.subscribe((state) => {
         stationAlarmAudios: state.stationAlarmAudios,
         biometricEnabled: state.biometricEnabled,
         backgroundIntervalSec: state.backgroundIntervalSec,
+        stationGateAlarmSwitches: state.stationGateAlarmSwitches,
       };
       try {
         localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));

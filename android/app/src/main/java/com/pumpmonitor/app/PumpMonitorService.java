@@ -84,6 +84,7 @@ public class PumpMonitorService extends Service {
                 .putString("stationAlarmLevels", json.optString("stationAlarmLevels", "{}"))
                 .putString("selectedStations", json.optString("selectedStations", "[]"))
                 .putInt("backgroundIntervalSec", json.optInt("backgroundIntervalSec", 120))
+                .putString("stationGateAlarmSwitches", json.optString("stationGateAlarmSwitches", "{}"))
                 .apply();
             int sec = json.optInt("backgroundIntervalSec", 120);
             Log.d(TAG, "設定已同步至背景服務（間隔 " + sec + " 秒）");
@@ -207,9 +208,11 @@ public class PumpMonitorService extends Service {
             String levelsJson = prefs.getString("stationAlarmLevels", "{}");
             String selectedJson = prefs.getString("selectedStations", "[]");
             String prevPumpJson = prefs.getString("previousPumpStates", "{}");
+            String gateSwitchesJson = prefs.getString("stationGateAlarmSwitches", "{}");
             JSONObject alarmLevels = new JSONObject(levelsJson);
             JSONArray selected = new JSONArray(selectedJson);
             JSONObject prevPumpStates = new JSONObject(prevPumpJson);
+            JSONObject gateAlarmSwitches = new JSONObject(gateSwitchesJson);
 
             JSONArray primary = fetchApiAsArray(API_URL);
             JSONArray backup = fetchApiAsArray(API_URL_BACKUP);
@@ -265,6 +268,41 @@ public class PumpMonitorService extends Service {
                     } else if (prevWasRunning && curr.equals("0")) {
                         if (alarmCount > 0) alarmMsg.append("\n");
                         alarmMsg.append(stationNo).append(" #").append(p).append(" 抽水機停止");
+                        alarmCount++;
+                    }
+                }
+
+                // ── 閘門警報檢查 ──
+                if (gateAlarmSwitches.has(stationNo) && !station.isNull("level_in") && !station.isNull("level_out")) {
+                    JSONObject gs = gateAlarmSwitches.getJSONObject(stationNo);
+                    double levelIn = station.getDouble("level_in");
+                    double levelOut = station.getDouble("level_out");
+
+                    boolean innerHighAlarm = gs.optBoolean("innerHighAlarm", false);
+                    boolean outerHighAlarm = gs.optBoolean("outerHighAlarm", false);
+
+                    boolean allClosed = false;
+                    boolean anyNotClosed = false;
+                    int doorCount = 0;
+                    for (int d = 1; d <= 16; d++) {
+                        String doorKey = "door" + String.format("%02d", d);
+                        if (!station.isNull(doorKey)) {
+                            doorCount++;
+                            String dv = station.getString(doorKey);
+                            if (!dv.equals("1")) anyNotClosed = true;
+                        }
+                    }
+                    allClosed = doorCount > 0 && !anyNotClosed;
+
+                    if (innerHighAlarm && levelIn > levelOut && allClosed) {
+                        if (alarmCount > 0) alarmMsg.append("\n");
+                        alarmMsg.append(stationNo).append(" 內高外低閘門全閉");
+                        alarmCount++;
+                    }
+
+                    if (outerHighAlarm && levelIn < levelOut && anyNotClosed) {
+                        if (alarmCount > 0) alarmMsg.append("\n");
+                        alarmMsg.append(stationNo).append(" 內低外高閘門未全閉");
                         alarmCount++;
                     }
                 }
@@ -341,13 +379,19 @@ public class PumpMonitorService extends Service {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager mgr = getSystemService(NotificationManager.class);
 
-        NotificationChannel svc = new NotificationChannel(
-                CHANNEL_SERVICE, "監控背景服務", NotificationManager.IMPORTANCE_DEFAULT);
-        svc.setDescription("水位監控背景執行中");
-        svc.setShowBadge(false);
-        svc.setSound(null, null);
-        svc.enableVibration(false);
-        mgr.createNotificationChannel(svc);
+        NotificationChannel svc = mgr.getNotificationChannel(CHANNEL_SERVICE);
+        if (svc == null) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_SERVICE, "監控背景服務", NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("水位監控背景執行中");
+            channel.setShowBadge(false);
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+            mgr.createNotificationChannel(channel);
+        } else if (svc.getImportance() > NotificationManager.IMPORTANCE_LOW) {
+            svc.setImportance(NotificationManager.IMPORTANCE_LOW);
+            mgr.createNotificationChannel(svc);
+        }
 
         // 警報通道 — 高優先級會彈出視窗，可鎖屏顯示，無系統音
         NotificationChannel alarm = new NotificationChannel(

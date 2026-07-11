@@ -67,6 +67,7 @@ export default function App() {
                 selectedStations: state.selectedStations,
                 stationAlarmLevels: state.stationAlarmLevels,
                 backgroundIntervalSec: state.backgroundIntervalSec,
+                stationGateAlarmSwitches: state.stationGateAlarmSwitches,
               });
               startBackgroundService();
             }
@@ -110,6 +111,7 @@ export default function App() {
           selectedStations: state.selectedStations,
           stationAlarmLevels: state.stationAlarmLevels,
           backgroundIntervalSec: state.backgroundIntervalSec,
+          stationGateAlarmSwitches: state.stationGateAlarmSwitches,
         });
         // 設定沒變就不同步（避免每輪 poll 觸發）
         if (snapshot === lastSyncedRef.current) return;
@@ -118,6 +120,7 @@ export default function App() {
           selectedStations: state.selectedStations,
           stationAlarmLevels: state.stationAlarmLevels,
           backgroundIntervalSec: state.backgroundIntervalSec,
+          stationGateAlarmSwitches: state.stationGateAlarmSwitches,
         });
       }, 1000);
     };
@@ -143,6 +146,7 @@ export default function App() {
               selectedStations: state.selectedStations,
               stationAlarmLevels: state.stationAlarmLevels,
               backgroundIntervalSec: state.backgroundIntervalSec,
+              stationGateAlarmSwitches: state.stationGateAlarmSwitches,
             });
             startBackgroundService();
           }
