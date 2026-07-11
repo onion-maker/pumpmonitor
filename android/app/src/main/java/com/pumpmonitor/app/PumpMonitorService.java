@@ -94,50 +94,51 @@ public class PumpMonitorService extends Service {
     private static void cancelAlarms(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        Intent intent = new Intent(context, PumpMonitorService.class);
+        Intent intent = new Intent(context, PumpAlarmReceiver.class);
         intent.setAction("com.pumpmonitor.CHECK");
-        am.cancel(PendingIntent.getService(context, REQUEST_CHECK, intent,
+        am.cancel(PendingIntent.getBroadcast(context, REQUEST_CHECK, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         intent.setAction("com.pumpmonitor.HEARTBEAT");
-        am.cancel(PendingIntent.getService(context, REQUEST_HEARTBEAT, intent,
+        am.cancel(PendingIntent.getBroadcast(context, REQUEST_HEARTBEAT, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
     }
 
-    /** 排程定時檢查（使用 setAlarmClock，HyperOS/Android 15+ 最可靠的喚醒方式） */
+    /** 排程定時檢查（BroadcastReceiver + RTC_WAKEUP，HyperOS 相容性最佳） */
     private static void scheduleNextCheck(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         long intervalMs = getIntervalMs(context);
-        Intent intent = new Intent(context, PumpMonitorService.class);
+
+        Intent intent = new Intent(context, PumpAlarmReceiver.class);
         intent.setAction("com.pumpmonitor.CHECK");
-        PendingIntent pi = PendingIntent.getService(context, REQUEST_CHECK, intent,
+        PendingIntent pi = PendingIntent.getBroadcast(context, REQUEST_CHECK, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        long triggerTime = SystemClock.elapsedRealtime() + intervalMs;
+        long triggerTime = System.currentTimeMillis() + intervalMs;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // setAlarmClock 是所有製造商（含 Xiaomi）最保證觸發的方式
+            Intent showIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            PendingIntent showPi = PendingIntent.getActivity(context, 0, showIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             AlarmManager.AlarmClockInfo alarmInfo =
-                    new AlarmManager.AlarmClockInfo(triggerTime,
-                            PendingIntent.getActivity(context, 0,
-                                    context.getPackageManager().getLaunchIntentForPackage(context.getPackageName()),
-                                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                    new AlarmManager.AlarmClockInfo(triggerTime, showPi);
             am.setAlarmClock(alarmInfo, pi);
         } else {
-            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pi);
+            am.set(AlarmManager.RTC_WAKEUP, triggerTime, pi);
         }
         Log.d(TAG, "排程檢查: " + (intervalMs / 1000) + " 秒後");
     }
 
-    /** 每 5 分鐘心跳備援（單次，重新排程） */
+    /** 每 5 分鐘心跳備援 */
     private static void scheduleHeartbeat(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        Intent intent = new Intent(context, PumpMonitorService.class);
+        Intent intent = new Intent(context, PumpAlarmReceiver.class);
         intent.setAction("com.pumpmonitor.HEARTBEAT");
-        PendingIntent pi = PendingIntent.getService(context, REQUEST_HEARTBEAT, intent,
+        PendingIntent pi = PendingIntent.getBroadcast(context, REQUEST_HEARTBEAT, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 5 * 60 * 1000L, pi);
+        am.set(AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + 5 * 60 * 1000L, pi);
     }
 
     @Override

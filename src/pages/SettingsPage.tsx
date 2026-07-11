@@ -176,6 +176,32 @@ export default function SettingsPage({ onLogout }: Props) {
 
         <hr className="border-gray-200 my-6" />
 
+        {/* 背景服務運作提示（Xiaomi / HyperOS 用戶） */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">背景服務注意事項</h2>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
+            <p className="text-sm text-amber-800">
+              ⚠ 手機休眠時若收不到警報，請確認以下設定：
+            </p>
+            <ol className="text-xs text-amber-700 list-decimal list-inside space-y-1">
+              <li>
+                <span className="font-medium">自啟動</span>：設定 → 應用程式 → 水位機組警報系統 → 開啟「自啟動」
+              </li>
+              <li>
+                <span className="font-medium">電池無限制</span>：設定 → 應用程式 → 水位機組警報系統 → 電池 → 「無限制」
+              </li>
+              <li>
+                <span className="font-medium">鎖定最近任務</span>：多工畫面 → 長按水位機組警報系統 → 鎖頭圖示 🔒
+              </li>
+              <li>
+                <span className="font-medium">通知權限</span>：設定 → 通知 → 水位機組警報系統 → 開啟所有通知類別
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <hr className="border-gray-200 my-6" />
+
         {/* 抽水機狀態顏色對照表 */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">抽水機狀態顏色說明</h2>
