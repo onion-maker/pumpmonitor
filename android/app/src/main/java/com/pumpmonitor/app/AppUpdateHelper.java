@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 
 import androidx.core.content.FileProvider;
 
@@ -133,12 +132,11 @@ public class AppUpdateHelper {
 
     /**
      * 下載 APK 並觸發安裝
-     * 使用 DownloadManager 下載到外部公開目錄，再啟動安裝 Intent
+     * 使用 DownloadManager 下載到 App 私有目錄，再用 FileProvider 安裝
      */
     public static void downloadAndInstall(Activity activity, String apkUrl) {
-        // 先刪除舊的下載檔案
-        File apkFile = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS), "pump-monitor-update.apk");
+        // 下載到 App 私有目錄（不需任何執行時期權限）
+        final File apkFile = new File(activity.getExternalFilesDir("Updates"), "pump-monitor-update.apk");
         if (apkFile.exists()) apkFile.delete();
 
         // 註冊廣播接收器監聽下載完成
@@ -149,7 +147,11 @@ public class AppUpdateHelper {
                 if (id != downloadId) return;
                 context.unregisterReceiver(this);
 
-                installApk(activity, apkFile);
+                if (apkFile.exists() && apkFile.length() > 0) {
+                    installApk(activity, apkFile);
+                } else {
+                    Log.e(TAG, "下載檔案不存在或為空");
+                }
             }
         };
         activity.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
@@ -160,7 +162,7 @@ public class AppUpdateHelper {
         request.setTitle("水位監控系統更新");
         request.setDescription("下載更新檔中…");
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "pump-monitor-update.apk");
+        request.setDestinationInExternalFilesDir(activity, "Updates", "pump-monitor-update.apk");
 
         DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
         downloadId = dm.enqueue(request);

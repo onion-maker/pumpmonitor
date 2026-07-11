@@ -260,10 +260,9 @@ public class PumpMonitorService extends Service {
         svc.enableVibration(false);
         mgr.createNotificationChannel(svc);
 
-        // 警報通道 — 僅顯示通知列（不發出聲音）
-        // 前端 mp3 警報音負責實際提醒，避免與系統通知重複
+        // 警報通道 — 高優先級（彈出視窗）但靜音，由前端 mp3 播放警報音
         NotificationChannel alarm = new NotificationChannel(
-                CHANNEL_ALARM, "水位警報", NotificationManager.IMPORTANCE_DEFAULT);
+                CHANNEL_ALARM, "水位警報", NotificationManager.IMPORTANCE_HIGH);
         alarm.setDescription("抽水站水位警報（靜音，由前端播放警報音）");
         alarm.enableVibration(false);
         alarm.setSound(null, null);
