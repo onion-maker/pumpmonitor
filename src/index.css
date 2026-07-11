@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* 安全區域變數（手機狀態列 + 底部導覽列） */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+/* 自訂動畫 */
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+.animate-slideDown { animation: slideDown 0.3s ease-out; }
+.animate-shake     { animation: shake 0.3s ease-in-out infinite; }

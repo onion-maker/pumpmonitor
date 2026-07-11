@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">水位監控</string>
+    <string name="title_activity_main">水位監控</string>
+    <string name="package_name">com.pumpmonitor.app</string>
+    <string name="custom_url_scheme">com.pumpmonitor.app</string>
+</resources>

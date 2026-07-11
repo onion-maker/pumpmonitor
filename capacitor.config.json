@@ -1,0 +1,5 @@
+{
+  "appId": "com.pumpmonitor.app",
+  "appName": "水位監控",
+  "webDir": "dist"
+}

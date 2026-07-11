@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:heovcenter.gov.taipei)",
+      "Bash(curl -s \"https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo\")",
+      "PowerShell(try { $response = Invoke-WebRequest -Uri \"https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo\" -UseBasicParsing -TimeoutSec 15; Write-Output $response.Content.Substring\\(0, [Math]::Min\\(8000, $response.Content.Length\\)\\) } catch { Write-Output \"Error: $_\" })",
+      "PowerShell($response = Invoke-WebRequest -Uri \"https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo\" -UseBasicParsing -TimeoutSec 15; $json = $response.Content | ConvertFrom-Json; $stations = $json.d | ForEach-Object { $_.stationno }; Write-Output \"Total stations: $\\($stations.Count\\)\"; Write-Output \\($stations -join \", \"\\))"
+    ]
+  }
+}
