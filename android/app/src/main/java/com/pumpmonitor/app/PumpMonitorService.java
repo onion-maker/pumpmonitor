@@ -10,9 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -33,118 +31,50 @@ public class PumpMonitorService extends Service {
 
     private static final String TAG = "PumpMonitor";
     private static final String CHANNEL_SERVICE = "pump_service_silent";
-    private static final String CHANNEL_ALARM = "pump_alarm_silent";
+    private static final String CHANNEL_ALARM = "pump_alarm_popup";
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
     private static final String PREFS_NAME = "pump-monitor-settings";
     private static final String API_URL = "https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
     private static final String API_URL_BACKUP = "https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
+    private static final int REQUEST_CHECK = 1;
+    private static final int REQUEST_HEARTBEAT = 2;
 
     private static boolean running = false;
-
-    /** 上次發送的警報訊息（用於去重，避免每輪重複通知） */
     private String lastAlarmMessage = "";
-
-    private Handler handler;
-    private final Runnable checkRunnable = new Runnable() {
-        @Override
-        public void run() {
-            doCheck();
-            long intervalMs = getIntervalMs(getApplicationContext());
-            handler.postDelayed(this, intervalMs);
-        }
-    };
 
     private static long getIntervalMs(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         int sec = prefs.getInt("backgroundIntervalSec", 120);
-        return Math.max(30000, sec * 1000L); // 最少 30 秒
+        return Math.max(30000, sec * 1000L);
     }
 
-    public static boolean isRunning() {
-        return running;
-    }
+    public static boolean isRunning() { return running; }
 
     public static void start(Context context) {
         Intent intent = new Intent(context, PumpMonitorService.class);
+        intent.setAction("com.pumpmonitor.START");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
         }
-        scheduleHeartbeat(context);
-    }
-
-    /** 每 5 分鐘用 AlarmManager 喚醒（不需任何特殊權限） */
-    private static void scheduleHeartbeat(Context context) {
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (am == null) return;
-
-        Intent intent = new Intent(context, PumpMonitorService.class);
-        intent.setAction("com.pumpmonitor.HEARTBEAT");
-        PendingIntent pi = PendingIntent.getService(context, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        long interval = 5 * 60 * 1000L;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // set() 為非精確鬧鐘，不需要 SCHEDULE_EXACT_ALARM 權限
-            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + interval, pi);
-        } else {
-            am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + interval, interval, pi);
-        }
     }
 
     public static void stop(Context context) {
         running = false;
+        cancelAlarms(context);
         context.stopService(new Intent(context, PumpMonitorService.class));
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        handler = new Handler(Looper.getMainLooper());
-        createNotificationChannels();
+    /** 重新載入間隔設定（讓前台變更立即生效） */
+    public static void reloadInterval(Context context) {
+        Intent intent = new Intent(context, PumpMonitorService.class);
+        intent.setAction("com.pumpmonitor.CHECK");
+        context.startService(intent);
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        running = true;
-
-        // ⚠️ 先呼叫 startForeground，確保服務不會被系統殺掉
-        Notification notification = buildServiceNotification();
-        startForeground(NOTIFY_SERVICE, notification);
-
-        // 恢復定時檢查
-        handler.removeCallbacks(checkRunnable);
-        handler.post(checkRunnable);
-
-        // 排程心跳（後呼叫 + try-catch，避免異常影響 startForeground）
-        try {
-            scheduleHeartbeat(this);
-        } catch (Exception e) {
-            Log.e(TAG, "排程心跳失敗（不影響服務運行）", e);
-        }
-
-        long ms = getIntervalMs(this);
-        Log.d(TAG, "前景服務已啟動，每 " + (ms / 1000) + " 秒檢查水位");
-        return START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        running = false;
-        lastAlarmMessage = "";
-        handler.removeCallbacks(checkRunnable);
-        Log.d(TAG, "前景服務已停止");
-        super.onDestroy();
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) { return null; }
-
-    /** 從前端同步使用者設定到 SharedPreferences（供背景服務使用） */
+    /** 從前端同步使用者設定 */
     public static void syncSettings(Context context, String settingsJson) {
         try {
             JSONObject json = new JSONObject(settingsJson);
@@ -161,19 +91,98 @@ public class PumpMonitorService extends Service {
         }
     }
 
-    /** 重新載入間隔設定（讓前台變更立即生效） */
-    public static void reloadInterval(Context context) {
-        // 透過 Intent 重新觸發 onStartCommand，用新的間隔重啟 timer
+    private static void cancelAlarms(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
         Intent intent = new Intent(context, PumpMonitorService.class);
-        context.startService(intent);
+        intent.setAction("com.pumpmonitor.CHECK");
+        am.cancel(PendingIntent.getService(context, REQUEST_CHECK, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        intent.setAction("com.pumpmonitor.HEARTBEAT");
+        am.cancel(PendingIntent.getService(context, REQUEST_HEARTBEAT, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
     }
+
+    /** 排程下一次定時檢查（AlarmManager 取代 Handler，可在 Doze 模式喚醒） */
+    private static void scheduleNextCheck(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        long intervalMs = getIntervalMs(context);
+        Intent intent = new Intent(context, PumpMonitorService.class);
+        intent.setAction("com.pumpmonitor.CHECK");
+        PendingIntent pi = PendingIntent.getService(context, REQUEST_CHECK, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + intervalMs, pi);
+        Log.d(TAG, "下次檢查: " + (intervalMs / 1000) + " 秒後");
+    }
+
+    /** 每 5 分鐘心跳備援 */
+    private static void scheduleHeartbeat(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        Intent intent = new Intent(context, PumpMonitorService.class);
+        intent.setAction("com.pumpmonitor.HEARTBEAT");
+        PendingIntent pi = PendingIntent.getService(context, REQUEST_HEARTBEAT, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 5 * 60 * 1000L, pi);
+        Log.d(TAG, "心跳排程: 5 分鐘後");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        createNotificationChannels();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        running = true;
+
+        // 先 startForeground（必須，否則系統會殺服務）
+        Notification notification = buildServiceNotification();
+        startForeground(NOTIFY_SERVICE, notification);
+
+        String action = intent != null ? intent.getAction() : "";
+
+        if (action.equals("com.pumpmonitor.CHECK")) {
+            // 定時檢查或 reload → 執行檢查 → 排程下一次
+            doCheck();
+            scheduleNextCheck(this);
+        } else if (action.equals("com.pumpmonitor.HEARTBEAT")) {
+            // 心跳 → 執行檢查 → 再排程心跳
+            doCheck();
+            scheduleHeartbeat(this);
+        } else {
+            // 首次啟動 → 立即檢查 + 排程兩者
+            doCheck();
+            scheduleNextCheck(this);
+            scheduleHeartbeat(this);
+        }
+
+        Log.d(TAG, "服務啟動（action=" + action + "）");
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        running = false;
+        lastAlarmMessage = "";
+        cancelAlarms(this);
+        Log.d(TAG, "服務已停止");
+        super.onDestroy();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) { return null; }
+
+    // ═══════════ 以下是檢查邏輯 ═══════════
 
     private void doCheck() {
         Calendar cal = Calendar.getInstance();
-        int minute = cal.get(Calendar.MINUTE);
-        boolean isFiveMark = (minute % 5 == 0);
         String timeStr = new SimpleDateFormat("HH:mm:ss", Locale.TAIWAN).format(cal.getTime());
-        Log.d(TAG, "檢查 [" + timeStr + "]" + (isFiveMark ? " ★5分鐘" : ""));
+        Log.d(TAG, "檢查 [" + timeStr + "]");
 
         try {
             SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -184,7 +193,6 @@ public class PumpMonitorService extends Service {
             JSONArray selected = new JSONArray(selectedJson);
             JSONObject prevPumpStates = new JSONObject(prevPumpJson);
 
-            // 同時取兩個 API
             JSONArray primary = fetchApiAsArray(API_URL);
             JSONArray backup = fetchApiAsArray(API_URL_BACKUP);
 
@@ -193,7 +201,6 @@ public class PumpMonitorService extends Service {
                 return;
             }
 
-            // 按站點合併，取 rectime 最新的
             JSONObject merged = new JSONObject();
             mergeArray(merged, primary);
             mergeArray(merged, backup);
@@ -210,7 +217,6 @@ public class PumpMonitorService extends Service {
                 double alarmLevel = 1.0;
                 if (alarmLevels.has(stationNo)) alarmLevel = alarmLevels.getDouble(stationNo);
 
-                // 水位檢查
                 if (!station.isNull("level_in")) {
                     double levelIn = station.getDouble("level_in");
                     if (levelIn > alarmLevel) {
@@ -220,7 +226,6 @@ public class PumpMonitorService extends Service {
                     }
                 }
 
-                // 機組狀態變化檢查
                 JSONObject stationPump = new JSONObject();
                 JSONObject prevStation = prevPumpStates.optJSONObject(stationNo);
                 if (prevStation == null) prevStation = new JSONObject();
@@ -252,7 +257,6 @@ public class PumpMonitorService extends Service {
 
             if (alarmCount > 0) {
                 String msg = alarmMsg.toString();
-                // 只有當警報內容有變化時才發通知（避免每輪重複逼聲）
                 if (!msg.equals(lastAlarmMessage)) {
                     lastAlarmMessage = msg;
                     sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
@@ -279,7 +283,6 @@ public class PumpMonitorService extends Service {
             String line;
             while ((line = r.readLine()) != null) sb.append(line);
             r.close();
-
             JSONObject root = new JSONObject(sb.toString());
             return root.optJSONArray("d");
         } catch (Exception e) {
@@ -288,7 +291,6 @@ public class PumpMonitorService extends Service {
         }
     }
 
-    /** 將 API 回傳的陣列按 stationno 合併到 merged 中，保留 rectime 較新的 */
     private void mergeArray(JSONObject merged, JSONArray arr) {
         if (arr == null) return;
         for (int i = 0; i < arr.length(); i++) {
@@ -296,17 +298,13 @@ public class PumpMonitorService extends Service {
                 JSONObject station = arr.getJSONObject(i);
                 String no = station.optString("stationno", "");
                 if (no.isEmpty()) continue;
-
                 JSONObject existing = merged.optJSONObject(no);
                 if (existing == null) {
                     merged.put(no, station);
                 } else {
-                    // 比較 rectime，取最新的
                     String newTime = station.optString("rectime", "0");
                     String oldTime = existing.optString("rectime", "0");
-                    if (newTime.compareTo(oldTime) > 0) {
-                        merged.put(no, station);
-                    }
+                    if (newTime.compareTo(oldTime) > 0) merged.put(no, station);
                 }
             } catch (Exception ignored) { }
         }
@@ -319,11 +317,12 @@ public class PumpMonitorService extends Service {
         return false;
     }
 
+    // ═══════════ 以下是通知 ═══════════
+
     private void createNotificationChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager mgr = getSystemService(NotificationManager.class);
 
-        // 前景服務通道 — 顯示通知欄但不發出聲音
         NotificationChannel svc = new NotificationChannel(
                 CHANNEL_SERVICE, "監控背景服務", NotificationManager.IMPORTANCE_DEFAULT);
         svc.setDescription("水位監控背景執行中");
@@ -332,12 +331,14 @@ public class PumpMonitorService extends Service {
         svc.enableVibration(false);
         mgr.createNotificationChannel(svc);
 
-        // 警報通道 — 高優先級（彈出視窗）但靜音，由前端 mp3 播放警報音
+        // 警報通道 — 高優先級會彈出視窗，可鎖屏顯示，無系統音
         NotificationChannel alarm = new NotificationChannel(
                 CHANNEL_ALARM, "水位警報", NotificationManager.IMPORTANCE_HIGH);
-        alarm.setDescription("抽水站水位警報（靜音，由前端播放警報音）");
+        alarm.setDescription("抽水站水位警報");
         alarm.enableVibration(false);
         alarm.setSound(null, null);
+        alarm.setBypassDnd(true);
+        alarm.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         mgr.createNotificationChannel(alarm);
     }
 
@@ -345,15 +346,12 @@ public class PumpMonitorService extends Service {
         Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         PendingIntent pi = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
         long intervalMs = getIntervalMs(this);
         int sec = (int)(intervalMs / 1000);
-        String desc = "每 " + sec + " 秒檢查抽水站水位與機組狀態";
-
         return new NotificationCompat.Builder(this, CHANNEL_SERVICE)
                 .setSmallIcon(android.R.drawable.ic_menu_compass)
                 .setContentTitle("水位監控背景執行中")
-                .setContentText(desc)
+                .setContentText("每 " + sec + " 秒檢查抽水站水位與機組狀態")
                 .setOngoing(true)
                 .setContentIntent(pi)
                 .build();
@@ -361,14 +359,10 @@ public class PumpMonitorService extends Service {
 
     private void sendAlarmNotification(String title, String body) {
         NotificationManager mgr = getSystemService(NotificationManager.class);
-
-        // 點擊通知 → 打開 App
         Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pi = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        // 全螢幕意圖 — 鎖屏時強制彈出
         PendingIntent fullScreenPi = PendingIntent.getActivity(this, 1, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
