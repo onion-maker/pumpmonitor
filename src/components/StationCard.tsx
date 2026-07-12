@@ -120,6 +120,7 @@ export default function StationCard({ station }: Props) {
   const setStationAlarmLevel = useStore((s) => s.setStationAlarmLevel);
   const alarmingStations = useStore((s) => s.alarmingStations);
   const dismissStationAlarm = useStore((s) => s.dismissStationAlarm);
+  const tideDirection = useStore((s) => s.tideDirection);
 
   const alarmLevel = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
   const [editValue, setEditValue] = useState(alarmLevel.toFixed(2));
@@ -210,6 +211,16 @@ export default function StationCard({ station }: Props) {
             }`}
         />
         <span className="text-xs text-gray-400">m</span>
+        {TIDE_STATIONS.includes(station.stationno) && (() => {
+          const dir = tideDirection[station.stationno];
+          if (!dir || dir === 'slack') {
+            return <span className="text-xs font-bold text-gray-400 ml-1">平潮</span>;
+          }
+          if (dir === 'rising') {
+            return <span className="text-xs font-bold text-red-500 ml-1">漲潮</span>;
+          }
+          return <span className="text-xs font-bold text-blue-500 ml-1">退潮</span>;
+        })()}
         {stationAlarmLevels[station.stationno] !== undefined && (
           <span className="text-xs text-blue-500" title="已自訂">
             ●

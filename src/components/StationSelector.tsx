@@ -8,17 +8,16 @@ interface Props {
 }
 
 export default function StationSelector({ selected, order, onChange, onReorder }: Props) {
-  // 依 order 排序選取的站點，未在 order 中的依 VALID_STATIONS 順序排在最後
-  const sortedSelected = order.length > 0
-    ? [...selected].sort((a, b) => {
-        const ai = order.indexOf(a);
-        const bi = order.indexOf(b);
-        if (ai === -1 && bi === -1) return VALID_STATIONS.indexOf(a) - VALID_STATIONS.indexOf(b);
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-        return ai - bi;
-      })
-    : [...selected];
+  // 依 order 排序所有站點，未在 order 中的依 VALID_STATIONS 順序排在最後
+  const sortedAll = [...VALID_STATIONS].sort((a, b) => {
+    if (order.length === 0) return 0;
+    const ai = order.indexOf(a);
+    const bi = order.indexOf(b);
+    if (ai === -1 && bi === -1) return VALID_STATIONS.indexOf(a) - VALID_STATIONS.indexOf(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
 
   const allSelected = selected.length === VALID_STATIONS.length;
 
@@ -32,8 +31,9 @@ export default function StationSelector({ selected, order, onChange, onReorder }
       }
     } else {
       onChange([...selected, id]);
-      // 新增的站點放在排序最後
-      onReorder([...order, id]);
+      // 勾選時移到排序最前面
+      const nextOrder = [id, ...order.filter((x) => x !== id)];
+      onReorder(nextOrder);
     }
   };
 
@@ -64,12 +64,10 @@ export default function StationSelector({ selected, order, onChange, onReorder }
     if (!draggedId || draggedId === targetId) return;
     if (!selected.includes(draggedId)) return;
 
-    // 在排序列表中重新排列
     const workingOrder = order.length > 0
       ? [...order.filter((x) => selected.includes(x))]
       : [...selected].sort((a, b) => VALID_STATIONS.indexOf(a) - VALID_STATIONS.indexOf(b));
 
-    // 確保兩個都在列表中
     if (!workingOrder.includes(draggedId)) workingOrder.push(draggedId);
     if (!workingOrder.includes(targetId)) workingOrder.push(targetId);
 
@@ -100,7 +98,7 @@ export default function StationSelector({ selected, order, onChange, onReorder }
       <p className="text-xs text-gray-400 mb-2">按住拖曳可調整站點排列順序</p>
 
       <div className="space-y-1.5">
-        {sortedSelected.map((id) => {
+        {sortedAll.map((id) => {
           const checked = selected.includes(id);
           const name = STATION_NAMES[id] ?? id;
           return (
@@ -116,7 +114,6 @@ export default function StationSelector({ selected, order, onChange, onReorder }
                   : 'border-gray-200 bg-white hover:bg-gray-50'
               }`}
             >
-              {/* 拖曳把手 */}
               <span className="text-gray-300 text-lg select-none shrink-0">⋮⋮</span>
               <input
                 type="checkbox"
