@@ -62,20 +62,22 @@ jobs:
       - name: Set up keystore and signing config
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
-          cat >> android/app/build.gradle << 'SIGNINGEOF'
 
-          android {
-            signingConfigs {
-              release {
-                storeFile file('release.keystore')
-                storePassword System.getenv('KEYSTORE_PASS')
-                keyAlias System.getenv('KEY_ALIAS')
-                keyPassword System.getenv('KEY_PASS')
-              }
-            }
-          }
-          SIGNINGEOF
-          sed -i '/release {/a\            signingConfig signingConfigs.release' android/app/build.gradle
+          # 在現有 android { 之後插入 signingConfigs 區塊
+          sed -i '/^android {/a\
+          signingConfigs {\
+              release {\
+                  storeFile file("release.keystore")\
+                  storePassword System.getenv("KEYSTORE_PASS")\
+                  keyAlias System.getenv("KEY_ALIAS")\
+                  keyPassword System.getenv("KEY_PASS")\
+              }\
+          }' android/app/build.gradle
+
+          # 在 buildTypes 的 release { 區塊中加入 signingConfig
+          sed -i '/buildTypes {/,/release {/ {
+            /release {/a\            signingConfig signingConfigs.release
+          }' android/app/build.gradle
 
       - name: Build release APK
         working-directory: android
