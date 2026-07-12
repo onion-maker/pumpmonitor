@@ -96,11 +96,7 @@ jobs:
           name: ${{ steps.version.outputs.TAG_NAME }}
           body: |
             versionCode:${{ steps.version.outputs.VERSION_CODE }}
-
-            ---
-
-            ${{ join(github.event.head_commit.message, '\n') }}
           files: android/app/build/outputs/apk/release/app-release.apk
-          generate_release_notes: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,28 +2,84 @@ import { STATION_NAMES, VALID_STATIONS } from '../config/stations';
 
 interface Props {
   selected: string[];
+  order: string[];
   onChange: (ids: string[]) => void;
+  onReorder: (order: string[]) => void;
 }
 
-export default function StationSelector({ selected, onChange }: Props) {
+export default function StationSelector({ selected, order, onChange, onReorder }: Props) {
+  // 依 order 排序選取的站點，未在 order 中的依 VALID_STATIONS 順序排在最後
+  const sortedSelected = order.length > 0
+    ? [...selected].sort((a, b) => {
+        const ai = order.indexOf(a);
+        const bi = order.indexOf(b);
+        if (ai === -1 && bi === -1) return VALID_STATIONS.indexOf(a) - VALID_STATIONS.indexOf(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      })
+    : [...selected];
+
   const allSelected = selected.length === VALID_STATIONS.length;
 
   const toggle = (id: string) => {
     if (selected.includes(id)) {
       const next = selected.filter((x) => x !== id);
-      // 至少要選一個
-      if (next.length > 0) onChange(next);
+      const nextOrder = order.filter((x) => x !== id);
+      if (next.length > 0) {
+        onChange(next);
+        onReorder(nextOrder);
+      }
     } else {
       onChange([...selected, id]);
+      // 新增的站點放在排序最後
+      onReorder([...order, id]);
     }
   };
 
   const toggleAll = () => {
     if (allSelected) {
       onChange([]);
+      onReorder([]);
     } else {
       onChange([...VALID_STATIONS]);
+      onReorder([...VALID_STATIONS]);
     }
+  };
+
+  // ── HTML5 Drag & Drop ──
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (!draggedId || draggedId === targetId) return;
+    if (!selected.includes(draggedId)) return;
+
+    // 在排序列表中重新排列
+    const workingOrder = order.length > 0
+      ? [...order.filter((x) => selected.includes(x))]
+      : [...selected].sort((a, b) => VALID_STATIONS.indexOf(a) - VALID_STATIONS.indexOf(b));
+
+    // 確保兩個都在列表中
+    if (!workingOrder.includes(draggedId)) workingOrder.push(draggedId);
+    if (!workingOrder.includes(targetId)) workingOrder.push(targetId);
+
+    const draggedIdx = workingOrder.indexOf(draggedId);
+    const targetIdx = workingOrder.indexOf(targetId);
+
+    workingOrder.splice(draggedIdx, 1);
+    workingOrder.splice(targetIdx, 0, draggedId);
+
+    onReorder(workingOrder);
   };
 
   return (
@@ -41,29 +97,37 @@ export default function StationSelector({ selected, onChange }: Props) {
         </label>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-        {VALID_STATIONS.map((id) => {
+      <p className="text-xs text-gray-400 mb-2">按住拖曳可調整站點排列順序</p>
+
+      <div className="space-y-1.5">
+        {sortedSelected.map((id) => {
           const checked = selected.includes(id);
+          const name = STATION_NAMES[id] ?? id;
           return (
-            <label
+            <div
               key={id}
-              className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+              draggable
+              onDragStart={(e) => handleDragStart(e, id)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, id)}
+              className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-grab active:cursor-grabbing transition-colors ${
                 checked
-                  ? 'border-blue-400 bg-blue-50'
+                  ? 'border-blue-300 bg-blue-50'
                   : 'border-gray-200 bg-white hover:bg-gray-50'
               }`}
             >
+              {/* 拖曳把手 */}
+              <span className="text-gray-300 text-lg select-none shrink-0">⋮⋮</span>
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(id)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0"
               />
-              <span className="text-sm text-gray-700">
-                {STATION_NAMES[id]}
-                <span className="text-xs text-gray-400 ml-0.5">#{id}</span>
+              <span className="text-sm text-gray-700 flex-1">
+                {name}
               </span>
-            </label>
+            </div>
           );
         })}
       </div>

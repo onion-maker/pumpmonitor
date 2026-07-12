@@ -9,15 +9,26 @@ export default function MainPage() {
   const { refresh, isLoading, isInitialLoading } = usePumpData();
   const stationData = useStore((s) => s.stationData);
   const selectedStations = useStore((s) => s.selectedStations);
+  const stationOrder = useStore((s) => s.stationOrder);
   const fetchError = useStore((s) => s.fetchError);
   const isAlarming = useStore((s) => s.isAlarming);
   const alarmingStations = useStore((s) => s.alarmingStations);
   const dismissAllAlarms = useStore((s) => s.dismissAllAlarms);
 
-  // 過濾使用者選取的站點
-  const visibleStations = stationData.filter((s) =>
-    selectedStations.includes(s.stationno),
-  );
+  // 過濾使用者選取的站點，依 stationOrder 排序
+  const visibleStations = stationData
+    .filter((s) => selectedStations.includes(s.stationno))
+    .sort((a, b) => {
+      if (stationOrder.length > 0) {
+        const ai = stationOrder.indexOf(a.stationno);
+        const bi = stationOrder.indexOf(b.stationno);
+        if (ai === -1 && bi === -1) return 0;
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      }
+      return 0;
+    });
 
   return (
     <div className="min-h-screen bg-gray-50">

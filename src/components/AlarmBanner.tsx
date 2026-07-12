@@ -4,6 +4,8 @@ const REASON_ICONS: Record<string, string> = {
   water_level: '🚨',
   pump_start: '🟢',
   pump_stop: '🔴',
+  tide_open_gate: '↗',
+  tide_close_gate: '↘',
 };
 
 export default function AlarmBanner() {
@@ -42,7 +44,6 @@ export default function AlarmBanner() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-sm">
                   {alarm.stationName}
-                  <span className="text-red-200 ml-1">#{alarm.stationno}</span>
                 </span>
                 {alarm.reasons.map((r, i) => (
                   <span

@@ -35,10 +35,12 @@ public class PumpMonitorService extends Service {
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
     private static final String PREFS_NAME = "pump-monitor-settings";
+    private static final String PREF_TIDE_BUFFER = "pump-tide-buffer";
     private static final String API_URL = "https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
     private static final String API_URL_BACKUP = "https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
     private static final int REQUEST_CHECK = 1;
     private static final int REQUEST_HEARTBEAT = 2;
+    private static final String[] TIDE_STATIONS = {"108", "110", "112"};
 
     private static boolean running = false;
 
@@ -85,6 +87,7 @@ public class PumpMonitorService extends Service {
                 .putString("selectedStations", json.optString("selectedStations", "[]"))
                 .putInt("backgroundIntervalSec", json.optInt("backgroundIntervalSec", 120))
                 .putString("stationGateAlarmSwitches", json.optString("stationGateAlarmSwitches", "{}"))
+                .putString("stationTideAlarmSwitches", json.optString("stationTideAlarmSwitches", "{}"))
                 .apply();
             int sec = json.optInt("backgroundIntervalSec", 120);
             Log.d(TAG, "設定已同步至背景服務（間隔 " + sec + " 秒）");
@@ -209,10 +212,12 @@ public class PumpMonitorService extends Service {
             String selectedJson = prefs.getString("selectedStations", "[]");
             String prevPumpJson = prefs.getString("previousPumpStates", "{}");
             String gateSwitchesJson = prefs.getString("stationGateAlarmSwitches", "{}");
+            String tideSwitchesJson = prefs.getString("stationTideAlarmSwitches", "{}");
             JSONObject alarmLevels = new JSONObject(levelsJson);
             JSONArray selected = new JSONArray(selectedJson);
             JSONObject prevPumpStates = new JSONObject(prevPumpJson);
             JSONObject gateAlarmSwitches = new JSONObject(gateSwitchesJson);
+            JSONObject tideAlarmSwitches = new JSONObject(tideSwitchesJson);
 
             JSONArray primary = fetchApiAsArray(API_URL);
             JSONArray backup = fetchApiAsArray(API_URL_BACKUP);
@@ -225,6 +230,18 @@ public class PumpMonitorService extends Service {
             JSONObject merged = new JSONObject();
             mergeArray(merged, primary);
             mergeArray(merged, backup);
+
+            // ── 讀取潮汐 buffer ──
+            String tideBufferJson = prefs.getString(PREF_TIDE_BUFFER, "{}");
+            JSONObject tideBufferObj = new JSONObject(tideBufferJson);
+            // 讀取潮向歷史
+            String tideDirJson = prefs.getString("tideDirections", "{}");
+            JSONObject prevTideDir = new JSONObject(tideDirJson);
+
+            // 本次檢查用
+            JSONObject newTideBuffer = new JSONObject();
+            JSONObject newTideDir = new JSONObject();
+            long cutoff = System.currentTimeMillis() - 4 * 60 * 60 * 1000L; // 4 小時
 
             StringBuilder alarmMsg = new StringBuilder();
             int alarmCount = 0;
@@ -279,7 +296,6 @@ public class PumpMonitorService extends Service {
                     double levelOut = station.getDouble("level_out");
 
                     boolean innerHighAlarm = gs.optBoolean("innerHighAlarm", false);
-                    boolean outerHighAlarm = gs.optBoolean("outerHighAlarm", false);
 
                     boolean allClosed = false;
                     boolean anyNotClosed = false;
@@ -299,17 +315,87 @@ public class PumpMonitorService extends Service {
                         alarmMsg.append(stationNo).append(" 內高外低閘門全閉");
                         alarmCount++;
                     }
+                }
 
-                    if (outerHighAlarm && levelIn < levelOut && anyNotClosed) {
-                        if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(stationNo).append(" 內低外高閘門未全閉");
-                        alarmCount++;
+                // ── 記錄外水位到 tide buffer ──
+                if (arrayContains(TIDE_STATIONS, stationNo) && !station.isNull("level_out")) {
+                    String rectime = station.optString("rectime", "");
+                    double levelOut = station.getDouble("level_out");
+                    // rectime: yyyyMMddHHmmss → timestamp
+                    long time = parseRectimeMs(rectime);
+                    if (time > 0) {
+                        JSONArray buf = tideBufferObj.optJSONArray(stationNo);
+                        if (buf == null) buf = new JSONArray();
+                        // 去重
+                        boolean dup = false;
+                        for (int j = 0; j < buf.length(); j++) {
+                            JSONObject entry = buf.getJSONObject(j);
+                            if (entry.optLong("time", 0) == time) { dup = true; break; }
+                        }
+                        if (!dup) {
+                            JSONObject entry = new JSONObject();
+                            entry.put("time", time);
+                            entry.put("level", levelOut);
+                            buf.put(entry);
+                        }
+                        // 砍掉超過 4 小時的舊資料
+                        JSONArray trimmed = new JSONArray();
+                        for (int j = 0; j < buf.length(); j++) {
+                            JSONObject e = buf.getJSONObject(j);
+                            if (e.optLong("time", 0) >= cutoff) trimmed.put(e);
+                        }
+                        buf = trimmed;
+                        newTideBuffer.put(stationNo, buf);
                     }
                 }
                 newPumpStates.put(stationNo, stationPump);
             }
 
-            prefs.edit().putString("previousPumpStates", newPumpStates.toString()).apply();
+            // ── 儲存 tide buffer ──
+            prefs.edit()
+                .putString(PREF_TIDE_BUFFER, newTideBuffer.toString())
+                .putString("previousPumpStates", newPumpStates.toString())
+                .apply();
+
+            // ── 潮汐方向判斷 + 關閘門警報 ──
+            for (String stationNo : TIDE_STATIONS) {
+                if (!contains(selected, stationNo)) continue;
+                if (!tideAlarmSwitches.has(stationNo)) continue;
+                JSONObject ts = tideAlarmSwitches.optJSONObject(stationNo);
+                if (ts == null || !ts.optBoolean("tideAlarm", false)) continue;
+
+                JSONArray buf = newTideBuffer.optJSONArray(stationNo);
+                if (buf == null || buf.length() < 3) {
+                    newTideDir.put(stationNo, "slack");
+                    continue;
+                }
+
+                int len = buf.length();
+                double t2 = buf.getJSONObject(len - 3).getDouble("level");
+                double t1 = buf.getJSONObject(len - 2).getDouble("level");
+                double t  = buf.getJSONObject(len - 1).getDouble("level");
+
+                String prevDir = prevTideDir.optString(stationNo, "slack");
+                String newDir = prevDir; // 預設維持
+
+                if (t > t1 && t > t2) {
+                    newDir = "rising";
+                } else if (t < t1 && t < t2) {
+                    newDir = "falling";
+                }
+
+                newTideDir.put(stationNo, newDir);
+
+                // 關閘門警報：退潮 → 漲潮
+                if (prevDir.equals("falling") && newDir.equals("rising")) {
+                    if (alarmCount > 0) alarmMsg.append("\n");
+                    alarmMsg.append(stationNo).append(" 潮汐轉漲潮，建議關閉閘門");
+                    alarmCount++;
+                }
+            }
+
+            // ── 儲存潮向 ──
+            prefs.edit().putString("tideDirections", newTideDir.toString()).apply();
 
             if (alarmCount > 0) {
                 String msg = alarmMsg.toString();
@@ -371,6 +457,24 @@ public class PumpMonitorService extends Service {
             try { if (arr.getString(i).equals(value)) return true; } catch (Exception ignored) { }
         }
         return false;
+    }
+
+    private boolean arrayContains(String[] arr, String value) {
+        for (String s : arr) {
+            if (s.equals(value)) return true;
+        }
+        return false;
+    }
+
+    /** 將 rectime 字串 "yyyyMMddHHmmss" 解析為 Unix timestamp (ms) */
+    private long parseRectimeMs(String rectime) {
+        try {
+            if (rectime == null || rectime.length() != 14) return 0;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.TAIWAN);
+            return sdf.parse(rectime).getTime();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     // ═══════════ 以下是通知 ═══════════

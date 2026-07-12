@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水位機組監控警示系統 — 系統架構圖</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root { --bg: #ffffff; --surface: #f8fafc; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --border: #334155; }
+  }
+  body { margin: 0; padding: 2rem; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 .25rem; }
+  header p { font-size: .9rem; color: var(--muted); margin: 0; }
+  .section { max-width: 1200px; margin: 0 auto 3rem; }
+  .section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; padding-bottom: .4rem; border-bottom: 2px solid var(--border); }
+  .diagram-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; overflow-x: auto; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(560px, 1fr)); gap: 1.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>水位機組監控警示系統 — 系統架構圖</h1>
+  <p>Capacitor 混合架構 · React + TypeScript 前端 · Android 原生背景層 · Firebase 認證 · 雙 API 備援</p>
+</header>
+
+<!-- ───────── Overall Architecture ───────── -->
+<div class="section">
+  <h2 class="section-title">1. 整體系統架構</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TB
+  subgraph FRONTEND["&nbsp;🖥️ React 前端 (TypeScript + Vite + Tailwind)&nbsp;"]
+    direction TB
+    APP["&nbsp;App.tsx&nbsp;<br/>根元件 / 路由 / Session"]:::react
+    PAGES["&nbsp;Pages&nbsp;"]:::react
+    MAIN["&nbsp;MainPage&nbsp;<br/>卡片網格"]:::react
+    SETTINGS["&nbsp;SettingsPage&nbsp;<br/>站點排序 / 設定"]:::react
+    LOGIN["&nbsp;LoginPage&nbsp;<br/>Email + 生物辨識"]:::react
+    APP --> PAGES
+    PAGES --> MAIN
+    PAGES --> SETTINGS
+    PAGES --> LOGIN
+
+    COMP["&nbsp;Components&nbsp;"]:::react
+    SCARD["&nbsp;StationCard&nbsp;<br/>水位Bar / PumpGrid / DoorGrid"]:::react
+    ALARM_B["&nbsp;AlarmBanner&nbsp;<br/>全域警報橫幅"]:::react
+    SEL["&nbsp;StationSelector&nbsp;<br/>拖曳排序"]:::react
+    COMP --> SCARD
+    COMP --> ALARM_B
+    COMP --> SEL
+
+    STORE["&nbsp;Zustand Store&nbsp;<br/>stationData + 使用者設定<br/>+ 警報狀態 + 潮汐 buffer"]:::store
+    API_TS["&nbsp;api/pumpStation.ts&nbsp;<br/>雙 API fetch + merge"]:::api
+    HOOK["&nbsp;hooks/usePumpData.ts&nbsp;<br/>30s 輪詢 + 10min 潮汐檢查"]:::hook
+    BRIDGE_TS["&nbsp;utils/backgroundAlarm.ts&nbsp;<br/>syncSettingsToNative()"]:::bridge
+    FIRE["&nbsp;firebase/session.ts&nbsp;<br/>Firestore 單一裝置管制"]:::firebase
+  end
+
+  subgraph NATIVE["&nbsp;🤖 Android 原生層 (Java)&nbsp;"]
+    direction TB
+    MA["&nbsp;MainActivity&nbsp;<br/>WebView + 3個 Bridge"]:::android
+    BRIDGES["&nbsp;@JavascriptInterface&nbsp;"]:::android
+    HTTP["&nbsp;AndroidHttp.fetch()&nbsp;<br/>原生 HTTP 繞過 CORS"]:::android
+    BIO["&nbsp;AndroidBiometric&nbsp;<br/>指紋/臉部辨識"]:::android
+    PUMP_B["&nbsp;AndroidPump&nbsp;<br/>背景服務控制"]:::android
+    MA --> BRIDGES
+    BRIDGES --> HTTP
+    BRIDGES --> BIO
+    BRIDGES --> PUMP_B
+
+    SVC["&nbsp;PumpMonitorService&nbsp;<br/>Foreground Service"]:::android
+    RCV["&nbsp;PumpAlarmReceiver&nbsp;<br/>BroadcastReceiver"]:::android
+    BOOT_RCV["&nbsp;BootReceiver&nbsp;<br/>BOOT_COMPLETED"]:::android
+    UPDATE["&nbsp;AppUpdateHelper&nbsp;<br/>GitHub Release → APK 安裝"]:::android
+    ALARM_MGR["&nbsp;AlarmManager&nbsp;<br/>setAlarmClock()"]:::android
+    SVC --> RCV
+    BOOT_RCV --> SVC
+    ALARM_MGR --> RCV
+    RCV --> SVC
+  end
+
+  subgraph EXTERNAL["&nbsp;🌐 外部服務&nbsp;"]
+    API1["&nbsp;heovcenter API&nbsp;<br/>GetLastestAutoPumpPGInfo"]:::ext
+    API2["&nbsp;heovcenter2 API&nbsp;(備援)&nbsp;<br/>GetLastestAutoPumpPGInfo"]:::ext
+    FB["&nbsp;Firebase Auth&nbsp;"]:::ext
+    FS["&nbsp;Firebase Firestore&nbsp;<br/>userSessions"]:::ext
+    GH["&nbsp;GitHub Releases&nbsp;<br/>APK 版本檢查"]:::ext
+  end
+
+  API_TS -->|"fetch"| API1
+  API_TS -->|"fetch"| API2
+  HTTP -->|"HttpURLConnection"| API1
+  HTTP -->|"HttpURLConnection"| API2
+  FIRE --> FB
+  FIRE --> FS
+  BRIDGE_TS -->|"JavaScript Bridge"| PUMP_B
+  STORE <-->|"localStorage 持久化"| STORE
+  UPDATE --> GH
+
+  classDef react fill:#3b82f6,color:#fff
+  classDef store fill:#ec4899,color:#fff
+  classDef api fill:#6366f1,color:#fff
+  classDef hook fill:#06b6d4,color:#fff
+  classDef bridge fill:#14b8a6,color:#fff
+  classDef firebase fill:#ef4444,color:#fff
+  classDef android fill:#8b5cf6,color:#fff
+  classDef ext fill:#64748b,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Data Flow ───────── -->
+<div class="section">
+  <h2 class="section-title">2. 資料流 — API → Store → UI</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+sequenceDiagram
+    participant API1 as 🏛️ heovcenter API
+    participant API2 as 🏛️ heovcenter2 API
+    participant FETCH as api/pumpStation.ts
+    participant HOOK as usePumpData.ts
+    participant STORE as Zustand Store
+    participant CARD as StationCard
+    participant BG as PumpMonitorService
+
+    loop 每 30 秒
+        HOOK->>FETCH: fetchAllStations()
+        FETCH->>API1: GET /GetLastestAutoPumpPGInfo
+        FETCH->>API2: GET /GetLastestAutoPumpPGInfo (備援)
+        API1-->>FETCH: { d: RawStationData[] }
+        API2-->>FETCH: { d: RawStationData[] }
+        FETCH->>FETCH: mergeStations() 各站取 rectime 最新
+        FETCH->>FETCH: normalizeStation() 正規化
+        FETCH-->>HOOK: PumpStationData[]
+        HOOK->>STORE: setStationData(data)
+        HOOK->>STORE: recordLevelOut() 潮汐 buffer
+        alt 距上次 > 10分鐘
+            HOOK->>STORE: checkTideAlarm()
+        end
+        HOOK->>STORE: checkAlarm(data)
+        STORE->>CARD: stationData + alarmStates
+    end
+
+    loop 背景間隔 (預設 120s)
+        BG->>API1: HttpURLConnection GET
+        BG->>API2: HttpURLConnection GET (備援)
+        BG->>BG: merge + checkAlarm + tide check
+        BG->>BG: sendAlarmNotification() (如有警報)
+    end
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Store Structure ───────── -->
+<div class="section">
+  <h2 class="section-title">3. Zustand Store 狀態結構</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart LR
+  subgraph STORE["&nbsp;useStore (Zustand)&nbsp;"]
+    direction TB
+    subgraph AUTH["&nbsp;登入&nbsp;"]
+      IL["&nbsp;isLoggedIn&nbsp;"]:::store
+      UID["&nbsp;currentUid&nbsp;"]:::store
+    end
+    subgraph DATA["&nbsp;資料&nbsp;"]
+      SD["&nbsp;stationData[]&nbsp;"]:::store
+      LU["&nbsp;lastUpdateTime&nbsp;"]:::store
+      ERR["&nbsp;fetchError&nbsp;"]:::store
+    end
+    subgraph SETTINGS["&nbsp;使用者設定 (localStorage 持久化)&nbsp;"]
+      SS["&nbsp;selectedStations[]&nbsp;"]:::store
+      SO["&nbsp;stationOrder[]&nbsp;"]:::store
+      SL["&nbsp;stationAlarmLevels{}&nbsp;"]:::store
+      SA["&nbsp;stationAlarmAudios{}&nbsp;"]:::store
+      BI["&nbsp;biometricEnabled&nbsp;"]:::store
+      BGI["&nbsp;backgroundIntervalSec&nbsp;"]:::store
+      GS["&nbsp;stationGateAlarmSwitches{}&nbsp;"]:::store
+      TS2["&nbsp;stationTideAlarmSwitches{}&nbsp;"]:::store
+    end
+    subgraph ALARM["&nbsp;警報&nbsp;"]
+      AS["&nbsp;alarmingStations[]&nbsp;"]:::store
+      IA["&nbsp;isAlarming&nbsp;"]:::store
+      PP["&nbsp;previousPumpMap{}&nbsp;"]:::store
+      LL["&nbsp;lastAlarmedLevels{}&nbsp;"]:::store
+      PL["&nbsp;previousLevelOut{}&nbsp;"]:::store
+    end
+    subgraph TIDE["&nbsp;潮汐&nbsp;"]
+      TB["&nbsp;tideBuffer{}&nbsp;"]:::store
+      TD["&nbsp;tideDirection{}&nbsp;"]:::store
+      LT["&nbsp;lastTideCheckTime&nbsp;"]:::store
+    end
+  end
+  classDef store fill:#ec4899,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Bridge ───────── -->
+<div class="section">
+  <h2 class="section-title">4. 前端 ↔ Android 原生橋接通訊</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TB
+  subgraph JS["&nbsp;JavaScript (WebView)&nbsp;"]
+    AB["&nbsp;utils/backgroundAlarm.ts&nbsp;"]:::js
+    APP2["&nbsp;App.tsx&nbsp;<br/>登入/設定變更時同步"]:::js
+  end
+
+  subgraph JAVA["&nbsp;MainActivity.java&nbsp;"]
+    HTTP_B["&nbsp;AndroidHttp&nbsp;<br/>fetch(url) → JSON string"]:::java
+    BIO_B["&nbsp;AndroidBiometric&nbsp;<br/>isAvailable() / authenticate()"]:::java
+    PUMP_B2["&nbsp;AndroidPump&nbsp;<br/>startService / stopService<br/>isServiceRunning<br/>syncSettings(json)<br/>getAppVersionName"]:::java
+  end
+
+  subgraph STORAGE["&nbsp;Android SharedPreferences&nbsp;"]
+    PREFS["&nbsp;pump-monitor-settings&nbsp;"]:::storage
+    KEYS["&nbsp;selectedStations&nbsp;<br/>stationAlarmLevels&nbsp;<br/>backgroundIntervalSec&nbsp;<br/>stationGateAlarmSwitches&nbsp;<br/>stationTideAlarmSwitches&nbsp;<br/>previousPumpStates&nbsp;<br/>tideDirections&nbsp;"]:::storage
+    TIDEBUF["&nbsp;pump-tide-buffer&nbsp;<br/>(潮汐水位歷史)"]:::storage
+  end
+
+  JS -->|"window.AndroidHttp.fetch()"| HTTP_B
+  JS -->|"window.AndroidBiometric.*"| BIO_B
+  JS -->|"window.AndroidPump.*"| PUMP_B2
+  PUMP_B2 -->|"讀取/寫入"| PREFS
+  PREFS --> KEYS
+  PREFS --> TIDEBUF
+
+  classDef js fill:#3b82f6,color:#fff
+  classDef java fill:#8b5cf6,color:#fff
+  classDef storage fill:#f59e0b,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Alarm Types ───────── -->
+<div class="section">
+  <h2 class="section-title">5. 警報類型總覽</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart LR
+  subgraph TYPES["&nbsp;6 種警報原因類型&nbsp;"]
+    W["&nbsp;water_level&nbsp;<br/>🚨 水位超標"]:::water
+    PS2["&nbsp;pump_start&nbsp;<br/>🟢 抽水機啟動"]:::pump
+    PE2["&nbsp;pump_stop&nbsp;<br/>🔴 抽水機停止"]:::pump
+    GH["&nbsp;gate_high_inner&nbsp;<br/>⬆ 內高外低閘門全閉"]:::gate
+    TO2["&nbsp;tide_open_gate&nbsp;<br/>↗ 退潮交叉→開閘門"]:::tide
+    TC["&nbsp;tide_close_gate&nbsp;<br/>↘ 退轉漲→關閘門"]:::tide
+  end
+
+  W --> OUT["&nbsp;App 畫面 badge&nbsp;<br/>+ 警報音播放&nbsp;<br/>+ Android 背景通知"]:::output
+  PS2 --> OUT
+  PE2 --> OUT
+  GH --> OUT
+  TO2 --> OUT
+  TC --> OUT
+
+  classDef water fill:#ef4444,color:#fff
+  classDef pump fill:#f59e0b,color:#fff
+  classDef gate fill:#a855f7,color:#fff
+  classDef tide fill:#0891b2,color:#fff
+  classDef output fill:#10b981,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Station List ───────── -->
+<div class="section">
+  <h2 class="section-title">6. 監控站點一覽</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart LR
+  subgraph ALL["&nbsp;15 個抽水站 (101~115)&nbsp;"]
+    direction TB
+    R1["&nbsp;101 林森&nbsp;"]:::normal
+    R2["&nbsp;102 長安&nbsp;"]:::normal
+    R3["&nbsp;103 長春&nbsp;"]:::normal
+    R4["&nbsp;104 民權&nbsp;"]:::normal
+    R5["&nbsp;105 民生&nbsp;"]:::normal
+    R6["&nbsp;106 錦州&nbsp;"]:::normal
+    R7["&nbsp;107 圓山&nbsp;"]:::normal
+    R8["&nbsp;108 中山 (潮汐站)&nbsp;"]:::tide
+    R9["&nbsp;109 中山擴&nbsp;"]:::normal
+    R10["&nbsp;110 建國 (潮汐站)&nbsp;"]:::tide
+    R11["&nbsp;111 建國擴&nbsp;"]:::normal
+    R12["&nbsp;112 新生 (潮汐站)&nbsp;"]:::tide
+    R13["&nbsp;113 新生擴&nbsp;"]:::normal
+    R14["&nbsp;114 特一左&nbsp;"]:::normal
+    R15["&nbsp;115 特一右&nbsp;"]:::normal
+  end
+  classDef normal fill:#64748b,color:#fff
+  classDef tide fill:#0891b2,color:#fff
+    </pre>
+  </div>
+</div>
+
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose',
+  themeVariables: { fontFamily: 'system-ui, sans-serif', fontSize: '14px' } });
+</script>
+</body>
+</html>

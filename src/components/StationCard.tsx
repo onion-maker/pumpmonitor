@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { PumpStationData, AlarmReason, GateAlarmSwitches } from '../types';
 import { useStore } from '../store/useStore';
 import { DEFAULT_ALARM_LEVEL } from '../config/stations';
+import { TIDE_STATIONS } from '../config/stations';
 import WaterLevelBar from './WaterLevelBar';
 import PumpGrid from './PumpGrid';
 import DoorGrid from './DoorGrid';
@@ -16,6 +17,8 @@ const REASON_ICONS: Record<string, string> = {
   pump_stop: '🔴',
   gate_high_inner: '⬆',
   gate_low_inner: '⬇',
+  tide_open_gate: '↗',
+  tide_close_gate: '↘',
 };
 
 /** 單一警報原因 badge */
@@ -27,6 +30,8 @@ function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
     pump_stop: 'bg-orange-100 text-orange-700 border-orange-300',
     gate_high_inner: 'bg-purple-100 text-purple-700 border-purple-300',
     gate_low_inner: 'bg-blue-100 text-blue-700 border-blue-300',
+    tide_open_gate: 'bg-teal-100 text-teal-700 border-teal-300',
+    tide_close_gate: 'bg-amber-100 text-amber-700 border-amber-300',
   };
   return (
     <span
@@ -42,11 +47,17 @@ function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
 function GateAlarmToggle({ station }: Props) {
   const stationGateAlarmSwitches = useStore((s) => s.stationGateAlarmSwitches);
   const setStationGateAlarmSwitch = useStore((s) => s.setStationGateAlarmSwitch);
+  const stationTideAlarmSwitches = useStore((s) => s.stationTideAlarmSwitches);
+  const setStationTideAlarmSwitch = useStore((s) => s.setStationTideAlarmSwitch);
+
+  const isTideStation = TIDE_STATIONS.includes(station.stationno);
 
   const current: GateAlarmSwitches = stationGateAlarmSwitches[station.stationno] ?? {
     innerHighAlarm: false,
     outerHighAlarm: false,
   };
+
+  const tideCurrent = stationTideAlarmSwitches[station.stationno] ?? { tideAlarm: false };
 
   const toggle = (key: keyof GateAlarmSwitches) => {
     setStationGateAlarmSwitch(station.stationno, {
@@ -76,24 +87,30 @@ function GateAlarmToggle({ station }: Props) {
           />
         </button>
       </label>
-      <label className="flex items-center justify-between cursor-pointer">
-        <span className="text-xs text-gray-600">內低外高閘門未關時告警</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={current.outerHighAlarm}
-          onClick={() => toggle('outerHighAlarm')}
-          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-            current.outerHighAlarm ? 'bg-blue-500' : 'bg-gray-200'
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
-              current.outerHighAlarm ? 'translate-x-4' : 'translate-x-0'
+      {isTideStation && (
+        <label className="flex items-center justify-between cursor-pointer">
+          <span className="text-xs text-gray-600">潮汐站閘門啟閉提醒</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={tideCurrent.tideAlarm}
+            onClick={() =>
+              setStationTideAlarmSwitch(station.stationno, {
+                tideAlarm: !tideCurrent.tideAlarm,
+              })
+            }
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+              tideCurrent.tideAlarm ? 'bg-teal-500' : 'bg-gray-200'
             }`}
-          />
-        </button>
-      </label>
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
+                tideCurrent.tideAlarm ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </label>
+      )}
     </div>
   );
 }
@@ -153,9 +170,6 @@ export default function StationCard({ station }: Props) {
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
             {station.stationName}
-            <span className="ml-1 text-sm font-normal text-gray-400">
-              #{station.stationno}
-            </span>
           </h3>
         </div>
         <span className="text-xs text-gray-400 whitespace-nowrap">{timeStr}</span>

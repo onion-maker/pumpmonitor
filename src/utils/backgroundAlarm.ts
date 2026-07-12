@@ -4,7 +4,7 @@
  * 提供前端的設定同步、服務啟停，確保手機螢幕關閉時仍能收到警報通知。
  */
 
-import type { GateAlarmSwitches } from '../types';
+import type { GateAlarmSwitches, TideAlarmSwitch } from '../types';
 
 interface Bridge {
   startService: () => void;
@@ -55,9 +55,11 @@ export function isBackgroundServiceRunning(): boolean {
  */
 export function syncSettingsToNative(params: {
   selectedStations: string[];
+  stationOrder: string[];
   stationAlarmLevels: Record<string, number>;
   backgroundIntervalSec: number;
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
+  stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
 }): void {
   const bridge = getBridge();
   if (!bridge) return;
@@ -67,6 +69,7 @@ export function syncSettingsToNative(params: {
     stationAlarmLevels: JSON.stringify(params.stationAlarmLevels),
     backgroundIntervalSec: params.backgroundIntervalSec,
     stationGateAlarmSwitches: JSON.stringify(params.stationGateAlarmSwitches),
+    stationTideAlarmSwitches: JSON.stringify(params.stationTideAlarmSwitches),
   });
 
   bridge.syncSettings(payload);

@@ -7,8 +7,10 @@ import type {
   PumpStatusMap,
   PumpStatus,
   GateAlarmSwitches,
+  TideDirection,
+  TideAlarmSwitch,
 } from '../types';
-import { DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
+import { TIDE_STATIONS, DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 import { playStationAlarm, stopStationAlarm, stopAllAlarms } from '../utils/audio';
 
 // ── 儲存 key ──
@@ -19,20 +21,24 @@ function storageKey(uid: string) {
 /** 使用者設定（需要持久化/個人化的部分） */
 interface UserSettings {
   selectedStations: string[];
+  stationOrder: string[];
   stationAlarmLevels: Record<string, number>;
   stationAlarmAudios: Record<string, string>;
   biometricEnabled: boolean;
   backgroundIntervalSec: number;
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
+  stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
 }
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
   selectedStations: DEFAULT_SELECTED,
+  stationOrder: [],
   stationAlarmLevels: {},
   stationAlarmAudios: {},
   biometricEnabled: false,
   backgroundIntervalSec: DEFAULT_BACKGROUND_INTERVAL_SEC,
   stationGateAlarmSwitches: {},
+  stationTideAlarmSwitches: {},
 };
 
 export interface AppStore {
@@ -58,19 +64,23 @@ export interface AppStore {
 
   // ── 使用者設定 ──
   selectedStations: string[];
+  stationOrder: string[];
   stationAlarmLevels: Record<string, number>;
   stationAlarmAudios: Record<string, string>;
   biometricEnabled: boolean;
   backgroundIntervalSec: number;
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
+  stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
 
   setSelectedStations: (ids: string[]) => void;
+  setStationOrder: (order: string[]) => void;
   setStationAlarmLevel: (stationno: string, level: number) => void;
   setStationAlarmAudio: (stationno: string, base64: string) => void;
   clearStationAlarmAudio: (stationno: string) => void;
   setBiometricEnabled: (v: boolean) => void;
   setBackgroundIntervalSec: (sec: number) => void;
   setStationGateAlarmSwitch: (stationno: string, switches: GateAlarmSwitches) => void;
+  setStationTideAlarmSwitch: (stationno: string, switches: TideAlarmSwitch) => void;
 
   /** 載入指定使用者的設定（登入成功時呼叫） */
   loadUserSettings: (uid: string) => void;
@@ -89,6 +99,15 @@ export interface AppStore {
   dismissStationAlarm: (stationno: string) => void;
   dismissAllAlarms: () => void;
   simulateAlarm: () => void;
+
+  // ── 潮汐狀態 ──
+  tideBuffer: Record<string, { time: number; level: number }[]>;
+  tideDirection: Record<string, TideDirection>;
+  lastTideCheckTime: number;
+  previousLevelOut: Record<string, number | null>;
+
+  recordLevelOut: (stationno: string, rectime: string, levelOut: number | null) => void;
+  checkTideAlarm: () => void;
 }
 
 function buildPumpMap(pumps: { id: number; status: PumpStatus }[]): PumpStatusMap {
@@ -130,6 +149,7 @@ export const useStore = create<AppStore>()((set, get) => ({
   ...DEFAULT_USER_SETTINGS,
 
   setSelectedStations: (selectedStations) => set({ selectedStations }),
+  setStationOrder: (stationOrder) => set({ stationOrder }),
   setStationAlarmLevel: (stationno, level) =>
     set((s) => ({
       stationAlarmLevels: { ...s.stationAlarmLevels, [stationno]: level },
@@ -150,6 +170,10 @@ export const useStore = create<AppStore>()((set, get) => ({
     set((s) => ({
       stationGateAlarmSwitches: { ...s.stationGateAlarmSwitches, [stationno]: switches },
     })),
+  setStationTideAlarmSwitch: (stationno, switches) =>
+    set((s) => ({
+      stationTideAlarmSwitches: { ...s.stationTideAlarmSwitches, [stationno]: switches },
+    })),
 
   loadUserSettings: (uid) => {
     try {
@@ -159,11 +183,13 @@ export const useStore = create<AppStore>()((set, get) => ({
         set({
           currentUid: uid,
           selectedStations: data.selectedStations ?? DEFAULT_SELECTED,
+          stationOrder: data.stationOrder ?? [],
           stationAlarmLevels: data.stationAlarmLevels ?? {},
           stationAlarmAudios: data.stationAlarmAudios ?? {},
           biometricEnabled: data.biometricEnabled ?? false,
           backgroundIntervalSec: data.backgroundIntervalSec ?? DEFAULT_BACKGROUND_INTERVAL_SEC,
           stationGateAlarmSwitches: data.stationGateAlarmSwitches ?? {},
+          stationTideAlarmSwitches: data.stationTideAlarmSwitches ?? {},
         });
       } else {
         // 首次登入，使用預設值
@@ -175,15 +201,17 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   saveUserSettings: () => {
-    const { currentUid, selectedStations, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches } = get();
+    const { currentUid, selectedStations, stationOrder, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches, stationTideAlarmSwitches } = get();
     if (!currentUid) return;
     const payload: UserSettings = {
       selectedStations,
+      stationOrder,
       stationAlarmLevels,
       stationAlarmAudios,
       biometricEnabled,
       backgroundIntervalSec,
       stationGateAlarmSwitches,
+      stationTideAlarmSwitches,
     };
     try {
       localStorage.setItem(storageKey(currentUid), JSON.stringify(payload));
@@ -207,11 +235,12 @@ export const useStore = create<AppStore>()((set, get) => ({
 
   checkAlarm: (data) => {
     const state = get();
-    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, previousPumpMap, lastAlarmedLevels } = state;
+    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, stationTideAlarmSwitches, previousPumpMap, lastAlarmedLevels, tideDirection, previousLevelOut } = state;
     const newAlarming: StationAlarmInfo[] = [];
     const newPumpMap: Record<string, PumpStatusMap> = {};
     const newLastAlarmed = { ...lastAlarmedLevels };
     const prevAlarmingNos = new Set(state.alarmingStations.map((a) => a.stationno));
+    const nextPrevLevelOut = { ...previousLevelOut };
 
     for (const station of data) {
       if (!selectedStations.includes(station.stationno)) continue;
@@ -270,7 +299,6 @@ export const useStore = create<AppStore>()((set, get) => ({
 
       if (gateSwitches && levelIn !== null && levelOut !== null) {
         const allDoorsClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
-        const anyDoorNotClosed = station.doors.some(d => d.status !== '1');
 
         if (gateSwitches.innerHighAlarm && levelIn > levelOut && allDoorsClosed) {
           reasons.push({
@@ -278,13 +306,26 @@ export const useStore = create<AppStore>()((set, get) => ({
             detail: `內水位 ${levelIn.toFixed(2)}m 高於外水位 ${levelOut.toFixed(2)}m，閘門全閉`,
           });
         }
+      }
 
-        if (gateSwitches.outerHighAlarm && levelIn < levelOut && anyDoorNotClosed) {
+      // ── 潮汐站閘門啟閉提醒 ──
+      const tideSwitch = stationTideAlarmSwitches[station.stationno];
+      if (tideSwitch?.tideAlarm && TIDE_STATIONS.includes(station.stationno) && levelIn !== null && levelOut !== null) {
+        const prevOut = previousLevelOut[station.stationno] ?? null;
+        const direction = tideDirection[station.stationno] ?? 'slack';
+
+        // 開閘門警報：外水 > 內水，退潮中，且外水從高於內水變低於或等於內水（交叉點）
+        if (prevOut !== null && prevOut > levelIn && levelOut <= levelIn && direction === 'falling') {
           reasons.push({
-            type: 'gate_low_inner',
-            detail: `內水位 ${levelIn.toFixed(2)}m 低於外水位 ${levelOut.toFixed(2)}m，閘門未全閉`,
+            type: 'tide_open_gate',
+            detail: `退潮中外水位 ${levelOut.toFixed(2)}m 已降至內水位 ${levelIn.toFixed(2)}m 以下，建議開啟閘門排水`,
           });
         }
+      }
+
+      // 記錄本輪外水位（供下輪交叉判斷用）
+      if (levelOut !== null) {
+        nextPrevLevelOut[station.stationno] = levelOut;
       }
 
       if (reasons.length > 0) {
@@ -298,6 +339,7 @@ export const useStore = create<AppStore>()((set, get) => ({
           const hadWaterReason = prevAlarm.reasons.some(r => r.type === 'water_level');
           const hadPumpReason = prevAlarm.reasons.some(r => r.type === 'pump_start' || r.type === 'pump_stop');
           const hadGateReason = prevAlarm.reasons.some(r => r.type === 'gate_high_inner' || r.type === 'gate_low_inner');
+          const hadTideReason = prevAlarm.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate');
 
           let keep = (hadWaterReason && hasWaterAlarm) || (hadPumpReason && hasRunningPump);
           if (hadGateReason) {
@@ -306,11 +348,13 @@ export const useStore = create<AppStore>()((set, get) => ({
               const li = station.level_in;
               const lo = station.level_out;
               const allClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
-              const anyNotClosed = station.doors.some(d => d.status !== '1');
               keep = keep ||
-                (gateSwitches2.innerHighAlarm && li !== null && lo !== null && li > lo && allClosed) ||
-                (gateSwitches2.outerHighAlarm && li !== null && lo !== null && li < lo && anyNotClosed);
+                (gateSwitches2.innerHighAlarm && li !== null && lo !== null && li > lo && allClosed);
             }
+          }
+          if (hadTideReason) {
+            // 潮汐警報只觸發一次，不自動保留（由 checkTideAlarm 重新產生）
+            keep = false;
           }
           if (keep) {
             newAlarming.push(prevAlarm);
@@ -335,6 +379,7 @@ export const useStore = create<AppStore>()((set, get) => ({
       isAlarming: newAlarming.length > 0,
       previousPumpMap: newPumpMap,
       lastAlarmedLevels: newLastAlarmed,
+      previousLevelOut: nextPrevLevelOut,
     });
   },
 
@@ -376,6 +421,104 @@ export const useStore = create<AppStore>()((set, get) => ({
     }
     set({ alarmingStations: simulated, isAlarming: true, lastAlarmedLevels: newLastAlarmed });
   },
+
+  // ── 潮汐 ──
+  tideBuffer: {},
+  tideDirection: {},
+  lastTideCheckTime: 0,
+  previousLevelOut: {},
+
+  /** 記錄 level_out 到滾動 buffer */
+  recordLevelOut: (stationno, rectime, levelOut) => {
+    if (levelOut === null) return;
+    if (!TIDE_STATIONS.includes(stationno)) return;
+
+    // 解析 rectime → timestamp
+    const m = rectime.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+    if (!m) return;
+    const time = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
+
+    set((s) => {
+      const buffer = [...(s.tideBuffer[stationno] ?? [])];
+      // 去重：同時間已有則跳過
+      if (buffer.some(d => d.time === time)) return s;
+      buffer.push({ time, level: levelOut });
+      // 保留最近 4 小時（寬裕）
+      const cutoff = Date.now() - 4 * 60 * 60 * 1000;
+      const trimmed = buffer.filter(d => d.time >= cutoff);
+      return { tideBuffer: { ...s.tideBuffer, [stationno]: trimmed } };
+    });
+  },
+
+  /** 潮汐方向判斷 + 關閘門警報（每 10 分鐘由 usePumpData 觸發） */
+  checkTideAlarm: () => {
+    const state = get();
+    const { tideBuffer, tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations } = state;
+    const now = Date.now();
+    const newDirections: Record<string, TideDirection> = { ...prevDirections };
+    const tideReasons: StationAlarmInfo[] = [];
+
+    for (const stationNo of TIDE_STATIONS) {
+      if (!selectedStations.includes(stationNo)) continue;
+      const tideSwitch = stationTideAlarmSwitches[stationNo];
+      if (!tideSwitch?.tideAlarm) continue;
+
+      const buffer = tideBuffer[stationNo] ?? [];
+      const recent = buffer.slice(-3);
+      if (recent.length < 3) {
+        newDirections[stationNo] = 'slack';
+        continue;
+      }
+
+      const [t2, t1, t] = recent.map(d => d.level);
+      const prevDir = prevDirections[stationNo] ?? 'slack';
+      let newDir: TideDirection = prevDir;
+
+      if (t > t1 && t > t2) {
+        newDir = 'rising';
+      } else if (t < t1 && t < t2) {
+        newDir = 'falling';
+      }
+      // 其他情況維持上次判定
+
+      newDirections[stationNo] = newDir;
+
+      // 關閘門警報：退潮 → 漲潮（趨勢反轉）
+      if (prevDir === 'falling' && newDir === 'rising') {
+        const stationData = state.stationData.find(s => s.stationno === stationNo);
+        const stationName = stationData?.stationName ?? stationNo;
+        tideReasons.push({
+          stationno: stationNo,
+          stationName,
+          reasons: [{
+            type: 'tide_close_gate',
+            detail: '外水位已從退潮轉為漲潮，建議關閉閘門防止河水倒灌',
+          }],
+        });
+      }
+    }
+
+    // 合併潮汐警報到現有警報列表
+    const existingAlarms = state.alarmingStations.filter(a =>
+      !a.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate')
+    );
+    const newAlarming = [...existingAlarms, ...tideReasons];
+
+    // 播放新警報音
+    const prevNos = new Set(state.alarmingStations.map(a => a.stationno));
+    for (const alarm of tideReasons) {
+      if (!prevNos.has(alarm.stationno)) {
+        playStationAlarm(alarm.stationno, DEFAULT_ALARM_AUDIO_URL);
+      }
+    }
+
+    set({
+      tideDirection: newDirections,
+      lastTideCheckTime: now,
+      alarmingStations: newAlarming,
+      isAlarming: newAlarming.length > 0,
+    });
+  },
 }));
 
 // ── 自動儲存：監聽 store 變化，每當使用者設定變更時自動存檔 ──
@@ -387,11 +530,13 @@ useStore.subscribe((state) => {
     if (state.currentUid) {
       const payload: UserSettings = {
         selectedStations: state.selectedStations,
+        stationOrder: state.stationOrder,
         stationAlarmLevels: state.stationAlarmLevels,
         stationAlarmAudios: state.stationAlarmAudios,
         biometricEnabled: state.biometricEnabled,
         backgroundIntervalSec: state.backgroundIntervalSec,
         stationGateAlarmSwitches: state.stationGateAlarmSwitches,
+        stationTideAlarmSwitches: state.stationTideAlarmSwitches,
       };
       try {
         localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));

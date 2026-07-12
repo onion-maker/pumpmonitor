@@ -65,9 +65,11 @@ export default function App() {
               const state = useStore.getState();
               syncSettingsToNative({
                 selectedStations: state.selectedStations,
+                stationOrder: state.stationOrder,
                 stationAlarmLevels: state.stationAlarmLevels,
                 backgroundIntervalSec: state.backgroundIntervalSec,
                 stationGateAlarmSwitches: state.stationGateAlarmSwitches,
+                stationTideAlarmSwitches: state.stationTideAlarmSwitches,
               });
               startBackgroundService();
             }
@@ -109,18 +111,22 @@ export default function App() {
         const state = useStore.getState();
         const snapshot = JSON.stringify({
           selectedStations: state.selectedStations,
+          stationOrder: state.stationOrder,
           stationAlarmLevels: state.stationAlarmLevels,
           backgroundIntervalSec: state.backgroundIntervalSec,
           stationGateAlarmSwitches: state.stationGateAlarmSwitches,
+          stationTideAlarmSwitches: state.stationTideAlarmSwitches,
         });
         // 設定沒變就不同步（避免每輪 poll 觸發）
         if (snapshot === lastSyncedRef.current) return;
         lastSyncedRef.current = snapshot;
         syncSettingsToNative({
           selectedStations: state.selectedStations,
+          stationOrder: state.stationOrder,
           stationAlarmLevels: state.stationAlarmLevels,
           backgroundIntervalSec: state.backgroundIntervalSec,
           stationGateAlarmSwitches: state.stationGateAlarmSwitches,
+          stationTideAlarmSwitches: state.stationTideAlarmSwitches,
         });
       }, 1000);
     };
@@ -144,9 +150,11 @@ export default function App() {
             const state = useStore.getState();
             syncSettingsToNative({
               selectedStations: state.selectedStations,
+              stationOrder: state.stationOrder,
               stationAlarmLevels: state.stationAlarmLevels,
               backgroundIntervalSec: state.backgroundIntervalSec,
               stationGateAlarmSwitches: state.stationGateAlarmSwitches,
+              stationTideAlarmSwitches: state.stationTideAlarmSwitches,
             });
             startBackgroundService();
           }

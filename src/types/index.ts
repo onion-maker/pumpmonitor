@@ -73,7 +73,7 @@ export interface ApiResponse {
 // ══════════════════════════════════════════════
 
 /** 警報原因類型 */
-export type AlarmReasonType = 'water_level' | 'pump_start' | 'pump_stop' | 'gate_high_inner' | 'gate_low_inner';
+export type AlarmReasonType = 'water_level' | 'pump_start' | 'pump_stop' | 'gate_high_inner' | 'gate_low_inner' | 'tide_open_gate' | 'tide_close_gate';
 
 /** 單一警報原因描述 */
 export interface AlarmReason {
@@ -99,6 +99,14 @@ export type DoorStatusMap = Record<number, DoorStatus>;
 export interface GateAlarmSwitches {
   /** 內水位 > 外水位，但所有閘門全閉時告警 */
   innerHighAlarm: boolean;
-  /** 內水位 < 外水位，但任一閘門未全閉時告警 */
+  /** [已棄用] 內水位 < 外水位，但任一閘門未全閉時告警 */
   outerHighAlarm: boolean;
+}
+
+/** 潮汐方向 */
+export type TideDirection = 'rising' | 'falling' | 'slack';
+
+/** 潮汐站閘門啟閉提醒開關 */
+export interface TideAlarmSwitch {
+  tideAlarm: boolean;
 }

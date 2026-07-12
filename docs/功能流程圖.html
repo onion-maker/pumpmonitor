@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水位機組監控警示系統 — 功能流程圖</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root { --bg: #ffffff; --surface: #f8fafc; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --border: #334155; }
+  }
+  body { margin: 0; padding: 2rem; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 .25rem; }
+  header p { font-size: .9rem; color: var(--muted); margin: 0; }
+  .section { max-width: 1100px; margin: 0 auto 3rem; }
+  .section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 1rem; padding-bottom: .4rem; border-bottom: 2px solid var(--border); }
+  .diagram-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; font-size: .8rem; color: var(--muted); }
+  .legend-item { display: flex; align-items: center; gap: .35rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>水位機組監控警示系統 — 功能流程圖</h1>
+  <p>登入 → 監控 → 警報 → 潮汐判斷 → 背景服務 — 完整流程</p>
+</header>
+
+<!-- ───────── Layer 1: Auth ───────── -->
+<div class="section">
+  <h2 class="section-title">1. 使用者登入與 Session 管理</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TD
+  A["&nbsp;App 啟動&nbsp;"]:::start --> B{"&nbsp;Firebase Auth 狀態&nbsp;"}:::decision
+  B -->|"未登入"| L["&nbsp;LoginPage 登入頁&nbsp;"]:::page
+  L --> L1["&nbsp;Email + 密碼登入&nbsp;"]:::action
+  L1 --> L2{"&nbsp;生物辨識已啟用?&nbsp;"}:::decision
+  L2 -->|"是"| L3["&nbsp;AndroidBiometric 指紋/臉部&nbsp;"]:::action
+  L2 -->|"否"| L4["&nbsp;直接登入&nbsp;"]:::action
+  L3 --> L4
+  L4 --> L5["&nbsp;產生隨機 session ID&nbsp;"]:::action
+  L5 --> L6["&nbsp;寫入 Firestore userSessions/uid&nbsp;"]:::firebase
+  L6 --> C["&nbsp;進入主頁&nbsp;"]:::start
+
+  B -->|"已登入"| S{"&nbsp;Session 驗證&nbsp;"}:::decision
+  S -->|"local vs Firestore 一致"| C
+  S -->|"不一致 (被踢出)"| K["&nbsp;自動登出 + 清除設定&nbsp;"]:::action
+  K --> L
+
+  classDef start fill:#3b82f6,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+  classDef page fill:#8b5cf6,color:#fff
+  classDef action fill:#10b981,color:#fff
+  classDef firebase fill:#ef4444,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 2: Main Monitor ───────── -->
+<div class="section">
+  <h2 class="section-title">2. 主頁即時監控（30 秒輪詢）</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TD
+  M["&nbsp;MainPage 主頁&nbsp;"]:::start --> P["&nbsp;usePumpData 輪詢 Hook&nbsp;"]:::hook
+  P --> F["&nbsp;fetchAllStations() 每 30 秒&nbsp;"]:::api
+  F --> API1["&nbsp;GET heovcenter API&nbsp;"]:::api
+  F --> API2["&nbsp;GET heovcenter2 API (備援)&nbsp;"]:::api
+  API1 --> MERGE["&nbsp;mergeStations()&nbsp;<br/>各站取 rectime 最新者"]:::merge
+  API2 --> MERGE
+  MERGE --> NORM["&nbsp;normalizeStation()&nbsp;<br/>解析 rectime / pump / door"]:::action
+  NORM --> SET["&nbsp;setStationData()&nbsp;<br/>存入 Zustand Store"]:::store
+  SET --> RENDER["&nbsp;StationCard x N&nbsp;<br/>水位橫條圖 + 抽水機Grid + 閘門Grid"]:::ui
+  SET --> RECORD["&nbsp;recordLevelOut()&nbsp;<br/>潮汐站記錄外水位到 buffer"]:::tide
+  RECORD --> TCHECK{"&nbsp;距上次潮汐檢查 > 10分?&nbsp;"}:::decision
+  TCHECK -->|"是"| TALARM["&nbsp;checkTideAlarm()&nbsp;<br/>判斷漲退潮 + 關閘門警報"]:::tide
+  TCHECK -->|"否"| SKIP["&nbsp;跳過&nbsp;"]:::action
+  TALARM --> CALARM
+
+  classDef start fill:#3b82f6,color:#fff
+  classDef hook fill:#06b6d4,color:#fff
+  classDef api fill:#6366f1,color:#fff
+  classDef merge fill:#a855f7,color:#fff
+  classDef action fill:#10b981,color:#fff
+  classDef store fill:#ec4899,color:#fff
+  classDef ui fill:#14b8a6,color:#fff
+  classDef tide fill:#0891b2,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 3: Alarm Check ───────── -->
+<div class="section">
+  <h2 class="section-title">3. 警報檢查流程（每次資料更新後執行）</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TD
+  CALARM["&nbsp;checkAlarm()&nbsp;"]:::start --> LOOP["&nbsp;遍歷每個選取的站點&nbsp;"]:::action
+  LOOP --> W{"&nbsp;水位檢查&nbsp;<br/>level_in > alarmLevel?"}:::decision
+  W -->|"是"| WS{"&nbsp;智慧觸發&nbsp;<br/>首次 或 增幅 ≥ 0.1m?"}:::decision
+  WS -->|"是"| WA["&nbsp;water_level 警報&nbsp;"]:::alarm
+  WS -->|"否"| PUMP
+  W -->|"否"| PUMP
+
+  PUMP["&nbsp;抽水機檢查&nbsp;"]:::action --> PCHK{"&nbsp;狀態變化?&nbsp;<br/>0→運轉 或 運轉→0"}:::decision
+  PCHK -->|"啟動"| PS["&nbsp;pump_start 警報&nbsp;"]:::alarm
+  PCHK -->|"停止"| PE["&nbsp;pump_stop 警報&nbsp;"]:::alarm
+  PCHK -->|"無變化"| GATE
+
+  GATE["&nbsp;閘門檢查&nbsp;"]:::action --> GCHK{"&nbsp;內高外低 + 閘門全閉?&nbsp;"}:::decision
+  GCHK -->|"是"| GA["&nbsp;gate_high_inner 警報&nbsp;"]:::alarm
+  GCHK -->|"否"| TIDE
+
+  TIDE["&nbsp;潮汐檢查&nbsp;"]:::tide --> TICHK{"&nbsp;潮汐開關啟用&nbsp;<br/>+ 外水 > 內水 + 退潮&nbsp;<br/>+ 交叉事件?"}:::decision
+  TICHK -->|"是"| TO["&nbsp;tide_open_gate 警報&nbsp;"]:::alarm
+  TICHK -->|"否"| DONE
+
+  TO --> DONE["&nbsp;合併警報列表&nbsp;"]:::action
+  WA --> DONE
+  PS --> DONE
+  PE --> DONE
+  GA --> DONE
+  DONE --> AUDIO{"&nbsp;新警報站點?&nbsp;"}:::decision
+  AUDIO -->|"是"| PLAY["&nbsp;playStationAlarm()&nbsp;<br/>播放警報音 + 全螢幕通知"]:::alarm
+  AUDIO -->|"否 (已存在)"| KEEP
+  PLAY --> KEEP["&nbsp;更新 alarmingStations&nbsp;<br/>更新 isAlarming"]:::store
+
+  classDef start fill:#3b82f6,color:#fff
+  classDef action fill:#10b981,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+  classDef alarm fill:#ef4444,color:#fff
+  classDef store fill:#ec4899,color:#fff
+  classDef tide fill:#0891b2,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 4: Tide Logic ───────── -->
+<div class="section">
+  <h2 class="section-title">4. 潮汐判斷與閘門啟閉提醒</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TD
+  subgraph DATA["&nbsp;資料累積 (每 30 秒)&nbsp;"]
+    R["&nbsp;雙 API merge 後&nbsp;<br/>取 新生/建國/中山 的 level_out"]:::api
+    R --> REC["&nbsp;recordLevelOut()&nbsp;<br/>去重 + 保留 4 小時"]:::action
+    REC --> BUF["&nbsp;tideBuffer[stationno]&nbsp;<br/>滾動陣列"]:::store
+  end
+
+  subgraph CHECK["&nbsp;潮汐檢查 (每 10 分鐘)&nbsp;"]
+    BUF --> SLICE["&nbsp;取最近 3 筆&nbsp;<br/>t-2, t-1, t"]:::action
+    SLICE --> CMP{"&nbsp;t > t-1 且 t > t-2?&nbsp;"}:::decision
+    CMP -->|"是"| RISE["&nbsp;漲潮 rising&nbsp;"]:::tide
+    CMP -->|"否"| CMP2{"&nbsp;t &lt; t-1 且 t &lt; t-2?&nbsp;"}:::decision
+    CMP2 -->|"是"| FALL["&nbsp;退潮 falling&nbsp;"]:::tide
+    CMP2 -->|"否"| KEEP2["&nbsp;維持上次判定&nbsp;"]:::action
+    RISE --> SAVEDIR["&nbsp;更新 tideDirection&nbsp;"]:::store
+    FALL --> SAVEDIR
+    KEEP2 --> SAVEDIR
+  end
+
+  subgraph ALERTS["&nbsp;警報觸發&nbsp;"]
+    SAVEDIR --> GC{"&nbsp;上次 falling&nbsp;<br/>本次 rising?&nbsp;"}:::decision
+    GC -->|"是"| CLOSE["&nbsp;tide_close_gate&nbsp;<br/>退→漲：建議關閘門"]:::alarm
+    SAVEDIR --> OG{"&nbsp;外水>內水 + falling&nbsp;<br/>外水剛穿過內水?&nbsp;"}:::decision
+    OG -->|"是"| OPEN["&nbsp;tide_open_gate&nbsp;<br/>交叉點：建議開閘門"]:::alarm
+  end
+
+  classDef api fill:#6366f1,color:#fff
+  classDef action fill:#10b981,color:#fff
+  classDef store fill:#ec4899,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+  classDef tide fill:#0891b2,color:#fff
+  classDef alarm fill:#ef4444,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 5: BG Service ───────── -->
+<div class="section">
+  <h2 class="section-title">5. Android 背景服務（螢幕關閉仍監控）</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TD
+  subgraph START["&nbsp;啟動途徑&nbsp;"]
+    LOGIN["&nbsp;使用者登入&nbsp;"]:::start --> SYNC["&nbsp;syncSettingsToNative()&nbsp;<br/>前端設定 → SharedPreferences"]:::bridge
+    SYNC --> SVC["&nbsp;startForegroundService()&nbsp;"]:::service
+    BOOT["&nbsp;開機完成 BOOT_COMPLETED&nbsp;"]:::event --> BOOTRCV["&nbsp;BootReceiver&nbsp;"]:::receiver
+    BOOTRCV --> SVC
+    HEART["&nbsp;5 分鐘心跳備援&nbsp;"]:::event --> ALARM2["&nbsp;PumpAlarmReceiver&nbsp;"]:::receiver
+    ALARM2 --> SVC
+    ALARM1["&nbsp;setAlarmClock 定時喚醒&nbsp;"]:::event --> ALARM2
+  end
+
+  subgraph RUN["&nbsp;PumpMonitorService (Foreground)&nbsp;"]
+    SVC --> FOREG["&nbsp;startForeground()&nbsp;<br/>低優先級持續通知"]:::service
+    FOREG --> THREAD["&nbsp;new Thread → doCheck()&nbsp;"]:::action
+    THREAD --> FETCH["&nbsp;HttpURLConnection&nbsp;<br/>GET 雙 API"]:::api
+    FETCH --> MERGE2["&nbsp;merge by rectime&nbsp;"]:::merge
+    MERGE2 --> CHECKS["&nbsp;水位 + 抽水機 + 閘門&nbsp;<br/>+ 潮汐 buffer + 方向判斷"]:::action
+    CHECKS --> HAS{"&nbsp;有警報?&nbsp;<br/>+ 訊息有變?"}:::decision
+    HAS -->|"是"| NOTIFY["&nbsp;sendAlarmNotification()&nbsp;<br/>CATEGORY_ALARM 高優先<br/>全螢幕 + 鎖屏顯示"]:::alarm
+    HAS -->|"否"| DONE2["&nbsp;儲存 pump states&nbsp;<br/>+ tide buffer + directions"]:::store
+    NOTIFY --> DONE2
+    DONE2 --> SCHED["&nbsp;scheduleNextCheck()&nbsp;<br/>+ scheduleHeartbeat()"]:::action
+  end
+
+  classDef start fill:#3b82f6,color:#fff
+  classDef bridge fill:#06b6d4,color:#fff
+  classDef service fill:#8b5cf6,color:#fff
+  classDef event fill:#f59e0b,color:#fff
+  classDef receiver fill:#a855f7,color:#fff
+  classDef action fill:#10b981,color:#fff
+  classDef api fill:#6366f1,color:#fff
+  classDef merge fill:#a855f7,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+  classDef alarm fill:#ef4444,color:#fff
+  classDef store fill:#ec4899,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 6: Settings ───────── -->
+<div class="section">
+  <h2 class="section-title">6. 設定頁功能流程</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart LR
+  SET["&nbsp;SettingsPage&nbsp;"]:::page --> SEL["&nbsp;站點選擇&nbsp;<br/>拖曳排序 + checkbox"]:::ui
+  SET --> BIO["&nbsp;生物辨識開關&nbsp;"]:::ui
+  SET --> FREQ["&nbsp;背景檢查頻率&nbsp;<br/>30~600 秒滑軌"]:::ui
+  SET --> HELP["&nbsp;HyperOS 背景設定提示&nbsp;"]:::ui
+  SET --> COLOR["&nbsp;抽水機狀態顏色表&nbsp;"]:::ui
+  SET --> VER["&nbsp;App 版本號&nbsp;"]:::ui
+  SEL --> SAVE["&nbsp;確定 → setPage('main')&nbsp;"]:::action
+  SAVE --> SYNC["&nbsp;syncSettingsToNative()&nbsp;<br/>即時同步到背景服務"]:::bridge
+
+  classDef page fill:#8b5cf6,color:#fff
+  classDef ui fill:#14b8a6,color:#fff
+  classDef action fill:#10b981,color:#fff
+  classDef bridge fill:#06b6d4,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 7: Card Detail ───────── -->
+<div class="section">
+  <h2 class="section-title">7. 單一站點卡片內部結構</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart TD
+  CARD["&nbsp;StationCard&nbsp;"]:::ui --> HEAD["&nbsp;站名 + rectime 時間&nbsp;<br/>潮汐站加 (潮汐站) 尾綴"]:::ui
+  CARD --> ALARM_IN["&nbsp;警報水位輸入框&nbsp;<br/>可自訂 0.01~10.0m"]:::ui
+  CARD --> WL["&nbsp;WaterLevelBar&nbsp;<br/>內池水位 (橫條 + 警報線)"]:::ui
+  CARD --> WL2["&nbsp;WaterLevelBar&nbsp;<br/>外池水位 (橫條)"]:::ui
+  CARD --> PGRID["&nbsp;PumpGrid&nbsp;<br/>16 台抽水機狀態圓點"]:::ui
+  CARD --> DGRID["&nbsp;DoorGrid&nbsp;<br/>16 個閘門狀態 badge"]:::ui
+  CARD --> TOGGLE["&nbsp;GateAlarmToggle&nbsp;"]:::ui
+  TOGGLE --> G1["&nbsp;內高外低閘門未開時告警&nbsp;"]:::ui
+  TOGGLE --> G2{"&nbsp;是潮汐站?&nbsp;"}:::decision
+  G2 -->|"是 (108,110,112)"| TSW["&nbsp;潮汐站閘門啟閉提醒&nbsp;"]:::tide
+  CARD --> BADGES["&nbsp;警報原因 badges&nbsp;<br/>水位/抽水機/閘門/潮汐"]:::alarm
+
+  classDef ui fill:#14b8a6,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+  classDef tide fill:#0891b2,color:#fff
+  classDef alarm fill:#ef4444,color:#fff
+    </pre>
+  </div>
+</div>
+
+<!-- ───────── Layer 8: Update ───────── -->
+<div class="section">
+  <h2 class="section-title">8. App 內自動更新</h2>
+  <div class="diagram-box">
+    <pre class="mermaid">
+flowchart LR
+  LOGIN2["&nbsp;登入完成&nbsp;"]:::start --> CHECK["&nbsp;checkForUpdate()&nbsp;<br/>GitHub Releases API"]:::api
+  CHECK --> CMP{"&nbsp;versionCode > 目前?"}:::decision
+  CMP -->|"是"| DIALOG["&nbsp;UpdateDialog&nbsp;<br/>顯示版本+更新內容"]:::ui
+  CMP -->|"否"| END2["&nbsp;結束&nbsp;"]:::action
+  DIALOG --> DL["&nbsp;下載 APK → 快取目錄&nbsp;"]:::action
+  DL --> INSTALL["&nbsp;FileProvider + ACTION_VIEW&nbsp;<br/>啟動系統安裝器"]:::action
+
+  classDef start fill:#3b82f6,color:#fff
+  classDef api fill:#6366f1,color:#fff
+  classDef decision fill:#f59e0b,color:#fff
+  classDef ui fill:#14b8a6,color:#fff
+  classDef action fill:#10b981,color:#fff
+    </pre>
+  </div>
+</div>
+
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose',
+  themeVariables: { fontFamily: 'system-ui, sans-serif', fontSize: '14px' } });
+</script>
+</body>
+</html>

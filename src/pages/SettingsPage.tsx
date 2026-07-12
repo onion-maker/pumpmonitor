@@ -9,8 +9,10 @@ interface Props {
 
 export default function SettingsPage({ onLogout }: Props) {
   const selectedStations = useStore((s) => s.selectedStations);
+  const stationOrder = useStore((s) => s.stationOrder);
   const biometricEnabled = useStore((s) => s.biometricEnabled);
   const setSelectedStations = useStore((s) => s.setSelectedStations);
+  const setStationOrder = useStore((s) => s.setStationOrder);
   const setBiometricEnabled = useStore((s) => s.setBiometricEnabled);
   const backgroundIntervalSec = useStore((s) => s.backgroundIntervalSec);
   const setBackgroundIntervalSec = useStore((s) => s.setBackgroundIntervalSec);
@@ -79,7 +81,12 @@ export default function SettingsPage({ onLogout }: Props) {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         {/* 站點選擇 */}
-        <StationSelector selected={selectedStations} onChange={setSelectedStations} />
+        <StationSelector
+            selected={selectedStations}
+            order={stationOrder}
+            onChange={setSelectedStations}
+            onReorder={setStationOrder}
+          />
 
         <hr className="border-gray-200 my-6" />
 
