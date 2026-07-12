@@ -213,13 +213,16 @@ export default function StationCard({ station }: Props) {
         <span className="text-xs text-gray-400">m</span>
         {TIDE_STATIONS.includes(station.stationno) && (() => {
           const dir = tideDirection[station.stationno];
-          if (!dir || dir === 'slack') {
-            return <span className="text-xs font-bold text-gray-400 ml-1">平潮</span>;
+          if (!dir) {
+            return <span className="text-lg font-bold text-gray-400 ml-auto">潮汐判定中</span>;
+          }
+          if (dir === 'slack') {
+            return <span className="text-lg font-bold text-gray-400 ml-auto">平潮</span>;
           }
           if (dir === 'rising') {
-            return <span className="text-xs font-bold text-red-500 ml-1">漲潮</span>;
+            return <span className="text-lg font-bold text-red-500 ml-auto">漲潮</span>;
           }
-          return <span className="text-xs font-bold text-blue-500 ml-1">退潮</span>;
+          return <span className="text-lg font-bold text-blue-500 ml-auto">退潮</span>;
         })()}
         {stationAlarmLevels[station.stationno] !== undefined && (
           <span className="text-xs text-blue-500" title="已自訂">
