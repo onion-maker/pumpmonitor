@@ -1,6 +1,5 @@
 name: Release APK
 
-# 推送 v 開頭的 tag 時自動觸發 (例如 v1.4.0)
 on:
   push:
     tags:
@@ -36,10 +35,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install npm dependencies
-        run: npm ci
+        run: npm ci 2>/dev/null || npm install
 
       - name: Build web (Vite)
         run: npm run build
@@ -47,17 +46,12 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # ⚠️ 從 tag 名稱提取版本號，自動更新 build.gradle 中的 versionName 與 versionCode
-      #   tag "v1.4.0" → versionName = "1.4.0", versionCode = 年份週數 (如 2026W28 = 260728)
       - name: Extract version from tag
         id: version
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          VERSION_NAME=${TAG_NAME#v}
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
-          # versionCode: YYMMDD 格式，以當前 UTC 日期計算
-          VERSION_CODE=$(date -u +'%y%m%d')
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "VERSION_NAME=${TAG_NAME#v}" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$(date -u +'%y%m%d')" >> $GITHUB_OUTPUT
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Update version in build.gradle
@@ -65,43 +59,27 @@ jobs:
           sed -i "s/versionCode [0-9]*/versionCode ${{ steps.version.outputs.VERSION_CODE }}/" android/app/build.gradle
           sed -i "s/versionName \"[^\"]*\"/versionName \"${{ steps.version.outputs.VERSION_NAME }}\"/" android/app/build.gradle
 
-      - name: Set up keystore
+      - name: Set up keystore and signing config
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+          cat >> android/app/build.gradle << 'SIGNINGEOF'
+
+          android {
+            signingConfigs {
+              release {
+                storeFile file('release.keystore')
+                storePassword System.getenv('KEYSTORE_PASS')
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASS')
+              }
+            }
+          }
+          SIGNINGEOF
+          sed -i '/release {/a\            signingConfig signingConfigs.release' android/app/build.gradle
 
       - name: Build release APK
         working-directory: android
-        run: |
-          python3 -c "
-          import re
-          path = 'app/build.gradle'
-          with open(path, 'r') as f:
-              content = f.read()
-
-          # 注入 signingConfigs 區段（放在 android { 之後）
-          signing = '''
-          signingConfigs {
-              release {
-                  storeFile file('release.keystore')
-                  storePassword System.getenv('KEYSTORE_PASS')
-                  keyAlias System.getenv('KEY_ALIAS')
-                  keyPassword System.getenv('KEY_PASS')
-              }
-          }\n'''
-          content = re.sub(r'(android\s*\{)', r'\1\n' + signing, content, count=1)
-
-          # 在 release buildType 中加入 signingConfig signingConfigs.release
-          content = re.sub(
-              r'(release\s*\{\n\s*minifyEnabled)',
-              r'signingConfig signingConfigs.release\n            \1',
-              content
-          )
-
-          with open(path, 'w') as f:
-              f.write(content)
-          print('signingConfig injected')
-          "
-          ./gradlew assembleRelease
+        run: ./gradlew assembleRelease
         env:
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
