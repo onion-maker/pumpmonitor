@@ -76,21 +76,15 @@ public class AppUpdateHelper {
                 String body = json.optString("body", "");
                 String apkUrl = findApkUrl(json);
 
-                // tag_name 格式：v{versionCode}
-                int latestVersion = 0;
-                String tag = tagName.startsWith("v") ? tagName.substring(1) : tagName;
-                try {
-                    latestVersion = Integer.parseInt(tag);
-                } catch (NumberFormatException e) {
-                    info.error = "版本格式錯誤: " + tagName;
-                    callback.onComplete(info);
-                    return;
-                }
-
+                // tag_name 格式：vX.Y.Z (semver)
+                String latestTag = tagName.startsWith("v") ? tagName.substring(1) : tagName;
                 info.latestVersion = tagName;
                 info.releaseNotes = body;
                 info.apkUrl = apkUrl;
-                info.hasUpdate = latestVersion > currentVersion;
+
+                // 從 tag 提取 versionCode (YYMMDD 格式的整數) 或比對 versionName
+                int latestCode = extractVersionCode(body, latestTag, apkUrl);
+                info.hasUpdate = latestCode > currentVersion;
 
                 if (info.hasUpdate && (apkUrl == null || apkUrl.isEmpty())) {
                     info.error = "Release 中找不到 APK 檔案";
@@ -119,6 +113,41 @@ public class AppUpdateHelper {
             }
         } catch (Exception ignored) { }
         return null;
+    }
+
+    /**
+     * 從 release body / tag / APK 檔名中提取 versionCode
+     * workflow 會把 versionCode 寫在 release body 第一行：versionCode:YYMMDD
+     * 如果找不到，fallback 到 tag 中的純數字部分
+     */
+    private static int extractVersionCode(String body, String latestTag, String apkUrl) {
+        // 1. 從 release body 找 "versionCode:數字"
+        if (body != null) {
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("versionCode[\\s:]*?(\\d{5,6})");
+            java.util.regex.Matcher m = p.matcher(body);
+            if (m.find()) {
+                return Integer.parseInt(m.group(1));
+            }
+        }
+        // 2. 從 tag 中找純數字（e.g. v1.4.0 → 取不包含點的最大數字區段當 fallback）
+        //    改用 semver 的三節數字轉換: major*10000 + minor*100 + patch
+        java.util.regex.Pattern sv = java.util.regex.Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)");
+        java.util.regex.Matcher sm = sv.matcher(latestTag);
+        if (sm.find()) {
+            int major = Integer.parseInt(sm.group(1));
+            int minor = Integer.parseInt(sm.group(2));
+            int patch = Integer.parseInt(sm.group(3));
+            return major * 10000 + minor * 100 + patch;
+        }
+        // 3. 從 APK 檔名找數字
+        if (apkUrl != null) {
+            java.util.regex.Pattern pf = java.util.regex.Pattern.compile("(\\d{5,6})");
+            java.util.regex.Matcher pm = pf.matcher(apkUrl);
+            if (pm.find()) {
+                return Integer.parseInt(pm.group(1));
+            }
+        }
+        return 0;
     }
 
     /**
