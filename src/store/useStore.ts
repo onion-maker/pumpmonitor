@@ -317,12 +317,20 @@ export const useStore = create<AppStore>()((set, get) => ({
         const prevOut = previousLevelOut[station.stationno] ?? null;
         const direction = tideDirection[station.stationno] ?? 'slack';
 
-        // 開閘門警報：外水 > 內水，退潮中，且外水從高於內水變低於或等於內水（交叉點）
+        // 開閘門警報：退潮交叉 + 指定閘門全閉才須告警（若已有閘門開啟，內水可自然排出）
         if (prevOut !== null && prevOut > levelIn && levelOut <= levelIn && direction === 'falling') {
-          reasons.push({
-            type: 'tide_open_gate',
-            detail: `退潮中外水位 ${levelOut.toFixed(2)}m 已降至內水位 ${levelIn.toFixed(2)}m 以下，建議開啟閘門排水`,
+          const doorCols = TIDE_DOOR_COLS[station.stationno] ?? [];
+          const doorIds = doorCols.map(d => parseInt(d.replace('door', ''), 10));
+          const allClosed = doorIds.every(id => {
+            const door = station.doors.find(dd => dd.id === id);
+            return door && door.status === '1';
           });
+          if (allClosed) {
+            reasons.push({
+              type: 'tide_open_gate',
+              detail: `退潮中外水位 ${levelOut.toFixed(2)}m 已降至內水位 ${levelIn.toFixed(2)}m 以下，建議開啟閘門排水`,
+            });
+          }
         }
       }
 
