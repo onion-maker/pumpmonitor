@@ -3,7 +3,7 @@ import { useStore } from './store/useStore';
 import MainPage from './pages/MainPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
-import { startBackgroundService, stopBackgroundService, syncSettingsToNative, isNative } from './utils/backgroundAlarm';
+import { startBackgroundService, stopBackgroundService, syncSettingsToNative, isNative, dismissBackgroundAlarm } from './utils/backgroundAlarm';
 import { validateSession, clearSession } from './firebase/session';
 import { checkForUpdate, downloadAndInstall } from './utils/appUpdate';
 import { GITHUB_OWNER, GITHUB_REPO } from './config/stations';
@@ -165,6 +165,8 @@ export default function App() {
     // 前景切換時檢查
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
+        // App 回到前景 → 停止背景警報音，改由前端管理
+        dismissBackgroundAlarm();
         ensureService();
       }
     };
