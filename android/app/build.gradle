@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+// CI 環境下 release.keystore 存在時才啟用簽名
+def hasReleaseKeystore = file('release.keystore').exists()
+
 android {
     namespace "com.pumpmonitor.app"
     compileSdk rootProject.ext.compileSdkVersion
@@ -16,12 +19,10 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    // CI 環境下 release.keystore 存在時才啟用簽名
-    def keystorePath = file('release.keystore')
-    if (keystorePath.exists()) {
+    if (hasReleaseKeystore) {
         signingConfigs {
             release {
-                storeFile keystorePath
+                storeFile file('release.keystore')
                 storePassword System.getenv("KEYSTORE_PASS")
                 keyAlias System.getenv("KEY_ALIAS")
                 keyPassword System.getenv("KEY_PASS")
@@ -30,7 +31,7 @@ android {
     }
     buildTypes {
         release {
-            if (keystorePath.exists()) {
+            if (hasReleaseKeystore) {
                 signingConfig signingConfigs.release
             }
             minifyEnabled false
@@ -66,5 +67,5 @@ try {
         apply plugin: 'com.google.gms.google-services'
     }
 } catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+    logger.info("google-services.json not found, google-services-plugin not applied. Push Notifications won't work")
 }
