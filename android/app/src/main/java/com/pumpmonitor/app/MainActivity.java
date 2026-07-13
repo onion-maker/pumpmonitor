@@ -17,8 +17,14 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.util.concurrent.Executor;
 
 public class MainActivity extends BridgeActivity {
@@ -58,12 +64,36 @@ public class MainActivity extends BridgeActivity {
     // ═══════════════════════════════════════════
 
     private class HttpBridge {
+
+        // 靜態初始化：信任所有憑證（政府伺服器 schannel 撤銷檢查問題）
+        private static final TrustManager[] TRUST_ALL = new TrustManager[]{
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+            }
+        };
+
+        private static HttpsURLConnection setupSSL(URL url) throws Exception {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, TRUST_ALL, new java.security.SecureRandom());
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            conn.setSSLSocketFactory(sc.getSocketFactory());
+            conn.setHostnameVerifier((hostname, session) -> true);
+            return conn;
+        }
+
         @JavascriptInterface
         public String fetch(String urlString) {
             Log.d(TAG, "AndroidHttp.fetch: " + urlString);
             try {
                 URL url = new URL(urlString);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                HttpURLConnection conn;
+                if (urlString.startsWith("https://")) {
+                    conn = setupSSL(url);
+                } else {
+                    conn = (HttpURLConnection) url.openConnection();
+                }
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(15000);
@@ -84,6 +114,44 @@ public class MainActivity extends BridgeActivity {
                 return sb.toString();
             } catch (Exception e) {
                 Log.e(TAG, "HTTP 請求失敗", e);
+                return null;
+            }
+        }
+
+        /** POST JSON 版本（用於 GetAutoPumpWaterMins 潮汐 API） */
+        @JavascriptInterface
+        public String fetchPost(String urlString, String jsonBody) {
+            Log.d(TAG, "AndroidHttp.fetchPost: " + urlString);
+            try {
+                URL url = new URL(urlString);
+                HttpsURLConnection conn = setupSSL(url);
+                conn.setRequestMethod("POST");
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(15000);
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                os.write(jsonBody.getBytes("UTF-8"));
+                os.flush();
+                os.close();
+
+                int code = conn.getResponseCode();
+                Log.d(TAG, "HTTP POST 狀態碼: " + code);
+                if (code != 200) return null;
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                reader.close();
+                return sb.toString();
+            } catch (Exception e) {
+                Log.e(TAG, "HTTP POST 請求失敗", e);
                 return null;
             }
         }

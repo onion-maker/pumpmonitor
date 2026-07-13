@@ -23,6 +23,13 @@ export const STATION_NAMES: Record<string, string> = {
 /** 潮汐站站號（外水位受基隆河潮汐影響） */
 export const TIDE_STATIONS = ['108', '110', '112'];
 
+/** 各潮汐站要監控的閘門清單（來自 shinshun 的 door_cols） */
+export const TIDE_DOOR_COLS: Record<string, string[]> = {
+  '112': ['door02', 'door03', 'door04', 'door05'],
+  '110': ['door01', 'door02', 'door03', 'door04'],
+  '108': ['door01', 'door02', 'door03'],
+};
+
 /** 所有有效站號 */
 export const VALID_STATIONS = Object.keys(STATION_NAMES);
 

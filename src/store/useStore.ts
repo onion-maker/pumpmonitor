@@ -10,7 +10,8 @@ import type {
   TideDirection,
   TideAlarmSwitch,
 } from '../types';
-import { TIDE_STATIONS, DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
+import type { TideRecord } from '../api/pumpStation';
+import { TIDE_STATIONS, TIDE_DOOR_COLS, DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 import { playStationAlarm, stopStationAlarm, stopAllAlarms } from '../utils/audio';
 
 // ── 儲存 key ──
@@ -107,7 +108,8 @@ export interface AppStore {
   previousLevelOut: Record<string, number | null>;
 
   recordLevelOut: (stationno: string, rectime: string, levelOut: number | null) => void;
-  checkTideAlarm: () => void;
+  /** 改用 GetAutoPumpWaterMins API 資料做潮汐判斷（shinshun 5 筆多數決法） */
+  updateTide: (tideRecords: Record<string, TideRecord[]>) => void;
 }
 
 function buildPumpMap(pumps: { id: number; status: PumpStatus }[]): PumpStatusMap {
@@ -450,51 +452,88 @@ export const useStore = create<AppStore>()((set, get) => ({
     });
   },
 
-  /** 潮汐方向判斷 + 關閘門警報（每 10 分鐘由 usePumpData 觸發） */
-  checkTideAlarm: () => {
+  /** 潮汐方向判斷（shinshun 5 筆多數決法）+ 閘門啟閉警報
+   *  新生(112) & 建國(110) 以新生的 level_out 決定潮汐方向
+   *  中山(108) 以自己的 level_out 獨立判斷
+   *  每 10 分鐘由 usePumpData 觸發 */
+  updateTide: (tideRecords) => {
     const state = get();
-    const { tideBuffer, tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations } = state;
-    const now = Date.now();
-    const newDirections: Record<string, TideDirection> = { ...prevDirections };
+    const { tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations } = state;
+    const newDirections: Record<string, TideDirection> = {};
     const tideReasons: StationAlarmInfo[] = [];
 
+    /** 用指定站號的 level_out 做 5 筆 pairwise 多數決 */
+    const detectTide = (records: TideRecord[] | undefined, stationNo: string): TideDirection => {
+      if (!records || records.length < 2) return prevDirections[stationNo] ?? 'slack';
+      const valid = records.slice(-5).map(r => r.level_out).filter(v => v !== null) as number[];
+      if (valid.length < 2) return prevDirections[stationNo] ?? 'slack';
+      let inc = 0, dec = 0;
+      for (let i = 1; i < valid.length; i++) {
+        if (valid[i] > valid[i - 1]) inc++;
+        else if (valid[i] < valid[i - 1]) dec++;
+      }
+      if (dec > inc) return 'falling';
+      if (inc > dec) return 'rising';
+      return prevDirections[stationNo] ?? 'slack';
+    };
+
+    // 新生(112) 決定潮汐方向 → 112 和 110 共用
+    const xinshengTide = detectTide(tideRecords['112'], '112');
+    newDirections['112'] = xinshengTide;
+    newDirections['110'] = xinshengTide;
+
+    // 中山(108) 獨立用自己的 level_out 判斷
+    newDirections['108'] = detectTide(tideRecords['108'], '108');
+
+    // ── 閘門啟閉警報（各站用自己的水位 & 閘門，但潮汐方向如上決定） ──
     for (const stationNo of TIDE_STATIONS) {
       if (!selectedStations.includes(stationNo)) continue;
       const tideSwitch = stationTideAlarmSwitches[stationNo];
       if (!tideSwitch?.tideAlarm) continue;
 
-      const buffer = tideBuffer[stationNo] ?? [];
-      const recent = buffer.slice(-3);
-      if (recent.length < 3) {
-        newDirections[stationNo] = 'slack';
-        continue;
-      }
+      const newDir = newDirections[stationNo] ?? prevDirections[stationNo] ?? 'slack';
+      const records = tideRecords[stationNo];
+      if (!records || records.length < 3) continue;
 
-      const [t2, t1, t] = recent.map(d => d.level);
-      const prevDir = prevDirections[stationNo] ?? 'slack';
-      let newDir: TideDirection = prevDir;
+      const newest = records[records.length - 1];
+      const prev = records[records.length - 2];
+      const prev2 = records[records.length - 3];
 
-      if (t > t1 && t > t2) {
-        newDir = 'rising';
-      } else if (t < t1 && t < t2) {
-        newDir = 'falling';
-      }
-      // 其他情況維持上次判定
+      const ni_lo = newest.level_out ?? 0;
+      const ni_li = newest.level_in ?? 0;
+      const pi_lo = prev.level_out ?? 0;
+      const pi_li = prev.level_in ?? 0;
+      const pi2_lo = prev2.level_out ?? 0;
 
-      newDirections[stationNo] = newDir;
+      const stationData = state.stationData.find(s => s.stationno === stationNo);
+      const stationName = stationData?.stationName ?? stationNo;
 
-      // 關閘門警報：退潮 → 漲潮（趨勢反轉）
-      if (prevDir === 'falling' && newDir === 'rising') {
-        const stationData = state.stationData.find(s => s.stationno === stationNo);
-        const stationName = stationData?.stationName ?? stationNo;
-        tideReasons.push({
-          stationno: stationNo,
-          stationName,
-          reasons: [{
-            type: 'tide_close_gate',
-            detail: '外水位已從退潮轉為漲潮，建議關閉閘門防止河水倒灌',
-          }],
-        });
+      if (newDir === 'falling') {
+        if (ni_lo < ni_li && pi_lo >= pi_li) {
+          const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
+          const allClosed = doorCols.length > 0 && doorCols.every(d => newest.doors[d] === '1');
+          if (allClosed) {
+            tideReasons.push({
+              stationno: stationNo,
+              stationName,
+              reasons: [{ type: 'tide_open_gate', detail: '退潮中外水位已低於內水位，建議開啟閘門排水' }],
+            });
+          }
+        }
+      } else if (newDir === 'rising') {
+        const cond1 = (pi2_lo === pi_lo && pi_lo === ni_lo);
+        const cond2 = (pi2_lo === pi_lo && ni_lo > pi_lo);
+        if (cond1 || cond2) {
+          const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
+          const anyOpen = doorCols.some(d => newest.doors[d] === '2');
+          if (anyOpen) {
+            tideReasons.push({
+              stationno: stationNo,
+              stationName,
+              reasons: [{ type: 'tide_close_gate', detail: '漲潮中外水位上升或持平，建議關閉閘門防止河水倒灌' }],
+            });
+          }
+        }
       }
     }
 
@@ -514,7 +553,7 @@ export const useStore = create<AppStore>()((set, get) => ({
 
     set({
       tideDirection: newDirections,
-      lastTideCheckTime: now,
+      lastTideCheckTime: Date.now(),
       alarmingStations: newAlarming,
       isAlarming: newAlarming.length > 0,
     });

@@ -21,11 +21,19 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class PumpMonitorService extends Service {
 
@@ -35,12 +43,20 @@ public class PumpMonitorService extends Service {
     private static final int NOTIFY_SERVICE = 1000;
     private static final int NOTIFY_ALARM = 1001;
     private static final String PREFS_NAME = "pump-monitor-settings";
-    private static final String PREF_TIDE_BUFFER = "pump-tide-buffer";
     private static final String API_URL = "https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
     private static final String API_URL_BACKUP = "https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo";
+    private static final String TIDE_API_URL = "https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins";
+    private static final String TIDE_API_URL_BACKUP = "https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins";
     private static final int REQUEST_CHECK = 1;
     private static final int REQUEST_HEARTBEAT = 2;
     private static final String[] TIDE_STATIONS = {"108", "110", "112"};
+
+    /** 各潮汐站監控的閘門清單（對應 shinshun door_cols） */
+    private static final Map<String, String[]> TIDE_DOOR_COLS = new HashMap<String, String[]>() {{
+        put("112", new String[]{"door02", "door03", "door04", "door05"});
+        put("110", new String[]{"door01", "door02", "door03", "door04"});
+        put("108", new String[]{"door01", "door02", "door03"});
+    }};
 
     private static boolean running = false;
 
@@ -231,17 +247,10 @@ public class PumpMonitorService extends Service {
             mergeArray(merged, primary);
             mergeArray(merged, backup);
 
-            // ── 讀取潮汐 buffer ──
-            String tideBufferJson = prefs.getString(PREF_TIDE_BUFFER, "{}");
-            JSONObject tideBufferObj = new JSONObject(tideBufferJson);
-            // 讀取潮向歷史
+            // ── 讀取潮向歷史 ──
             String tideDirJson = prefs.getString("tideDirections", "{}");
             JSONObject prevTideDir = new JSONObject(tideDirJson);
-
-            // 本次檢查用
-            JSONObject newTideBuffer = new JSONObject();
             JSONObject newTideDir = new JSONObject();
-            long cutoff = System.currentTimeMillis() - 4 * 60 * 60 * 1000L; // 4 小時
 
             StringBuilder alarmMsg = new StringBuilder();
             int alarmCount = 0;
@@ -317,85 +326,78 @@ public class PumpMonitorService extends Service {
                     }
                 }
 
-                // ── 記錄外水位到 tide buffer ──
-                if (arrayContains(TIDE_STATIONS, stationNo) && !station.isNull("level_out")) {
-                    String rectime = station.optString("rectime", "");
-                    double levelOut = station.getDouble("level_out");
-                    // rectime: yyyyMMddHHmmss → timestamp
-                    long time = parseRectimeMs(rectime);
-                    if (time > 0) {
-                        JSONArray buf = tideBufferObj.optJSONArray(stationNo);
-                        if (buf == null) buf = new JSONArray();
-                        // 去重
-                        boolean dup = false;
-                        for (int j = 0; j < buf.length(); j++) {
-                            JSONObject entry = buf.getJSONObject(j);
-                            if (entry.optLong("time", 0) == time) { dup = true; break; }
-                        }
-                        if (!dup) {
-                            JSONObject entry = new JSONObject();
-                            entry.put("time", time);
-                            entry.put("level", levelOut);
-                            buf.put(entry);
-                        }
-                        // 砍掉超過 4 小時的舊資料
-                        JSONArray trimmed = new JSONArray();
-                        for (int j = 0; j < buf.length(); j++) {
-                            JSONObject e = buf.getJSONObject(j);
-                            if (e.optLong("time", 0) >= cutoff) trimmed.put(e);
-                        }
-                        buf = trimmed;
-                        newTideBuffer.put(stationNo, buf);
-                    }
-                }
                 newPumpStates.put(stationNo, stationPump);
             }
 
-            // ── 儲存 tide buffer ──
+            // ── 儲存 pump states ──
             prefs.edit()
-                .putString(PREF_TIDE_BUFFER, newTideBuffer.toString())
                 .putString("previousPumpStates", newPumpStates.toString())
                 .apply();
 
-            // ── 潮汐方向判斷 + 關閘門警報 ──
-            for (String stationNo : TIDE_STATIONS) {
-                if (!contains(selected, stationNo)) continue;
-                if (!tideAlarmSwitches.has(stationNo)) continue;
-                JSONObject ts = tideAlarmSwitches.optJSONObject(stationNo);
-                if (ts == null || !ts.optBoolean("tideAlarm", false)) continue;
+            // ── 潮汐方向判斷（新生 112 決定，建國 110 共用；中山 108 獨立） ──
+            if (tideRecords != null) {
+                // 先決定潮汐方向
+                String xinshengTide = detectTide(tideRecords.optJSONArray("112"), prevTideDir.optString("112", "slack"));
+                newTideDir.put("112", xinshengTide);
+                newTideDir.put("110", xinshengTide);
+                newTideDir.put("108", detectTide(tideRecords.optJSONArray("108"), prevTideDir.optString("108", "slack")));
 
-                JSONArray buf = newTideBuffer.optJSONArray(stationNo);
-                if (buf == null || buf.length() < 3) {
-                    newTideDir.put(stationNo, "slack");
-                    continue;
+                // 閘門啟閉警報（各站用自己的水位 & 閘門）
+                for (String stationNo : TIDE_STATIONS) {
+                    if (!contains(selected, stationNo)) continue;
+                    if (!tideAlarmSwitches.has(stationNo)) continue;
+                    JSONObject ts = tideAlarmSwitches.optJSONObject(stationNo);
+                    if (ts == null || !ts.optBoolean("tideAlarm", false)) continue;
+
+                    JSONArray records = tideRecords.optJSONArray(stationNo);
+                    if (records == null || records.length() < 3) continue;
+
+                    String dir = newTideDir.optString(stationNo, prevTideDir.optString(stationNo, "slack"));
+
+                    int rlen = records.length();
+                    JSONObject newest = records.getJSONObject(rlen - 1);
+                    JSONObject prev  = records.getJSONObject(rlen - 2);
+                    JSONObject prev2 = records.getJSONObject(rlen - 3);
+
+                    double ni_lo = newest.optDouble("level_out", 0);
+                    double ni_li = newest.optDouble("level_in", 0);
+                    double pi_lo = prev.optDouble("level_out", 0);
+                    double pi_li = prev.optDouble("level_in", 0);
+                    double pi2_lo = prev2.optDouble("level_out", 0);
+
+                    String[] doorCols = TIDE_DOOR_COLS.get(stationNo);
+
+                    if (dir.equals("falling")) {
+                        if (ni_lo < ni_li && pi_lo >= pi_li && doorCols != null) {
+                            boolean allClosed = true;
+                            for (String d : doorCols) {
+                                if (!newest.optString(d, "").equals("1")) { allClosed = false; break; }
+                            }
+                            if (allClosed) {
+                                if (alarmCount > 0) alarmMsg.append("\n");
+                                alarmMsg.append(stationNo).append(" 退潮請開閘門");
+                                alarmCount++;
+                            }
+                        }
+                    } else if (dir.equals("rising")) {
+                        boolean cond1 = (pi2_lo == pi_lo && pi_lo == ni_lo);
+                        boolean cond2 = (pi2_lo == pi_lo && ni_lo > pi_lo);
+                        if ((cond1 || cond2) && doorCols != null) {
+                            boolean anyOpen = false;
+                            for (String d : doorCols) {
+                                if (newest.optString(d, "").equals("2")) { anyOpen = true; break; }
+                            }
+                            if (anyOpen) {
+                                if (alarmCount > 0) alarmMsg.append("\n");
+                                alarmMsg.append(stationNo).append(" 漲潮請關閘門");
+                                alarmCount++;
+                            }
+                        }
+                    }
                 }
 
-                int len = buf.length();
-                double t2 = buf.getJSONObject(len - 3).getDouble("level");
-                double t1 = buf.getJSONObject(len - 2).getDouble("level");
-                double t  = buf.getJSONObject(len - 1).getDouble("level");
-
-                String prevDir = prevTideDir.optString(stationNo, "slack");
-                String newDir = prevDir; // 預設維持
-
-                if (t > t1 && t > t2) {
-                    newDir = "rising";
-                } else if (t < t1 && t < t2) {
-                    newDir = "falling";
-                }
-
-                newTideDir.put(stationNo, newDir);
-
-                // 關閘門警報：退潮 → 漲潮
-                if (prevDir.equals("falling") && newDir.equals("rising")) {
-                    if (alarmCount > 0) alarmMsg.append("\n");
-                    alarmMsg.append(stationNo).append(" 潮汐轉漲潮，建議關閉閘門");
-                    alarmCount++;
-                }
+                prefs.edit().putString("tideDirections", newTideDir.toString()).apply();
             }
-
-            // ── 儲存潮向 ──
-            prefs.edit().putString("tideDirections", newTideDir.toString()).apply();
 
             if (alarmCount > 0) {
                 String msg = alarmMsg.toString();
@@ -412,10 +414,35 @@ public class PumpMonitorService extends Service {
         }
     }
 
+    // ═══════════ HTTP 工具 ═══════════
+
+    // 靜態信任所有憑證（政府伺服器 schannel 撤銷檢查問題）
+    private static final TrustManager[] TRUST_ALL = new TrustManager[]{
+        new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+        }
+    };
+
+    private static HttpsURLConnection setupSSL(URL url) throws Exception {
+        SSLContext sc = SSLContext.getInstance("TLS");
+        sc.init(null, TRUST_ALL, new java.security.SecureRandom());
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+        conn.setSSLSocketFactory(sc.getSocketFactory());
+        conn.setHostnameVerifier((hostname, session) -> true);
+        return conn;
+    }
+
     private JSONArray fetchApiAsArray(String urlStr) {
         try {
             URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn;
+            if (urlStr.startsWith("https://")) {
+                conn = setupSSL(url);
+            } else {
+                conn = (HttpURLConnection) url.openConnection();
+            }
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(10000);
@@ -431,6 +458,129 @@ public class PumpMonitorService extends Service {
             Log.e(TAG, "HTTP 失敗: " + urlStr, e);
             return null;
         }
+    }
+
+    /** POST JSON 到潮汐 API，合併雙 API 取 rectime 最新 */
+    private JSONArray fetchTideApi(String apiUrl, String body) {
+        try {
+            URL url = new URL(apiUrl);
+            HttpsURLConnection conn = setupSSL(url);
+            conn.setRequestMethod("POST");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(15000);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(body.getBytes("UTF-8"));
+            os.flush();
+            os.close();
+
+            if (conn.getResponseCode() != 200) return null;
+            BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = r.readLine()) != null) sb.append(line);
+            r.close();
+            JSONObject root = new JSONObject(sb.toString());
+            return root.optJSONArray("d");
+        } catch (Exception e) {
+            Log.e(TAG, "潮汐 API 失敗: " + apiUrl, e);
+            return null;
+        }
+    }
+
+    /** 取得三個潮汐站的歷史水位紀錄（雙 API 合併） */
+    private JSONObject fetchTideRecords() {
+        try {
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.HOUR_OF_DAY, 1);
+            String sEnd = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(cal.getTime());
+            cal.add(Calendar.HOUR_OF_DAY, -2);
+            String sBgn = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(cal.getTime());
+
+            JSONObject body = new JSONObject();
+            body.put("sBgnDate", sBgn);
+            body.put("sEndDate", sEnd);
+            String bodyStr = body.toString();
+
+            JSONObject out = new JSONObject();
+
+            for (String no : TIDE_STATIONS) {
+                JSONObject bodyWithStation = new JSONObject();
+                bodyWithStation.put("sBgnDate", sBgn);
+                bodyWithStation.put("sEndDate", sEnd);
+                bodyWithStation.put("stationno", no);
+                String bs = bodyWithStation.toString();
+
+                JSONArray primary = fetchTideApi(TIDE_API_URL, bs);
+                JSONArray backup = fetchTideApi(TIDE_API_URL_BACKUP, bs);
+
+                // 合併雙 API，取 rectime 較新
+                Map<String, JSONObject> map = new HashMap<>();
+                if (primary != null) {
+                    for (int j = 0; j < primary.length(); j++) {
+                        JSONObject r = primary.getJSONObject(j);
+                        String rectime = r.optString("rectime", "");
+                        JSONObject existing = map.get(rectime);
+                        if (existing == null || rectime.compareTo(existing.optString("rectime", "")) > 0) {
+                            map.put(rectime, r);
+                        }
+                    }
+                }
+                if (backup != null) {
+                    for (int j = 0; j < backup.length(); j++) {
+                        JSONObject r = backup.getJSONObject(j);
+                        String rectime = r.optString("rectime", "");
+                        JSONObject existing = map.get(rectime);
+                        if (existing == null || rectime.compareTo(existing.optString("rectime", "")) > 0) {
+                            map.put(rectime, r);
+                        }
+                    }
+                }
+
+                JSONArray merged = new JSONArray();
+                // 依 rectime 排序（TreeMap 或手動排）
+                Object[] keys = map.keySet().toArray();
+                java.util.Arrays.sort(keys);
+                for (Object k : keys) {
+                    merged.put(map.get((String)k));
+                }
+                if (merged.length() > 0) {
+                    out.put(no, merged);
+                }
+            }
+
+            return out;
+        } catch (Exception e) {
+            Log.e(TAG, "潮汐 fetch 失敗", e);
+            return null;
+        }
+    }
+
+    /** 5 筆 pairwise 多數決潮汐判斷，不足 2 筆回傳 prevDir */
+    private String detectTide(JSONArray records, String prevDir) {
+        if (records == null || records.length() < 2) return prevDir;
+        int rlen = records.length();
+        int start = Math.max(0, rlen - 5);
+        int inc = 0, dec = 0;
+        Double prevVal = null;
+        for (int j = start; j < rlen; j++) {
+            try {
+                JSONObject rec = records.getJSONObject(j);
+                if (rec.isNull("level_out")) continue;
+                double val = rec.getDouble("level_out");
+                if (prevVal != null) {
+                    if (val > prevVal) inc++;
+                    else if (val < prevVal) dec++;
+                }
+                prevVal = val;
+            } catch (Exception ignored) { }
+        }
+        if (dec > inc) return "falling";
+        if (inc > dec) return "rising";
+        return prevDir;
     }
 
     private void mergeArray(JSONObject merged, JSONArray arr) {
@@ -464,17 +614,6 @@ public class PumpMonitorService extends Service {
             if (s.equals(value)) return true;
         }
         return false;
-    }
-
-    /** 將 rectime 字串 "yyyyMMddHHmmss" 解析為 Unix timestamp (ms) */
-    private long parseRectimeMs(String rectime) {
-        try {
-            if (rectime == null || rectime.length() != 14) return 0;
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.TAIWAN);
-            return sdf.parse(rectime).getTime();
-        } catch (Exception e) {
-            return 0;
-        }
     }
 
     // ═══════════ 以下是通知 ═══════════

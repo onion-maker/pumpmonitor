@@ -1,8 +1,12 @@
 import type { PumpStationData, RawStationData, PumpStatus, DoorStatus, ApiResponse } from '../types';
-import { STATION_NAMES, VALID_STATIONS, PUMP_FIELDS, DOOR_FIELDS } from '../config/stations';
+import { STATION_NAMES, VALID_STATIONS, PUMP_FIELDS, DOOR_FIELDS, TIDE_STATIONS } from '../config/stations';
 
 const API_URL = 'https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo';
 const API_URL_BACKUP = 'https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo';
+
+// 潮汐站歷史水位 API（POST，需要 verify=False 繞過政府憑證撤銷檢查）
+const TIDE_API_URL = 'https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins';
+const TIDE_API_URL_BACKUP = 'https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins';
 
 export class ApiError extends Error {
   constructor(
@@ -171,4 +175,141 @@ export async function fetchAllStations(): Promise<PumpStationData[]> {
 
   const merged = mergeStations(raw1, raw2);
   return merged.map(normalizeStation);
+}
+
+// ═══════════════════════════════════════════
+//  潮汐站歷史水位 API（GetAutoPumpWaterMins）
+// ═══════════════════════════════════════════
+
+/** 潮汐 record（RawStationData 的子集，用於潮汐判斷） */
+export interface TideRecord {
+  rectime: string;
+  level_in: number | null;
+  level_out: number | null;
+  /** 閘門狀態 (door01~door16)，key 為欄位名 */
+  doors: Record<string, string | null>;
+}
+
+/** 潮汐 API 回傳格式 */
+interface TideApiResponse {
+  d: RawStationData[];
+}
+
+/**
+ * 透過 POST 呼叫潮汐 API（GetAutoPumpWaterMins）
+ * 取得指定站號在時間範圍內的歷史水位紀錄
+ */
+async function fetchRawTide(
+  apiUrl: string,
+  sBgnDate: string,
+  sEndDate: string,
+  stationno: string,
+): Promise<RawStationData[] | null> {
+  const body = JSON.stringify({ sBgnDate, sEndDate, stationno });
+
+  if (isNative()) {
+    const bridge = (window as any).AndroidHttp;
+    if (!bridge || typeof bridge.fetchPost !== 'function') {
+      return null;
+    }
+    try {
+      const jsonStr = bridge.fetchPost(apiUrl, body);
+      if (!jsonStr) return null;
+      const json: TideApiResponse = JSON.parse(jsonStr);
+      return json.d || null;
+    } catch {
+      return null;
+    }
+  }
+
+  // 瀏覽器環境：dev mode 透過 Vite proxy，production 直接 fetch
+  let actualUrl = apiUrl;
+  if (import.meta.env.DEV) {
+    const path = '/WebLayout/GetAutoPumpWaterMins';
+    if (apiUrl.includes('heovcenter2')) {
+      actualUrl = `/api2${path}`;
+    } else {
+      actualUrl = `/api${path}`;
+    }
+  }
+
+  try {
+    const response = await fetch(actualUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+    if (!response.ok) return null;
+    const json: TideApiResponse = await response.json();
+    return json.d || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 取得三個潮汐站（108/110/112）的歷史水位紀錄
+ * 雙 API 合併，取 rectime 較新者
+ * 回傳格式：{ stationno: TideRecord[] }
+ */
+export async function fetchTideRecords(): Promise<Record<string, TideRecord[]>> {
+  const now = new Date();
+  const sEnd = new Date(now.getTime() + 60 * 60 * 1000); // now + 1hr
+  const sBgn = new Date(sEnd.getTime() - 2 * 60 * 60 * 1000); // sEnd - 2hr
+
+  const fmt = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
+  const sBgnDate = fmt(sBgn);
+  const sEndDate = fmt(sEnd);
+
+  // 三個站點，兩個 API → 6 個請求
+  const results = await Promise.all(
+    TIDE_STATIONS.flatMap((no) => [
+      fetchRawTide(TIDE_API_URL, sBgnDate, sEndDate, no),
+      fetchRawTide(TIDE_API_URL_BACKUP, sBgnDate, sEndDate, no),
+    ]),
+  );
+
+  // 依 stationno 分組合併（雙 API 結果取 rectime 較新）
+  // results 順序：112主, 112備, 110主, 110備, 108主, 108備
+  const out: Record<string, TideRecord[]> = {};
+
+  for (let i = 0; i < TIDE_STATIONS.length; i++) {
+    const no = TIDE_STATIONS[i];
+    const primary = results[i * 2];
+    const backup = results[i * 2 + 1];
+
+    // 合併 + 排序
+    const map = new Map<string, TideRecord>();
+    const addRecords = (list: RawStationData[] | null) => {
+      if (!list) return;
+      for (const r of list) {
+        const key = r.rectime;
+        if (!map.has(key) || r.rectime > (map.get(key)!.rectime)) {
+          map.set(key, {
+            rectime: r.rectime,
+            level_in: r.level_in,
+            level_out: r.level_out,
+            doors: Object.fromEntries(
+              Array.from({ length: 16 }, (_, j) => {
+                const f = `door${String(j + 1).padStart(2, '0')}`;
+                return [f, (r as unknown as Record<string, string | null>)[f] ?? null];
+              }),
+            ),
+          });
+        }
+      }
+    };
+
+    addRecords(primary);
+    addRecords(backup);
+
+    const records = Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
+    if (records.length > 0) out[no] = records;
+  }
+
+  return out;
 }

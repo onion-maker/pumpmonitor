@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store/useStore';
-import { fetchAllStations } from '../api/pumpStation';
+import { fetchAllStations, fetchTideRecords } from '../api/pumpStation';
 import { POLL_INTERVAL_MS } from '../config/stations';
 
 const TIDE_CHECK_INTERVAL_MS = 10 * 60 * 1000; // 10 分鐘
@@ -12,8 +12,7 @@ export function usePumpData() {
   const setFetchError = useStore((s) => s.setFetchError);
   const setInitialLoading = useStore((s) => s.setInitialLoading);
   const checkAlarm = useStore((s) => s.checkAlarm);
-  const checkTideAlarm = useStore((s) => s.checkTideAlarm);
-  const recordLevelOut = useStore((s) => s.recordLevelOut);
+  const updateTide = useStore((s) => s.updateTide);
   const isLoading = useStore((s) => s.isLoading);
   const isInitialLoading = useStore((s) => s.isInitialLoading);
 
@@ -29,21 +28,15 @@ export function usePumpData() {
       if (!mountedRef.current) return;
       setStationData(data);
 
-      // 記錄潮汐站外水位到 buffer
-      for (const station of data) {
-        if (station.rectime) {
-          const rectimeStr = station.rectime
-            .toISOString()
-            .replace(/[-:T]/g, '')
-            .slice(0, 14); // yyyyMMddHHmmss
-          recordLevelOut(station.stationno, rectimeStr, station.level_out);
-        }
-      }
-
-      // 潮汐檢查（每 10 分鐘）
+      // 潮汐檢查（每 10 分鐘用 GetAutoPumpWaterMins API 判斷）
       const state = useStore.getState();
       if (Date.now() - state.lastTideCheckTime >= TIDE_CHECK_INTERVAL_MS) {
-        checkTideAlarm();
+        try {
+          const tideRecords = await fetchTideRecords();
+          if (mountedRef.current) updateTide(tideRecords);
+        } catch {
+          // 潮汐 API 失敗則跳過本次，等下次週期
+        }
       }
 
       checkAlarm(data);
@@ -57,7 +50,7 @@ export function usePumpData() {
         setInitialLoading(false);
       }
     }
-  }, [setStationData, setLoading, setFetchError, checkAlarm, checkTideAlarm, recordLevelOut, setInitialLoading]);
+  }, [setStationData, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
 
   // 首次載入與 page 切換時 fetch
   useEffect(() => {
