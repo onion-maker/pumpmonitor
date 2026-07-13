@@ -247,6 +247,12 @@ public class MainActivity extends BridgeActivity {
             PumpMonitorService.reloadInterval(getApplicationContext());
         }
 
+        /** 停止背景警報音（前端警報確認時呼叫） */
+        @JavascriptInterface
+        public void dismissAlarm() {
+            PumpMonitorService.dismissAlarm(getApplicationContext());
+        }
+
         // ── App 更新 ──
 
         /** 檢查 GitHub Release 是否有新版本（非同步，結果透過 callback JS 回傳） */

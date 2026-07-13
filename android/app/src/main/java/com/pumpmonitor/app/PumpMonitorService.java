@@ -9,9 +9,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -61,6 +66,8 @@ public class PumpMonitorService extends Service {
     private static boolean running = false;
 
     private String lastAlarmMessage = "";
+    private MediaPlayer mediaPlayer;
+    private PowerManager.WakeLock wakeLock;
 
     private static long getIntervalMs(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -90,6 +97,13 @@ public class PumpMonitorService extends Service {
     public static void reloadInterval(Context context) {
         Intent intent = new Intent(context, PumpMonitorService.class);
         intent.setAction("com.pumpmonitor.RELOAD");
+        context.startService(intent);
+    }
+
+    /** 停止背景警報音（前端警報確認時呼叫） */
+    public static void dismissAlarm(Context context) {
+        Intent intent = new Intent(context, PumpMonitorService.class);
+        intent.setAction("com.pumpmonitor.DISMISS_ALARM");
         context.startService(intent);
     }
 
@@ -166,6 +180,11 @@ public class PumpMonitorService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannels();
+        // 取得 WakeLock 確保警報音在螢幕關閉時也能播放
+        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+        if (pm != null) {
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PumpMonitor:AlarmWakeLock");
+        }
     }
 
     @Override
@@ -192,6 +211,10 @@ public class PumpMonitorService extends Service {
             // 心跳 → 執行檢查 → 再排程心跳
             new Thread(this::doCheck).start();
             scheduleHeartbeat(this);
+        } else if (action.equals("com.pumpmonitor.DISMISS_ALARM")) {
+            // 前端警報確認 → 停止背景警報音
+            stopAlarmSound();
+            lastAlarmMessage = "";
         } else {
             // 首次啟動 → 立即檢查 + 排程兩者
             new Thread(this::doCheck).start();
@@ -207,6 +230,10 @@ public class PumpMonitorService extends Service {
     public void onDestroy() {
         running = false;
         lastAlarmMessage = "";
+        stopAlarmSound();
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
         cancelAlarms(this);
         Log.d(TAG, "服務已停止");
         super.onDestroy();
@@ -408,6 +435,7 @@ public class PumpMonitorService extends Service {
                 }
             } else {
                 lastAlarmMessage = "";
+                stopAlarmSound();
             }
 
         } catch (Exception e) {
@@ -663,6 +691,50 @@ public class PumpMonitorService extends Service {
                 .build();
     }
 
+    private void startAlarmSound() {
+        try {
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+            }
+            // 使用系統預設警報音
+            Uri alarmUri = Settings.System.DEFAULT_ALARM_ALERT_URI;
+            if (alarmUri == null) {
+                alarmUri = Settings.System.DEFAULT_RINGTONE_URI;
+            }
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(this, alarmUri);
+            mediaPlayer.setLooping(true);
+            mediaPlayer.setVolume(1.0f, 1.0f);
+            mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            );
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            // 取得 WakeLock 確保播放不中斷
+            if (wakeLock != null && !wakeLock.isHeld()) {
+                wakeLock.acquire(10 * 60 * 1000L);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "無法播放警報音", e);
+        }
+    }
+
+    private void stopAlarmSound() {
+        if (mediaPlayer != null) {
+            try {
+                if (mediaPlayer.isPlaying()) mediaPlayer.stop();
+            } catch (Exception ignored) {}
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
+    }
+
     private void sendAlarmNotification(String title, String body) {
         NotificationManager mgr = getSystemService(NotificationManager.class);
         Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
@@ -685,5 +757,8 @@ public class PumpMonitorService extends Service {
                 .build();
 
         mgr.notify(NOTIFY_ALARM, notif);
+
+        // 開始循環播放警報音（MediaPlayer）
+        startAlarmSound();
     }
 }

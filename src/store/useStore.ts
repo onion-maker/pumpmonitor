@@ -13,6 +13,7 @@ import type {
 import type { TideRecord } from '../api/pumpStation';
 import { TIDE_STATIONS, TIDE_DOOR_COLS, DEFAULT_SELECTED, DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 import { playStationAlarm, stopStationAlarm, stopAllAlarms } from '../utils/audio';
+import { dismissBackgroundAlarm } from '../utils/backgroundAlarm';
 
 // ── 儲存 key ──
 function storageKey(uid: string) {
@@ -391,11 +392,16 @@ export const useStore = create<AppStore>()((set, get) => ({
       const next = s.alarmingStations.filter((a) => a.stationno !== stationno);
       return { alarmingStations: next, isAlarming: next.length > 0 };
     });
+    // 如果全部解除，通知背景服務停止警報音
+    if (get().alarmingStations.length === 0) {
+      dismissBackgroundAlarm();
+    }
   },
 
   dismissAllAlarms: () => {
     stopAllAlarms();
     set({ alarmingStations: [], isAlarming: false });
+    dismissBackgroundAlarm();
   },
 
   simulateAlarm: () => {

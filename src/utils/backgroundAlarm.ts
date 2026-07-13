@@ -11,6 +11,7 @@ interface Bridge {
   stopService: () => void;
   isServiceRunning: () => boolean;
   syncSettings: (json: string) => void;
+  dismissAlarm: () => void;
 }
 
 /** 取得 Android 原生橋接物件（不存在時回傳 null） */
@@ -73,4 +74,12 @@ export function syncSettingsToNative(params: {
   });
 
   bridge.syncSettings(payload);
+}
+
+/** 通知背景服務停止警報音（前端按下警報確認時呼叫） */
+export function dismissBackgroundAlarm(): void {
+  const bridge = getBridge();
+  if (bridge) {
+    bridge.dismissAlarm();
+  }
 }
