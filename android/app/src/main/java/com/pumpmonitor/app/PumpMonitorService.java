@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -696,11 +695,9 @@ public class PumpMonitorService extends Service {
             if (mediaPlayer != null) {
                 mediaPlayer.release();
             }
-            // 使用系統預設警報音
-            Uri alarmUri = Settings.System.DEFAULT_ALARM_ALERT_URI;
-            if (alarmUri == null) {
-                alarmUri = Settings.System.DEFAULT_RINGTONE_URI;
-            }
+
+            // 先用模組內建的預設警報音
+            Uri alarmUri = Uri.parse("android.resource://" + getPackageName() + "/raw/alarm_default");
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(this, alarmUri);
             mediaPlayer.setLooping(true);

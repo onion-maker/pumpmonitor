@@ -16,8 +16,23 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // CI 環境下 release.keystore 存在時才啟用簽名
+    def keystorePath = file('release.keystore')
+    if (keystorePath.exists()) {
+        signingConfigs {
+            release {
+                storeFile keystorePath
+                storePassword System.getenv("KEYSTORE_PASS")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASS")
+            }
+        }
+    }
     buildTypes {
         release {
+            if (keystorePath.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
