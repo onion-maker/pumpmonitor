@@ -70,7 +70,7 @@ function GateAlarmToggle({ station }: Props) {
     <div className="mt-2 pt-2 border-t border-gray-100 space-y-1.5">
       <p className="text-xs text-gray-500 font-medium">閘門警報條件</p>
       <label className="flex items-center justify-between cursor-pointer">
-        <span className="text-xs text-gray-600">內高外低閘門未開時告警</span>
+        <span className={`text-xs ${current.innerHighAlarm ? 'text-purple-600 font-medium' : 'text-gray-600'}`}>內高外低閘門未開時告警</span>
         <button
           type="button"
           role="switch"
@@ -89,7 +89,7 @@ function GateAlarmToggle({ station }: Props) {
       </label>
       {isTideStation && (
         <label className="flex items-center justify-between cursor-pointer">
-          <span className="text-xs text-gray-600">潮汐站閘門啟閉提醒</span>
+          <span className={`text-xs ${tideCurrent.tideAlarm ? 'text-teal-600 font-medium' : 'text-gray-600'}`}>潮汐站閘門啟閉提醒</span>
           <button
             type="button"
             role="switch"
