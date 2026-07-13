@@ -51,7 +51,7 @@ jobs:
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
           echo "VERSION_NAME=${TAG_NAME#v}" >> $GITHUB_OUTPUT
-          echo "VERSION_CODE=$(date -u +'%y%m%d')" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$(date -u +'%y%m%d%H%M')" >> $GITHUB_OUTPUT
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Update version in build.gradle

@@ -121,9 +121,9 @@ public class AppUpdateHelper {
      * 如果找不到，fallback 到 tag 中的純數字部分
      */
     private static int extractVersionCode(String body, String latestTag, String apkUrl) {
-        // 1. 從 release body 找 "versionCode:數字"
+        // 1. 從 release body 找 "versionCode:數字"（支援 YYMMDDHHMM 格式）
         if (body != null) {
-            java.util.regex.Pattern p = java.util.regex.Pattern.compile("versionCode[\\s:]*?(\\d{5,6})");
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("versionCode[\\s:]*?(\\d{8,10})");
             java.util.regex.Matcher m = p.matcher(body);
             if (m.find()) {
                 return Integer.parseInt(m.group(1));
