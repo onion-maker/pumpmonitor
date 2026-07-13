@@ -167,6 +167,11 @@ export default function App() {
       if (document.visibilityState === 'visible') {
         // App 回到前景 → 停止背景警報音，改由前端管理
         dismissBackgroundAlarm();
+        // 重置潮汐檢查時間，讓下次輪詢立即重新判斷
+        const state = useStore.getState();
+        if (state.lastTideCheckTime !== 0) {
+          useStore.setState({ lastTideCheckTime: 0 });
+        }
         ensureService();
       }
     };

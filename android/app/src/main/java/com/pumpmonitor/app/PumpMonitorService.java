@@ -65,6 +65,8 @@ public class PumpMonitorService extends Service {
     private static boolean running = false;
 
     private String lastAlarmMessage = "";
+    private long alarmDismissedMs = 0;  // 使用者最後一次按確認的時間戳
+    private static final long ALARM_COOLDOWN_MS = 10 * 60 * 1000;  // 冷卻 10 分鐘
     private MediaPlayer mediaPlayer;
     private PowerManager.WakeLock wakeLock;
 
@@ -211,9 +213,9 @@ public class PumpMonitorService extends Service {
             new Thread(this::doCheck).start();
             scheduleHeartbeat(this);
         } else if (action.equals("com.pumpmonitor.DISMISS_ALARM")) {
-            // 前端警報確認 → 停止背景警報音
+            // 前端警報確認 → 停止背景警報音 + 進入冷卻（避免下輪檢查又重響）
             stopAlarmSound();
-            lastAlarmMessage = "";
+            alarmDismissedMs = System.currentTimeMillis();
         } else {
             // 首次啟動 → 立即檢查 + 排程兩者
             new Thread(this::doCheck).start();
@@ -428,12 +430,27 @@ public class PumpMonitorService extends Service {
 
             if (alarmCount > 0) {
                 String msg = alarmMsg.toString();
-                if (!msg.equals(lastAlarmMessage)) {
+                boolean sameAlarm = msg.equals(lastAlarmMessage);
+
+                if (!sameAlarm) {
+                    // 警報訊息變了 → 退出冷卻（代表條件有變化）
+                    alarmDismissedMs = 0;
                     lastAlarmMessage = msg;
                     sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
+                } else {
+                    // 同一條警報：冷卻期內只更新通知（不響音），冷卻期外才恢復響音
+                    boolean inCooldown = (System.currentTimeMillis() - alarmDismissedMs) < ALARM_COOLDOWN_MS;
+                    if (inCooldown) {
+                        // 只更新通知，不響音
+                        sendSilentNotification(alarmCount + " 個站點觸發警報", msg);
+                    } else {
+                        // 冷卻結束，恢復正常警報
+                        sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
+                    }
                 }
             } else {
                 lastAlarmMessage = "";
+                alarmDismissedMs = 0;
                 stopAlarmSound();
             }
 
@@ -757,5 +774,27 @@ public class PumpMonitorService extends Service {
 
         // 開始循環播放警報音（MediaPlayer）
         startAlarmSound();
+    }
+
+    /** 只推通知不響音（冷卻期內使用） */
+    private void sendSilentNotification(String title, String body) {
+        NotificationManager mgr = getSystemService(NotificationManager.class);
+        Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification notif = new NotificationCompat.Builder(this, CHANNEL_ALARM)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setAutoCancel(true)
+                .setContentIntent(pi)
+                .build();
+
+        mgr.notify(NOTIFY_ALARM, notif);
     }
 }
