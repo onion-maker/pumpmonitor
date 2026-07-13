@@ -335,6 +335,7 @@ public class PumpMonitorService extends Service {
                 .apply();
 
             // ── 潮汐方向判斷（新生 112 決定，建國 110 共用；中山 108 獨立） ──
+            JSONObject tideRecords = fetchTideRecords();
             if (tideRecords != null) {
                 // 先決定潮汐方向
                 String xinshengTide = detectTide(tideRecords.optJSONArray("112"), prevTideDir.optString("112", "slack"));
