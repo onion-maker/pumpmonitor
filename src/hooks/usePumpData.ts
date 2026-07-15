@@ -53,16 +53,20 @@ export function usePumpData() {
     }
   }, [setStationData, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
 
+  // ref 存最新 fetchData，避免 effect 因 fetchData reference 變化而重跑
+  const fetchDataRef = useRef(fetchData);
+  fetchDataRef.current = fetchData;
+
   // 首次載入與 page 切換時 fetch
   useEffect(() => {
     mountedRef.current = true;
     if (page === 'main') {
-      fetchData();
+      fetchDataRef.current();
     }
     return () => {
       mountedRef.current = false;
     };
-  }, [page, fetchData]);
+  }, [page]);
 
   // 定時輪詢（僅主頁 + 監控啟用中）
   useEffect(() => {
@@ -75,7 +79,7 @@ export function usePumpData() {
     }
 
     intervalRef.current = setInterval(() => {
-      fetchData();
+      fetchDataRef.current();
     }, POLL_INTERVAL_MS);
 
     return () => {
@@ -84,7 +88,7 @@ export function usePumpData() {
         intervalRef.current = null;
       }
     };
-  }, [page, monitoringEnabled, fetchData]);
+  }, [page, monitoringEnabled]);
 
   return { refresh: fetchData, isLoading, isInitialLoading };
 }
