@@ -96,6 +96,7 @@ export interface AppStore {
   isAlarming: boolean;
   previousPumpMap: Record<string, PumpStatusMap>;
   lastAlarmedLevels: Record<string, number | null>;
+  testAlarmStationNos: string[];
 
   checkAlarm: (data: PumpStationData[]) => void;
   dismissStationAlarm: (stationno: string) => void;
@@ -106,7 +107,6 @@ export interface AppStore {
   tideBuffer: Record<string, { time: number; level: number }[]>;
   tideDirection: Record<string, TideDirection>;
   lastTideCheckTime: number;
-  previousLevelOut: Record<string, number | null>;
 
   recordLevelOut: (stationno: string, rectime: string, levelOut: number | null) => void;
   /** 改用 GetAutoPumpWaterMins API 資料做潮汐判斷（shinshun 5 筆多數決法） */
@@ -235,26 +235,26 @@ export const useStore = create<AppStore>()((set, get) => ({
   isAlarming: false,
   previousPumpMap: {},
   lastAlarmedLevels: {},
+  testAlarmStationNos: [],
 
   checkAlarm: (data) => {
     const state = get();
-    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, stationTideAlarmSwitches, previousPumpMap, lastAlarmedLevels, tideDirection, previousLevelOut } = state;
+    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, previousPumpMap, lastAlarmedLevels } = state;
     const newAlarming: StationAlarmInfo[] = [];
     const newPumpMap: Record<string, PumpStatusMap> = {};
     const newLastAlarmed = { ...lastAlarmedLevels };
     const prevAlarmingNos = new Set(state.alarmingStations.map((a) => a.stationno));
-    const nextPrevLevelOut = { ...previousLevelOut };
 
     for (const station of data) {
       if (!selectedStations.includes(station.stationno)) continue;
 
       const reasons: AlarmReason[] = [];
-      const level = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
+      const alarmThreshold = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
       const prevLevel = newLastAlarmed[station.stationno] ?? null;
 
       // ── 水位檢查（智慧觸發） ──
       const levelIn = station.level_in;
-      if (levelIn !== null && levelIn > level) {
+      if (levelIn !== null && levelIn > alarmThreshold) {
         let shouldAlarm = false;
 
         if (prevLevel === null) {
@@ -268,7 +268,7 @@ export const useStore = create<AppStore>()((set, get) => ({
         if (shouldAlarm) {
           reasons.push({
             type: 'water_level',
-            detail: `水位 ${levelIn.toFixed(2)}m 超過警報值 ${level.toFixed(2)}m`,
+            detail: `水位 ${levelIn.toFixed(2)}m 超過警報值 ${alarmThreshold.toFixed(2)}m`,
           });
         }
       } else {
@@ -311,48 +311,19 @@ export const useStore = create<AppStore>()((set, get) => ({
         }
       }
 
-      // ── 潮汐站閘門啟閉提醒 ──
-      const tideSwitch = stationTideAlarmSwitches[station.stationno];
-      if (tideSwitch?.tideAlarm && TIDE_STATIONS.includes(station.stationno) && levelIn !== null && levelOut !== null) {
-        const prevOut = previousLevelOut[station.stationno] ?? null;
-        const direction = tideDirection[station.stationno] ?? 'slack';
-
-        // 開閘門警報：退潮交叉 + 指定閘門全閉才須告警（若已有閘門開啟，內水可自然排出）
-        if (prevOut !== null && prevOut > levelIn && levelOut <= levelIn && direction === 'falling') {
-          const doorCols = TIDE_DOOR_COLS[station.stationno] ?? [];
-          const doorIds = doorCols.map(d => parseInt(d.replace('door', ''), 10));
-          const allClosed = doorIds.every(id => {
-            const door = station.doors.find(dd => dd.id === id);
-            return door && door.status === '1';
-          });
-          if (allClosed) {
-            reasons.push({
-              type: 'tide_open_gate',
-              detail: `退潮中外水位 ${levelOut.toFixed(2)}m 已降至內水位 ${levelIn.toFixed(2)}m 以下，建議開啟閘門排水`,
-            });
-          }
-        }
-      }
-
-      // 記錄本輪外水位（供下輪交叉判斷用）
-      if (levelOut !== null) {
-        nextPrevLevelOut[station.stationno] = levelOut;
-      }
-
       if (reasons.length > 0) {
         newAlarming.push({ stationno: station.stationno, stationName: station.stationName, reasons });
       } else if (prevAlarmingNos.has(station.stationno)) {
         // ── 保留仍在警報條件中的既有警報 ──
         const prevAlarm = state.alarmingStations.find(a => a.stationno === station.stationno);
         if (prevAlarm) {
-          const hasWaterAlarm = station.level_in !== null && station.level_in > level;
-          const hasRunningPump = station.pumps.some(p => p.status === '1' || p.status === '2' || p.status === '3');
+          const hasWaterAlarm = station.level_in !== null && station.level_in > alarmThreshold;
           const hadWaterReason = prevAlarm.reasons.some(r => r.type === 'water_level');
           const hadPumpReason = prevAlarm.reasons.some(r => r.type === 'pump_start' || r.type === 'pump_stop');
           const hadGateReason = prevAlarm.reasons.some(r => r.type === 'gate_high_inner' || r.type === 'gate_low_inner');
           const hadTideReason = prevAlarm.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate');
 
-          let keep = (hadWaterReason && hasWaterAlarm) || (hadPumpReason && hasRunningPump);
+          let keep = (hadWaterReason && hasWaterAlarm) || hadPumpReason || hadTideReason;
           if (hadGateReason) {
             const gateSwitches2 = stationGateAlarmSwitches[station.stationno];
             if (gateSwitches2) {
@@ -363,13 +334,19 @@ export const useStore = create<AppStore>()((set, get) => ({
                 (gateSwitches2.innerHighAlarm && li !== null && lo !== null && li > lo && allClosed);
             }
           }
-          if (hadTideReason) {
-            // 潮汐警報只觸發一次，不自動保留（由 checkTideAlarm 重新產生）
-            keep = false;
-          }
           if (keep) {
             newAlarming.push(prevAlarm);
           }
+        }
+      }
+    }
+
+    // ── 測試警報合併（確保測試警報不被輪詢覆蓋） ──
+    for (const testNo of state.testAlarmStationNos) {
+      if (!newAlarming.some(a => a.stationno === testNo)) {
+        const testAlarm = state.alarmingStations.find(a => a.stationno === testNo);
+        if (testAlarm) {
+          newAlarming.push(testAlarm);
         }
       }
     }
@@ -390,7 +367,6 @@ export const useStore = create<AppStore>()((set, get) => ({
       isAlarming: newAlarming.length > 0,
       previousPumpMap: newPumpMap,
       lastAlarmedLevels: newLastAlarmed,
-      previousLevelOut: nextPrevLevelOut,
     });
   },
 
@@ -398,7 +374,11 @@ export const useStore = create<AppStore>()((set, get) => ({
     stopStationAlarm(stationno);
     set((s) => {
       const next = s.alarmingStations.filter((a) => a.stationno !== stationno);
-      return { alarmingStations: next, isAlarming: next.length > 0 };
+      return {
+        alarmingStations: next,
+        isAlarming: next.length > 0,
+        testAlarmStationNos: s.testAlarmStationNos.filter(n => n !== stationno),
+      };
     });
     // 如果全部解除，通知背景服務停止警報音
     if (get().alarmingStations.length === 0) {
@@ -408,7 +388,7 @@ export const useStore = create<AppStore>()((set, get) => ({
 
   dismissAllAlarms: () => {
     stopAllAlarms();
-    set({ alarmingStations: [], isAlarming: false });
+    set({ alarmingStations: [], isAlarming: false, testAlarmStationNos: [] });
     dismissBackgroundAlarm();
   },
 
@@ -435,14 +415,13 @@ export const useStore = create<AppStore>()((set, get) => ({
     for (const alarm of simulated) {
       playStationAlarm(alarm.stationno, DEFAULT_ALARM_AUDIO_URL);
     }
-    set({ alarmingStations: simulated, isAlarming: true, lastAlarmedLevels: newLastAlarmed });
+    set({ alarmingStations: simulated, isAlarming: true, lastAlarmedLevels: newLastAlarmed, testAlarmStationNos: targets.map(s => s.stationno) });
   },
 
   // ── 潮汐 ──
   tideBuffer: {},
   tideDirection: {},
   lastTideCheckTime: 0,
-  previousLevelOut: {},
 
   /** 記錄 level_out 到滾動 buffer */
   recordLevelOut: (stationno, rectime, levelOut) => {
@@ -555,6 +534,16 @@ export const useStore = create<AppStore>()((set, get) => ({
     const existingAlarms = state.alarmingStations.filter(a =>
       !a.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate')
     );
+
+    // 保留本週期未重新產生的既有潮汐警報（使用者尚未確認則持續顯示）
+    const currentTideNos = new Set(tideReasons.map(t => t.stationno));
+    for (const existing of state.alarmingStations) {
+      if (existing.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate') &&
+          !currentTideNos.has(existing.stationno)) {
+        tideReasons.push(existing);
+      }
+    }
+
     const newAlarming = [...existingAlarms, ...tideReasons];
 
     // 播放新警報音
