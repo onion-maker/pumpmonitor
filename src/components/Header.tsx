@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 
 interface Props {
@@ -16,10 +16,6 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const monitoringEnabled = useStore((s) => s.monitoringEnabled);
   const setMonitoringEnabled = useStore((s) => s.setMonitoringEnabled);
   const [clock, setClock] = useState('');
-
-  const handleToggleMonitoring = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setMonitoringEnabled(e.target.checked);
-  }, [setMonitoringEnabled]);
 
   // 系統時鐘（每秒更新）
   useEffect(() => {
@@ -47,15 +43,16 @@ export default function Header({ onRefresh, isLoading }: Props) {
 
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-400">{monitoringEnabled ? '監控中' : '已暫停'}</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={monitoringEnabled}
-                onChange={handleToggleMonitoring}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-            </label>
+            <button
+              onClick={() => setMonitoringEnabled(!monitoringEnabled)}
+              className={`px-3 py-1 text-xs font-medium rounded-full border active:scale-95 transition-colors ${
+                monitoringEnabled
+                  ? 'bg-green-500 text-white border-green-500'
+                  : 'bg-gray-200 text-gray-500 border-gray-300'
+              }`}
+            >
+              {monitoringEnabled ? '監控中' : '已暫停'}
+            </button>
             {/* 測試警報 */}
             {!isAlarming && (
               <button onClick={simulateAlarm} className="flex items-center gap-0.5 text-xs text-orange-400 hover:text-orange-600 active:scale-95 transition-all" title="測試警報">
