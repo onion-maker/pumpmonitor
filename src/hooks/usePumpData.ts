@@ -15,6 +15,7 @@ export function usePumpData() {
   const updateTide = useStore((s) => s.updateTide);
   const isLoading = useStore((s) => s.isLoading);
   const isInitialLoading = useStore((s) => s.isInitialLoading);
+  const monitoringEnabled = useStore((s) => s.monitoringEnabled);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
@@ -63,9 +64,9 @@ export function usePumpData() {
     };
   }, [page, fetchData]);
 
-  // 定時輪詢（僅主頁）
+  // 定時輪詢（僅主頁 + 監控啟用中）
   useEffect(() => {
-    if (page !== 'main') {
+    if (page !== 'main' || !monitoringEnabled) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -83,7 +84,7 @@ export function usePumpData() {
         intervalRef.current = null;
       }
     };
-  }, [page, fetchData]);
+  }, [page, monitoringEnabled, fetchData]);
 
   return { refresh: fetchData, isLoading, isInitialLoading };
 }
