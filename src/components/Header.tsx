@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 
 interface Props {
@@ -16,6 +16,10 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const monitoringEnabled = useStore((s) => s.monitoringEnabled);
   const setMonitoringEnabled = useStore((s) => s.setMonitoringEnabled);
   const [clock, setClock] = useState('');
+
+  const handleToggleMonitoring = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setMonitoringEnabled(e.target.checked);
+  }, [setMonitoringEnabled]);
 
   // 系統時鐘（每秒更新）
   useEffect(() => {
@@ -47,7 +51,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
               <input
                 type="checkbox"
                 checked={monitoringEnabled}
-                onChange={(e) => setMonitoringEnabled(e.target.checked)}
+                onChange={handleToggleMonitoring}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>

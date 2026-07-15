@@ -102,7 +102,7 @@ export default function App() {
     return () => { cancelled = true; };
   }, [isReady, isLoggedIn]);
 
-  // 設定變更時同步到 Native 背景服務（防抖 1 秒，僅設定實際有變時才同步）
+  // 設定變更時同步到 Native 背景服務（防抖 2 秒，設定量未變則跳過）
   useEffect(() => {
     if (!isNative() || !isLoggedIn) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -119,7 +119,6 @@ export default function App() {
           stationTideAlarmSwitches: state.stationTideAlarmSwitches,
           monitoringEnabled: state.monitoringEnabled,
         });
-        // 設定沒變就不同步（避免每輪 poll 觸發）
         if (snapshot === lastSyncedRef.current) return;
         lastSyncedRef.current = snapshot;
         syncSettingsToNative({
@@ -131,7 +130,7 @@ export default function App() {
           stationTideAlarmSwitches: state.stationTideAlarmSwitches,
           monitoringEnabled: state.monitoringEnabled,
         });
-      }, 1000);
+      }, 2000);
     };
     const unsub = useStore.subscribe(sync);
     return () => {
@@ -149,7 +148,7 @@ export default function App() {
         const bridge = (window as any).AndroidPump;
         if (bridge && typeof bridge.isServiceRunning === 'function') {
           if (!bridge.isServiceRunning()) {
-            // 服務被系統殺掉了，重新啟動
+            // 服務被系統殺掉了，重新啟動（先同步設定再啟動）
             const state = useStore.getState();
             syncSettingsToNative({
               selectedStations: state.selectedStations,

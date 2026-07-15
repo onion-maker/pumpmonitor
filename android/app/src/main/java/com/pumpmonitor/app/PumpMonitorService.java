@@ -109,23 +109,26 @@ public class PumpMonitorService extends Service {
         context.startService(intent);
     }
 
-    /** 從前端同步使用者設定 */
-    public static void syncSettings(Context context, String settingsJson) {
+    /** 從前端同步使用者設定。回傳 true 表示 backgroundIntervalSec 有變更。 */
+    public static boolean syncSettings(Context context, String settingsJson) {
         try {
             JSONObject json = new JSONObject(settingsJson);
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            int oldInterval = prefs.getInt("backgroundIntervalSec", 120);
+            int newInterval = json.optInt("backgroundIntervalSec", 120);
             prefs.edit()
                 .putString("stationAlarmLevels", json.optString("stationAlarmLevels", "{}"))
                 .putString("selectedStations", json.optString("selectedStations", "[]"))
-                .putInt("backgroundIntervalSec", json.optInt("backgroundIntervalSec", 120))
+                .putInt("backgroundIntervalSec", newInterval)
                 .putString("stationGateAlarmSwitches", json.optString("stationGateAlarmSwitches", "{}"))
                 .putString("stationTideAlarmSwitches", json.optString("stationTideAlarmSwitches", "{}"))
                 .putBoolean("monitoringEnabled", json.optBoolean("monitoringEnabled", true))
                 .apply();
-            int sec = json.optInt("backgroundIntervalSec", 120);
-            Log.d(TAG, "設定已同步至背景服務（間隔 " + sec + " 秒）");
+            Log.d(TAG, "設定已同步至背景服務（間隔 " + newInterval + " 秒）");
+            return newInterval != oldInterval;
         } catch (Exception e) {
             Log.e(TAG, "同步設定失敗", e);
+            return false;
         }
     }
 
