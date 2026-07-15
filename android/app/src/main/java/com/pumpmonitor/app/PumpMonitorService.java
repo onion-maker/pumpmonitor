@@ -53,6 +53,7 @@ public class PumpMonitorService extends Service {
     private static final String TIDE_API_URL_BACKUP = "https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins";
     private static final int REQUEST_CHECK = 1;
     private static final int REQUEST_HEARTBEAT = 2;
+    private static final int REQUEST_UPDATE_CHECK = 3;
     private static final String[] TIDE_STATIONS = {"108", "110", "112"};
 
     /** 各潮汐站監控的閘門清單（對應 shinshun door_cols） */
@@ -119,6 +120,7 @@ public class PumpMonitorService extends Service {
                 .putInt("backgroundIntervalSec", json.optInt("backgroundIntervalSec", 120))
                 .putString("stationGateAlarmSwitches", json.optString("stationGateAlarmSwitches", "{}"))
                 .putString("stationTideAlarmSwitches", json.optString("stationTideAlarmSwitches", "{}"))
+                .putBoolean("monitoringEnabled", json.optBoolean("monitoringEnabled", true))
                 .apply();
             int sec = json.optInt("backgroundIntervalSec", 120);
             Log.d(TAG, "設定已同步至背景服務（間隔 " + sec + " 秒）");
@@ -136,6 +138,9 @@ public class PumpMonitorService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         intent.setAction("com.pumpmonitor.HEARTBEAT");
         am.cancel(PendingIntent.getBroadcast(context, REQUEST_HEARTBEAT, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        intent.setAction("com.pumpmonitor.UPDATE_CHECK");
+        am.cancel(PendingIntent.getBroadcast(context, REQUEST_UPDATE_CHECK, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
     }
 
@@ -177,6 +182,74 @@ public class PumpMonitorService extends Service {
                 System.currentTimeMillis() + 5 * 60 * 1000L, pi);
     }
 
+    /** 每 24 小時排程一次 GitHub 版本檢查（僅檢查不自動下載） */
+    private static void scheduleUpdateCheck(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        long lastCheck = prefs.getLong("lastUpdateCheckMs", 0);
+        long now = System.currentTimeMillis();
+        // 若上次檢查在 20 小時內則跳過（避免重複排程）
+        if (now - lastCheck < 20 * 60 * 60 * 1000L) return;
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        Intent intent = new Intent(context, PumpAlarmReceiver.class);
+        intent.setAction("com.pumpmonitor.UPDATE_CHECK");
+        PendingIntent pi = PendingIntent.getBroadcast(context, REQUEST_UPDATE_CHECK, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        // 首次啟動先等 60 秒再檢查（避免剛開 app 就發請求），之後每 24 小時
+        long delay = lastCheck == 0 ? 60 * 1000L : 24 * 60 * 60 * 1000L;
+        am.set(AlarmManager.RTC_WAKEUP, now + delay, pi);
+        Log.d(TAG, "排程更新檢查: " + (delay / 1000) + " 秒後");
+    }
+
+    /** 執行 GitHub Release 版本檢查，有新版本時推通知 */
+    private void doUpdateCheck() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putLong("lastUpdateCheckMs", System.currentTimeMillis()).apply();
+
+        AppUpdateHelper.checkForUpdate(this, "onion-maker", "pumpmonitor", info -> {
+            if (info.hasUpdate) {
+                Log.d(TAG, "發現新版本: " + info.latestVersion);
+                showUpdateNotification(info.latestVersion, info.releaseNotes, info.apkUrl);
+            } else {
+                Log.d(TAG, "已是最新版本" + (info.error != null ? " (" + info.error + ")" : ""));
+            }
+        });
+    }
+
+    /** 顯示更新通知 */
+    private void showUpdateNotification(String version, String releaseNotes, String apkUrl) {
+        NotificationManager mgr = getSystemService(NotificationManager.class);
+        Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        PendingIntent pi = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // 下載按鈕：用瀏覽器開啟 APK 下載網址
+        PendingIntent downloadPi = null;
+        if (apkUrl != null && !apkUrl.isEmpty()) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl));
+            browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            downloadPi = PendingIntent.getActivity(this, 4, browserIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        }
+
+        String bodyText = "版本 " + version + " 已發布" +
+                (releaseNotes != null && !releaseNotes.isEmpty() ? "\n" + releaseNotes : "");
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ALARM)
+                .setSmallIcon(android.R.drawable.ic_menu_compass)
+                .setContentTitle("📦 有新版本可用")
+                .setContentText("版本 " + version + " 已發布，點擊下載更新")
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(bodyText))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pi);
+        if (downloadPi != null) {
+            builder.addAction(android.R.drawable.ic_menu_directions, "📥 下載更新", downloadPi);
+        }
+        mgr.notify(999, builder.build());
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -216,11 +289,15 @@ public class PumpMonitorService extends Service {
             // 前端警報確認 → 停止背景警報音 + 進入冷卻（避免下輪檢查又重響）
             stopAlarmSound();
             alarmDismissedMs = System.currentTimeMillis();
+        } else if (action.equals("com.pumpmonitor.UPDATE_CHECK")) {
+            // 定時更新檢查
+            doUpdateCheck();
         } else {
-            // 首次啟動 → 立即檢查 + 排程兩者
+            // 首次啟動 → 立即檢查 + 排程三者
             new Thread(this::doCheck).start();
             scheduleNextCheck(this);
             scheduleHeartbeat(this);
+            scheduleUpdateCheck(this);
         }
 
         Log.d(TAG, "服務啟動（action=" + action + "）");
@@ -426,6 +503,15 @@ public class PumpMonitorService extends Service {
                 }
 
                 prefs.edit().putString("tideDirections", newTideDir.toString()).apply();
+            }
+
+            // ── 監控暫停：清空警報、停止音效、不觸發任何通知 ──
+            boolean monitoringEnabled = prefs.getBoolean("monitoringEnabled", true);
+            if (!monitoringEnabled) {
+                lastAlarmMessage = "";
+                alarmDismissedMs = 0;
+                stopAlarmSound();
+                alarmCount = 0;
             }
 
             if (alarmCount > 0) {
@@ -757,6 +843,15 @@ public class PumpMonitorService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         PendingIntent fullScreenPi = PendingIntent.getActivity(this, 1, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // 喚醒螢幕，確保使用者能看到警報（5秒後自動釋放）
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (pm != null) {
+            PowerManager.WakeLock screenLock = pm.newWakeLock(
+                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                    "PumpMonitor:WakeUpScreen");
+            screenLock.acquire(5000);
+        }
 
         Notification notif = new NotificationCompat.Builder(this, CHANNEL_ALARM)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)

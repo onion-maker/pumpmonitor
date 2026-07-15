@@ -14,6 +14,7 @@ export default function MainPage() {
   const isAlarming = useStore((s) => s.isAlarming);
   const alarmingStations = useStore((s) => s.alarmingStations);
   const dismissAllAlarms = useStore((s) => s.dismissAllAlarms);
+  const monitoringEnabled = useStore((s) => s.monitoringEnabled);
 
   // 過濾使用者選取的站點，依 stationOrder 排序
   const visibleStations = stationData
@@ -60,6 +61,15 @@ export default function MainPage() {
       )}
 
       <main className={`max-w-7xl mx-auto px-4 pb-8 ${isAlarming ? 'pb-20' : ''}`}>
+        {/* 監控暫停提示 */}
+        {!monitoringEnabled && !isAlarming && (
+          <div className="mb-4 p-3 bg-gray-100 border border-gray-300 rounded-lg text-center">
+            <p className="text-sm font-medium text-gray-500">
+              ⏸ 監控已暫停 — 不會觸發任何警報
+            </p>
+          </div>
+        )}
+
         {isInitialLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <svg className="w-10 h-10 text-blue-500 animate-spin mb-4" fill="none" viewBox="0 0 24 24">

@@ -70,6 +70,7 @@ export default function App() {
                 backgroundIntervalSec: state.backgroundIntervalSec,
                 stationGateAlarmSwitches: state.stationGateAlarmSwitches,
                 stationTideAlarmSwitches: state.stationTideAlarmSwitches,
+                monitoringEnabled: state.monitoringEnabled,
               });
               startBackgroundService();
             }
@@ -116,6 +117,7 @@ export default function App() {
           backgroundIntervalSec: state.backgroundIntervalSec,
           stationGateAlarmSwitches: state.stationGateAlarmSwitches,
           stationTideAlarmSwitches: state.stationTideAlarmSwitches,
+          monitoringEnabled: state.monitoringEnabled,
         });
         // 設定沒變就不同步（避免每輪 poll 觸發）
         if (snapshot === lastSyncedRef.current) return;

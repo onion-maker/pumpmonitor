@@ -9,6 +9,7 @@ public class PumpAlarmReceiver extends BroadcastReceiver {
 
     private static final String ACTION_CHECK = "com.pumpmonitor.CHECK";
     private static final String ACTION_HEARTBEAT = "com.pumpmonitor.HEARTBEAT";
+    private static final String ACTION_UPDATE_CHECK = "com.pumpmonitor.UPDATE_CHECK";
 
     @Override
     public void onReceive(Context context, Intent intent) {

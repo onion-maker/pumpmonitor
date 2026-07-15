@@ -13,6 +13,8 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const simulateAlarm = useStore((s) => s.simulateAlarm);
   const isAlarming = useStore((s) => s.isAlarming);
   const stationData = useStore((s) => s.stationData);
+  const monitoringEnabled = useStore((s) => s.monitoringEnabled);
+  const setMonitoringEnabled = useStore((s) => s.setMonitoringEnabled);
   const [clock, setClock] = useState('');
 
   // 系統時鐘（每秒更新）
@@ -40,6 +42,19 @@ export default function Header({ onRefresh, isLoading }: Props) {
             </h1>
 
           <div className="flex items-center gap-2">
+            {/* 監控啟停開關 */}
+            <button
+              onClick={() => setMonitoringEnabled(!monitoringEnabled)}
+              className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border active:scale-95 transition-all ${
+                monitoringEnabled
+                  ? 'text-green-700 bg-green-50 border-green-300 hover:bg-green-100'
+                  : 'text-gray-500 bg-gray-100 border-gray-300 hover:bg-gray-200'
+              }`}
+              title={monitoringEnabled ? '暫停監控警報' : '恢復監控警報'}
+            >
+              <span>{monitoringEnabled ? '🟢' : '⏸'}</span>
+              <span>{monitoringEnabled ? '監控中' : '已暫停'}</span>
+            </button>
             {/* 測試警報（開發用） */}
             {!isAlarming && (
               <button onClick={simulateAlarm} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 active:scale-95 transition-all">

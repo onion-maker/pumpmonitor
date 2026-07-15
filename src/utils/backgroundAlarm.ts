@@ -61,6 +61,7 @@ export function syncSettingsToNative(params: {
   backgroundIntervalSec: number;
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
   stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
+  monitoringEnabled: boolean;
 }): void {
   const bridge = getBridge();
   if (!bridge) return;
@@ -71,6 +72,7 @@ export function syncSettingsToNative(params: {
     backgroundIntervalSec: params.backgroundIntervalSec,
     stationGateAlarmSwitches: JSON.stringify(params.stationGateAlarmSwitches),
     stationTideAlarmSwitches: JSON.stringify(params.stationTideAlarmSwitches),
+    monitoringEnabled: params.monitoringEnabled,
   });
 
   bridge.syncSettings(payload);

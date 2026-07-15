@@ -84,6 +84,10 @@ export interface AppStore {
   setStationGateAlarmSwitch: (stationno: string, switches: GateAlarmSwitches) => void;
   setStationTideAlarmSwitch: (stationno: string, switches: TideAlarmSwitch) => void;
 
+  /** 監控啟停 */
+  monitoringEnabled: boolean;
+  setMonitoringEnabled: (v: boolean) => void;
+
   /** 載入指定使用者的設定（登入成功時呼叫） */
   loadUserSettings: (uid: string) => void;
   /** 儲存目前使用者的設定 */
@@ -97,6 +101,10 @@ export interface AppStore {
   previousPumpMap: Record<string, PumpStatusMap>;
   lastAlarmedLevels: Record<string, number | null>;
   testAlarmStationNos: string[];
+  /** 各站最後關閉警報的時間戳（冷卻用，與 Java 端 10 分鐘同步） */
+  alarmDismissTimestamps: Record<string, number>;
+  /** 全部確認的時間戳（全域冷卻） */
+  lastFullDismissTime: number;
 
   checkAlarm: (data: PumpStationData[]) => void;
   dismissStationAlarm: (stationno: string) => void;
@@ -236,10 +244,33 @@ export const useStore = create<AppStore>()((set, get) => ({
   previousPumpMap: {},
   lastAlarmedLevels: {},
   testAlarmStationNos: [],
+  alarmDismissTimestamps: {},
+  lastFullDismissTime: 0,
+  monitoringEnabled: true,
 
   checkAlarm: (data) => {
     const state = get();
-    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, previousPumpMap, lastAlarmedLevels } = state;
+    const ALARM_COOLDOWN_MS = 10 * 60 * 1000; // 10 分鐘（與 Java 端同步）
+    const now = Date.now();
+
+    // ── 監控停用：清空所有警報、停止音效、重設追蹤狀態 ──
+    if (!state.monitoringEnabled) {
+      if (state.alarmingStations.length > 0) {
+        stopAllAlarms();
+        dismissBackgroundAlarm();
+      }
+      set({
+        alarmingStations: [],
+        isAlarming: false,
+        testAlarmStationNos: [],
+        previousPumpMap: {},
+        lastAlarmedLevels: {},
+      });
+      return;
+    }
+
+    const { selectedStations, stationAlarmLevels, stationGateAlarmSwitches, previousPumpMap, lastAlarmedLevels,
+            alarmDismissTimestamps, lastFullDismissTime } = state;
     const newAlarming: StationAlarmInfo[] = [];
     const newPumpMap: Record<string, PumpStatusMap> = {};
     const newLastAlarmed = { ...lastAlarmedLevels };
@@ -252,9 +283,17 @@ export const useStore = create<AppStore>()((set, get) => ({
       const alarmThreshold = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
       const prevLevel = newLastAlarmed[station.stationno] ?? null;
 
+      // ── 冷卻檢查：10 分鐘內關閉過的警報不重響（但 pump 狀態仍要記錄） ──
+      const stationDismissTs = alarmDismissTimestamps[station.stationno] ?? 0;
+      const inCooldown = (now - Math.max(stationDismissTs, lastFullDismissTime)) < ALARM_COOLDOWN_MS;
+      const isCurrentlyAlarming = prevAlarmingNos.has(station.stationno);
+
+      // 冷卻中 + 尚未在警報中 → 跳過水位/機組/閘門檢查
+      const skipAlarmChecks = inCooldown && !isCurrentlyAlarming;
+
       // ── 水位檢查（智慧觸發） ──
       const levelIn = station.level_in;
-      if (levelIn !== null && levelIn > alarmThreshold) {
+      if (!skipAlarmChecks && levelIn !== null && levelIn > alarmThreshold) {
         let shouldAlarm = false;
 
         if (prevLevel === null) {
@@ -275,39 +314,41 @@ export const useStore = create<AppStore>()((set, get) => ({
         newLastAlarmed[station.stationno] = null;
       }
 
-      // ── Pump 變化檢查 ──
+      // ── Pump 變化檢查（冷卻中只記錄狀態，不觸發警報） ──
       const prevPumps = previousPumpMap[station.stationno] ?? {};
       const currPumpMap = buildPumpMap(station.pumps);
       newPumpMap[station.stationno] = currPumpMap;
 
-      for (const pump of station.pumps) {
-        const prev = prevPumps[pump.id];
-        const isRunning = pump.status === '1' || pump.status === '2' || pump.status === '3';
-        const wasRunning = prev === '1' || prev === '2' || prev === '3';
+      if (!skipAlarmChecks) {
+        for (const pump of station.pumps) {
+          const prev = prevPumps[pump.id];
+          const isRunning = pump.status === '1' || pump.status === '2' || pump.status === '3';
+          const wasRunning = prev === '1' || prev === '2' || prev === '3';
 
-        if (prev === '0' && isRunning) {
-          reasons.push({
-            type: 'pump_start',
-            detail: `#${pump.id} 抽水機${PUMP_STATUS_LABEL[pump.status]}`,
-            pumpId: pump.id,
-          });
-        } else if (wasRunning && pump.status === '0') {
-          reasons.push({ type: 'pump_stop', detail: `#${pump.id} 抽水機停止`, pumpId: pump.id });
+          if (prev === '0' && isRunning) {
+            reasons.push({
+              type: 'pump_start',
+              detail: `#${pump.id} 抽水機${PUMP_STATUS_LABEL[pump.status]}`,
+              pumpId: pump.id,
+            });
+          } else if (wasRunning && pump.status === '0') {
+            reasons.push({ type: 'pump_stop', detail: `#${pump.id} 抽水機停止`, pumpId: pump.id });
+          }
         }
-      }
 
-      // ── 閘門警報檢查 ──
-      const gateSwitches = stationGateAlarmSwitches[station.stationno];
-      const levelOut = station.level_out;
+        // ── 閘門警報檢查 ──
+        const gateSwitches = stationGateAlarmSwitches[station.stationno];
+        const levelOut = station.level_out;
 
-      if (gateSwitches && levelIn !== null && levelOut !== null) {
-        const allDoorsClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
+        if (gateSwitches && levelIn !== null && levelOut !== null) {
+          const allDoorsClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
 
-        if (gateSwitches.innerHighAlarm && levelIn > levelOut && allDoorsClosed) {
-          reasons.push({
-            type: 'gate_high_inner',
-            detail: `內水位 ${levelIn.toFixed(2)}m 高於外水位 ${levelOut.toFixed(2)}m，閘門全閉`,
-          });
+          if (gateSwitches.innerHighAlarm && levelIn > levelOut && allDoorsClosed) {
+            reasons.push({
+              type: 'gate_high_inner',
+              detail: `內水位 ${levelIn.toFixed(2)}m 高於外水位 ${levelOut.toFixed(2)}m，閘門全閉`,
+            });
+          }
         }
       }
 
@@ -371,6 +412,7 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   dismissStationAlarm: (stationno) => {
+    const now = Date.now();
     stopStationAlarm(stationno);
     set((s) => {
       const next = s.alarmingStations.filter((a) => a.stationno !== stationno);
@@ -378,6 +420,7 @@ export const useStore = create<AppStore>()((set, get) => ({
         alarmingStations: next,
         isAlarming: next.length > 0,
         testAlarmStationNos: s.testAlarmStationNos.filter(n => n !== stationno),
+        alarmDismissTimestamps: { ...s.alarmDismissTimestamps, [stationno]: now },
       };
     });
     // 如果全部解除，通知背景服務停止警報音
@@ -387,10 +430,25 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   dismissAllAlarms: () => {
+    const now = Date.now();
+    const state = get();
+    // 記錄所有目前警報中的站點關閉時間
+    const dismissTs: Record<string, number> = {};
+    for (const a of state.alarmingStations) {
+      dismissTs[a.stationno] = now;
+    }
     stopAllAlarms();
-    set({ alarmingStations: [], isAlarming: false, testAlarmStationNos: [] });
+    set({
+      alarmingStations: [],
+      isAlarming: false,
+      testAlarmStationNos: [],
+      alarmDismissTimestamps: { ...state.alarmDismissTimestamps, ...dismissTs },
+      lastFullDismissTime: now,
+    });
     dismissBackgroundAlarm();
   },
+
+  setMonitoringEnabled: (v) => set({ monitoringEnabled: v }),
 
   simulateAlarm: () => {
     const state = get();
