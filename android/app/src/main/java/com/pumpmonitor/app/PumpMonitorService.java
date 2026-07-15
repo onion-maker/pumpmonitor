@@ -296,11 +296,14 @@ public class PumpMonitorService extends Service {
             // 定時更新檢查
             doUpdateCheck();
         } else {
-            // 首次啟動 → 立即檢查 + 排程三者
-            new Thread(this::doCheck).start();
+            // 首次啟動 → 延遲 3 秒再檢查，避免與前端首次 fetch race 導致 WebView renderer crash
             scheduleNextCheck(this);
             scheduleHeartbeat(this);
             scheduleUpdateCheck(this);
+            new Thread(() -> {
+                try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+                doCheck();
+            }).start();
         }
 
         Log.d(TAG, "服務啟動（action=" + action + "）");
