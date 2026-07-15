@@ -326,12 +326,14 @@ export const useStore = create<AppStore>()((set, get) => ({
           const wasRunning = prev === '1' || prev === '2' || prev === '3';
 
           if (prev === '0' && isRunning) {
+            console.log(`[checkAlarm] ${station.stationno} #${pump.id} 啟動: ${prev}→${pump.status}`);
             reasons.push({
               type: 'pump_start',
               detail: `#${pump.id} 抽水機${PUMP_STATUS_LABEL[pump.status]}`,
               pumpId: pump.id,
             });
           } else if (wasRunning && pump.status === '0') {
+            console.log(`[checkAlarm] ${station.stationno} #${pump.id} 停止: ${prev}→${pump.status}`);
             reasons.push({ type: 'pump_stop', detail: `#${pump.id} 抽水機停止`, pumpId: pump.id });
           }
         }

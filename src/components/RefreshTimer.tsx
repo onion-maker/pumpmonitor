@@ -5,8 +5,12 @@ import { POLL_INTERVAL_MS } from '../config/stations';
 /** 距離下次自動更新的倒數秒數 */
 export default function RefreshTimer() {
   const lastUpdateTime = useStore((s) => s.lastUpdateTime);
+  const monitoringEnabled = useStore((s) => s.monitoringEnabled);
   const [remain, setRemain] = useState(POLL_INTERVAL_MS / 1000);
   const [showUpdating, setShowUpdating] = useState(false);
+
+  // 監控暫停時不顯示倒數行
+  if (!monitoringEnabled) return null;
 
   // 當 lastUpdateTime 改變（代表剛完成一次更新），重設計時器
   useEffect(() => {
