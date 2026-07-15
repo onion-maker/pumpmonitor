@@ -15,9 +15,13 @@ export function usePumpData() {
   const updateTide = useStore((s) => s.updateTide);
   const isLoading = useStore((s) => s.isLoading);
   const isInitialLoading = useStore((s) => s.isInitialLoading);
+  const monitoringEnabled = useStore((s) => s.monitoringEnabled);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
+  // ref 存 monitoringEnabled，避免 effect dependency chain 觸發 cleanup/re-run → crash
+  const monitoringEnabledRef = useRef(monitoringEnabled);
+  monitoringEnabledRef.current = monitoringEnabled;
 
   const fetchData = useCallback(async () => {
     if (useStore.getState().page === 'settings') return;
@@ -52,18 +56,22 @@ export function usePumpData() {
     }
   }, [setStationData, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
 
+  // ref 存最新 fetchData，避免 effect 因 fetchData reference 改變而 rebuild
+  const fetchDataRef = useRef(fetchData);
+  fetchDataRef.current = fetchData;
+
   // 首次載入與 page 切換時 fetch
   useEffect(() => {
     mountedRef.current = true;
     if (page === 'main') {
-      fetchData();
+      fetchDataRef.current();
     }
     return () => {
       mountedRef.current = false;
     };
-  }, [page, fetchData]);
+  }, [page]);
 
-  // 定時輪詢（僅主頁）
+  // 定時輪詢（僅主頁，監控啟停不影響 effect 重建，只在 callback 內部判斷）
   useEffect(() => {
     if (page !== 'main') {
       if (intervalRef.current) {
@@ -74,7 +82,9 @@ export function usePumpData() {
     }
 
     intervalRef.current = setInterval(() => {
-      fetchData();
+      if (monitoringEnabledRef.current) {
+        fetchDataRef.current();
+      }
     }, POLL_INTERVAL_MS);
 
     return () => {
@@ -83,7 +93,7 @@ export function usePumpData() {
         intervalRef.current = null;
       }
     };
-  }, [page, fetchData]);
+  }, [page]);
 
   return { refresh: fetchData, isLoading, isInitialLoading };
 }

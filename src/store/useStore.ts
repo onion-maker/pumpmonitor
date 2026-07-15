@@ -30,6 +30,7 @@ interface UserSettings {
   backgroundIntervalSec: number;
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
   stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
+  monitoringEnabled: boolean;
 }
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
@@ -41,6 +42,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   backgroundIntervalSec: DEFAULT_BACKGROUND_INTERVAL_SEC,
   stationGateAlarmSwitches: {},
   stationTideAlarmSwitches: {},
+  monitoringEnabled: true,
 };
 
 export interface AppStore {
@@ -201,6 +203,7 @@ export const useStore = create<AppStore>()((set, get) => ({
           backgroundIntervalSec: data.backgroundIntervalSec ?? DEFAULT_BACKGROUND_INTERVAL_SEC,
           stationGateAlarmSwitches: data.stationGateAlarmSwitches ?? {},
           stationTideAlarmSwitches: data.stationTideAlarmSwitches ?? {},
+          monitoringEnabled: data.monitoringEnabled ?? true,
         });
       } else {
         // 首次登入，使用預設值
@@ -212,7 +215,7 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   saveUserSettings: () => {
-    const { currentUid, selectedStations, stationOrder, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches, stationTideAlarmSwitches } = get();
+    const { currentUid, selectedStations, stationOrder, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches, stationTideAlarmSwitches, monitoringEnabled } = get();
     if (!currentUid) return;
     const payload: UserSettings = {
       selectedStations,
@@ -223,6 +226,7 @@ export const useStore = create<AppStore>()((set, get) => ({
       backgroundIntervalSec,
       stationGateAlarmSwitches,
       stationTideAlarmSwitches,
+      monitoringEnabled,
     };
     try {
       localStorage.setItem(storageKey(currentUid), JSON.stringify(payload));
@@ -637,6 +641,7 @@ useStore.subscribe((state) => {
         backgroundIntervalSec: state.backgroundIntervalSec,
         stationGateAlarmSwitches: state.stationGateAlarmSwitches,
         stationTideAlarmSwitches: state.stationTideAlarmSwitches,
+        monitoringEnabled: state.monitoringEnabled,
       };
       try {
         localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));
