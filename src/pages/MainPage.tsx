@@ -35,7 +35,7 @@ export default function MainPage() {
     <div className="min-h-screen bg-gray-50">
       <AlarmBanner />
       <Header onRefresh={refresh} isLoading={isLoading} />
-      <RefreshTimer />
+      {monitoringEnabled && <RefreshTimer />}
 
       {/* ── 警報確認浮動按鈕 ── */}
       {isAlarming && (
