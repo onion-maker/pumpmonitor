@@ -9,7 +9,10 @@
       "PowerShell(adb devices *)",
       "PowerShell(adb logcat *)",
       "PowerShell(adb *)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

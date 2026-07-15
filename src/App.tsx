@@ -129,6 +129,7 @@ export default function App() {
           backgroundIntervalSec: state.backgroundIntervalSec,
           stationGateAlarmSwitches: state.stationGateAlarmSwitches,
           stationTideAlarmSwitches: state.stationTideAlarmSwitches,
+          monitoringEnabled: state.monitoringEnabled,
         });
       }, 1000);
     };
@@ -157,6 +158,7 @@ export default function App() {
               backgroundIntervalSec: state.backgroundIntervalSec,
               stationGateAlarmSwitches: state.stationGateAlarmSwitches,
               stationTideAlarmSwitches: state.stationTideAlarmSwitches,
+              monitoringEnabled: state.monitoringEnabled,
             });
             startBackgroundService();
           }
