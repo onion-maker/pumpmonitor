@@ -86,6 +86,12 @@ export default function App() {
     checkAuth();
   }, [setIsLoggedIn, loadUserSettings]);
 
+  // ── 夜間暗色模式：同步到 <html> 元素 ──
+  const darkMode = useStore((s) => s.darkMode);
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
+
   // ── App 更新檢查（登入後檢查一次） ──
   useEffect(() => {
     if (!isReady || !isLoggedIn) return;
@@ -255,13 +261,13 @@ export default function App() {
 
   if (!isReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
           <svg className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-4" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <p className="text-gray-500">載入中…</p>
+          <p className="text-gray-500 dark:text-gray-400">載入中…</p>
         </div>
       </div>
     );

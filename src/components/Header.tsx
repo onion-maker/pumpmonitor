@@ -32,13 +32,13 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const isConnected = stationData.length > 0 && !fetchError;
 
   return (
-    <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200" style={{ paddingTop: 'var(--sat)' }}>
+    <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700" style={{ paddingTop: 'var(--sat)' }}>
       <div className="max-w-7xl mx-auto px-4 py-3">
         {/* 第一行：標題 + 監控開關 */}
         <div className="flex items-center justify-between mb-1">
-          <h1 className="text-xl font-bold text-gray-900 leading-tight">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
             <span className="block">水情警報系統</span>
-            <span className="block text-sm font-medium text-gray-500">(第一分區)</span>
+            <span className="block text-sm font-medium text-gray-500 dark:text-gray-400">(第一分區)</span>
           </h1>
 
           <div className="flex items-center gap-2">
@@ -50,14 +50,14 @@ export default function Header({ onRefresh, isLoading }: Props) {
                 onChange={() => setMonitoringEnabled(!monitoringEnabled)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" />
-              <span className={`ml-2 text-sm font-medium ${monitoringEnabled ? 'text-green-600' : 'text-gray-500'}`}>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" />
+              <span className={`ml-2 text-sm font-medium ${monitoringEnabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
                 {monitoringEnabled ? '監控中' : '已暫停'}
               </span>
             </label>
             {/* 測試警報（開發用） */}
             {!isAlarming && (
-              <button onClick={simulateAlarm} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 active:scale-95 transition-all">
+              <button onClick={simulateAlarm} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/50 active:scale-95 transition-all">
                 🧪 測試警報
               </button>
             )}
@@ -66,7 +66,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
 
         {/* 第二行：系統時間 + 連線狀態 + 最後更新 + 設定/重整按鈕（靠右） */}
         <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-3 text-xs text-gray-400 flex-1 flex-wrap">
+          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 flex-1 flex-wrap">
             {/* 系統時間 */}
             <span className="whitespace-nowrap">🕐 {clock}</span>
 
@@ -93,7 +93,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
             </button>
-            <button onClick={onRefresh} disabled={isLoading} className="flex items-center gap-1 p-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 active:scale-95 transition-all" title="重新整理">
+            <button onClick={onRefresh} disabled={isLoading} className="flex items-center gap-1 p-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 active:scale-95 transition-all" title="重新整理">
               <svg className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>

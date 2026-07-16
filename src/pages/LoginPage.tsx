@@ -120,36 +120,36 @@ export default function LoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900">水位監控系統</h1>
-          <p className="text-sm text-gray-500 mt-1">請登入您的帳號</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">水位監控系統</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">請登入您的帳號</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">⚠ {error}</p>
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-700 rounded-lg">
+            <p className="text-sm text-red-600 dark:text-red-400">⚠ {error}</p>
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email 帳號</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email 帳號</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@mail.com"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               autoComplete="email"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">密碼</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">密碼</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="請輸入密碼"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               autoComplete="current-password"
             />
           </div>
@@ -164,11 +164,11 @@ export default function LoginPage() {
 
         {/* 生物辨識 — 只有當使用者在設定中啟用後才顯示 */}
         {biometricAvailable && biometricEnabled && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={handleBiometric}
               disabled={biometricLoading}
-              className="w-full py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3zm6 6c0 2.21-1.343 4-6 4s-6-1.79-6-4c0-1.105.895-2 6-2s6 .895 6 2z" />

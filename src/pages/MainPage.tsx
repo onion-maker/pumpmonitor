@@ -32,7 +32,7 @@ export default function MainPage() {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <AlarmBanner />
       <Header onRefresh={refresh} isLoading={isLoading} />
       {monitoringEnabled && <RefreshTimer />}
@@ -46,7 +46,7 @@ export default function MainPage() {
               <span className="font-semibold">
                 {alarmingStations.length} 個站點警報中
               </span>
-              <span className="text-sm text-red-200">
+              <span className="text-sm text-red-200 dark:text-red-300">
                 （警報音持續播放中）
               </span>
             </div>
@@ -63,8 +63,8 @@ export default function MainPage() {
       <main className={`max-w-7xl mx-auto px-4 pb-8 ${isAlarming ? 'pb-20' : ''}`}>
         {/* 監控暫停提示 */}
         {!monitoringEnabled && !isAlarming && (
-          <div className="mb-4 p-3 bg-gray-100 border border-gray-300 rounded-lg text-center">
-            <p className="text-sm font-medium text-gray-500">
+          <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-center">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
               ⏸ 監控已暫停 — 不會觸發任何警報
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function MainPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            <p className="text-gray-500">正在載入抽水站資料…</p>
+            <p className="text-gray-500 dark:text-gray-400">正在載入抽水站資料…</p>
           </div>
         ) : fetchError && visibleStations.length === 0 ? (
           <div className="text-center py-20">
@@ -91,8 +91,8 @@ export default function MainPage() {
           </div>
         ) : visibleStations.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-lg mb-2">當前沒有選取的站點</p>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">當前沒有選取的站點</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               請前往設定頁面勾選您要監控的抽水站
             </p>
           </div>

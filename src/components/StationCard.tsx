@@ -67,17 +67,17 @@ function GateAlarmToggle({ station }: Props) {
   };
 
   return (
-    <div className="mt-2 pt-2 border-t border-gray-100 space-y-1.5">
-      <p className="text-xs text-gray-500 font-medium">閘門警報條件</p>
+    <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1.5">
+      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">閘門警報條件</p>
       <label className="flex items-center justify-between cursor-pointer">
-        <span className={`text-xs ${current.innerHighAlarm ? 'text-purple-600 font-medium' : 'text-gray-600'}`}>內高外低閘門未開時告警</span>
+        <span className={`text-xs ${current.innerHighAlarm ? 'text-purple-600 dark:text-purple-400 font-medium' : 'text-gray-600 dark:text-gray-400'}`}>內高外低閘門未開時告警</span>
         <button
           type="button"
           role="switch"
           aria-checked={current.innerHighAlarm}
           onClick={() => toggle('innerHighAlarm')}
           className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-            current.innerHighAlarm ? 'bg-purple-500' : 'bg-gray-200'
+            current.innerHighAlarm ? 'bg-purple-500' : 'bg-gray-200 dark:bg-gray-600'
           }`}
         >
           <span
@@ -89,7 +89,7 @@ function GateAlarmToggle({ station }: Props) {
       </label>
       {isTideStation && (
         <label className="flex items-center justify-between cursor-pointer">
-          <span className={`text-xs ${tideCurrent.tideAlarm ? 'text-teal-600 font-medium' : 'text-gray-600'}`}>潮汐站閘門啟閉提醒</span>
+          <span className={`text-xs ${tideCurrent.tideAlarm ? 'text-teal-600 dark:text-teal-400 font-medium' : 'text-gray-600 dark:text-gray-400'}`}>潮汐站閘門啟閉提醒</span>
           <button
             type="button"
             role="switch"
@@ -100,7 +100,7 @@ function GateAlarmToggle({ station }: Props) {
               })
             }
             className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-              tideCurrent.tideAlarm ? 'bg-teal-500' : 'bg-gray-200'
+              tideCurrent.tideAlarm ? 'bg-teal-500' : 'bg-gray-200 dark:bg-gray-600'
             }`}
           >
             <span
@@ -162,18 +162,18 @@ export default function StationCard({ station }: Props) {
     <div
       className={`rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md ${
         isAlarm
-          ? 'border-red-400 bg-red-50 shadow-md'
-          : 'border-gray-200 bg-white shadow-sm'
+          ? 'border-red-400 bg-red-50 shadow-md dark:bg-red-950/40 dark:border-red-700'
+          : 'border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:hover:shadow-gray-800/50'
       }`}
     >
       {/* 站名 + 站號 + 時間 */}
       <div className="flex justify-between items-start mb-2">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {station.stationName}
           </h3>
         </div>
-        <span className="text-xs text-gray-400 whitespace-nowrap">{timeStr}</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{timeStr}</span>
       </div>
 
       {/* 警報原因 badges */}
@@ -184,7 +184,7 @@ export default function StationCard({ station }: Props) {
           ))}
           <button
             onClick={() => dismissStationAlarm(station.stationno)}
-            className="text-xs text-gray-400 hover:text-gray-600 ml-1"
+            className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 ml-1"
             title="關閉此站警報"
           >
             ✕
@@ -194,7 +194,7 @@ export default function StationCard({ station }: Props) {
 
       {/* 警報水位輸入 */}
       <div className="flex items-center gap-2 mb-3">
-        <label className="text-xs text-gray-500 whitespace-nowrap">警報水位:</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">警報水位:</label>
         <input
           type="number"
           value={editValue}
@@ -206,18 +206,18 @@ export default function StationCard({ station }: Props) {
           max="10.0"
           className={`w-20 px-1.5 py-0.5 text-sm font-mono border rounded text-center outline-none
             ${isWaterAlarm
-              ? 'border-red-400 bg-red-50 text-red-700'
-              : 'border-gray-300 text-gray-700 focus:border-blue-400 focus:ring-1 focus:ring-blue-300'
+              ? 'border-red-400 bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400'
+              : 'border-gray-300 text-gray-700 focus:border-blue-400 focus:ring-1 focus:ring-blue-300 dark:border-gray-600 dark:text-gray-300 dark:bg-gray-800 dark:focus:border-blue-500 dark:focus:ring-blue-800'
             }`}
         />
-        <span className="text-xs text-gray-400">m</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">m</span>
         {TIDE_STATIONS.includes(station.stationno) && (() => {
           const dir = tideDirection[station.stationno];
           if (!dir) {
-            return <span className="text-lg font-bold text-gray-400 ml-auto">潮汐判定中</span>;
+            return <span className="text-lg font-bold text-gray-400 dark:text-gray-500 ml-auto">潮汐判定中</span>;
           }
           if (dir === 'slack') {
-            return <span className="text-lg font-bold text-gray-400 ml-auto">平潮</span>;
+            return <span className="text-lg font-bold text-gray-400 dark:text-gray-500 ml-auto">平潮</span>;
           }
           if (dir === 'rising') {
             return <span className="text-lg font-bold text-red-500 ml-auto">漲潮</span>;
@@ -225,7 +225,7 @@ export default function StationCard({ station }: Props) {
           return <span className="text-lg font-bold text-blue-500 ml-auto">退潮</span>;
         })()}
         {stationAlarmLevels[station.stationno] !== undefined && (
-          <span className="text-xs text-blue-500" title="已自訂">
+          <span className="text-xs text-blue-500 dark:text-blue-400" title="已自訂">
             ●
           </span>
         )}

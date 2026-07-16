@@ -31,6 +31,7 @@ interface UserSettings {
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
   stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
   monitoringEnabled: boolean;
+  darkMode: boolean;
 }
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
@@ -43,6 +44,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   stationGateAlarmSwitches: {},
   stationTideAlarmSwitches: {},
   monitoringEnabled: true,
+  darkMode: false,
 };
 
 export interface AppStore {
@@ -89,6 +91,10 @@ export interface AppStore {
   /** 監控啟停 */
   monitoringEnabled: boolean;
   setMonitoringEnabled: (v: boolean) => void;
+
+  /** 夜間暗色模式 */
+  darkMode: boolean;
+  setDarkMode: (v: boolean) => void;
 
   /** 載入指定使用者的設定（登入成功時呼叫） */
   loadUserSettings: (uid: string) => void;
@@ -204,6 +210,7 @@ export const useStore = create<AppStore>()((set, get) => ({
           stationGateAlarmSwitches: data.stationGateAlarmSwitches ?? {},
           stationTideAlarmSwitches: data.stationTideAlarmSwitches ?? {},
           monitoringEnabled: data.monitoringEnabled ?? true,
+          darkMode: data.darkMode ?? false,
         });
       } else {
         // 首次登入，使用預設值
@@ -215,7 +222,7 @@ export const useStore = create<AppStore>()((set, get) => ({
   },
 
   saveUserSettings: () => {
-    const { currentUid, selectedStations, stationOrder, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches, stationTideAlarmSwitches, monitoringEnabled } = get();
+    const { currentUid, selectedStations, stationOrder, stationAlarmLevels, stationAlarmAudios, biometricEnabled, backgroundIntervalSec, stationGateAlarmSwitches, stationTideAlarmSwitches, monitoringEnabled, darkMode } = get();
     if (!currentUid) return;
     const payload: UserSettings = {
       selectedStations,
@@ -227,6 +234,7 @@ export const useStore = create<AppStore>()((set, get) => ({
       stationGateAlarmSwitches,
       stationTideAlarmSwitches,
       monitoringEnabled,
+      darkMode,
     };
     try {
       localStorage.setItem(storageKey(currentUid), JSON.stringify(payload));
@@ -454,6 +462,8 @@ export const useStore = create<AppStore>()((set, get) => ({
 
   setMonitoringEnabled: (v) => set({ monitoringEnabled: v }),
 
+  setDarkMode: (darkMode) => set({ darkMode }),
+
   simulateAlarm: () => {
     const state = get();
     const { stationData } = state;
@@ -642,6 +652,7 @@ useStore.subscribe((state) => {
         stationGateAlarmSwitches: state.stationGateAlarmSwitches,
         stationTideAlarmSwitches: state.stationTideAlarmSwitches,
         monitoringEnabled: state.monitoringEnabled,
+        darkMode: state.darkMode,
       };
       try {
         localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));

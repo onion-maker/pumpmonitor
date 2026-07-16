@@ -31,8 +31,8 @@ export default function AlarmLevelInput({ value, onChange }: Props) {
 
   return (
     <div className="mb-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-2">警報水位門檻</h2>
-      <p className="text-sm text-gray-500 mb-2">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">警報水位門檻</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
         當站點內水位（level_in）超過此數值時觸發警報
       </p>
 
@@ -44,9 +44,9 @@ export default function AlarmLevelInput({ value, onChange }: Props) {
           step="0.01"
           min="0.01"
           max="10.0"
-          className="w-32 px-3 py-2 text-lg font-mono text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          className="w-32 px-3 py-2 text-lg font-mono text-gray-900 dark:text-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
         />
-        <span className="text-sm text-gray-500">公尺 (m)</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">公尺 (m)</span>
       </div>
 
       {error && <p className="mt-1 text-sm text-red-500">⚠ {error}</p>}

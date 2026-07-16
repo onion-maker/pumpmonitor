@@ -56,7 +56,7 @@ export default function AlarmBanner() {
               </div>
               <button
                 onClick={() => dismissStationAlarm(alarm.stationno)}
-                className="ml-2 text-xs text-red-200 hover:text-white transition-colors shrink-0"
+                className="ml-2 text-xs text-red-200 hover:text-white dark:text-red-300 dark:hover:text-red-100 transition-colors shrink-0"
                 title={`關閉 ${alarm.stationName} 警報`}
               >
                 ✕ 關閉

@@ -83,19 +83,19 @@ export default function StationSelector({ selected, order, onChange, onReorder }
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-gray-900">選擇監控站點</h2>
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">選擇監控站點</h2>
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
           <input
             type="checkbox"
             checked={allSelected}
             onChange={toggleAll}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
           />
           全選 / 全不選
         </label>
       </div>
 
-      <p className="text-xs text-gray-400 mb-2">按住拖曳可調整站點排列順序</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">按住拖曳可調整站點排列順序</p>
 
       <div className="space-y-1.5">
         {sortedAll.map((id) => {
@@ -110,18 +110,18 @@ export default function StationSelector({ selected, order, onChange, onReorder }
               onDrop={(e) => handleDrop(e, id)}
               className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-grab active:cursor-grabbing transition-colors ${
                 checked
-                  ? 'border-blue-300 bg-blue-50'
-                  : 'border-gray-200 bg-white hover:bg-gray-50'
+                  ? 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/40'
+                  : 'border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800'
               }`}
             >
-              <span className="text-gray-300 text-lg select-none shrink-0">⋮⋮</span>
+              <span className="text-gray-300 dark:text-gray-600 text-lg select-none shrink-0">⋮⋮</span>
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(id)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0"
+                className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 shrink-0"
               />
-              <span className="text-sm text-gray-700 flex-1">
+              <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">
                 {name}
               </span>
             </div>

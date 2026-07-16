@@ -11,6 +11,8 @@ export default function SettingsPage({ onLogout }: Props) {
   const selectedStations = useStore((s) => s.selectedStations);
   const stationOrder = useStore((s) => s.stationOrder);
   const biometricEnabled = useStore((s) => s.biometricEnabled);
+  const darkMode = useStore((s) => s.darkMode);
+  const setDarkMode = useStore((s) => s.setDarkMode);
   const setSelectedStations = useStore((s) => s.setSelectedStations);
   const setStationOrder = useStore((s) => s.setStationOrder);
   const setBiometricEnabled = useStore((s) => s.setBiometricEnabled);
@@ -51,20 +53,20 @@ export default function SettingsPage({ onLogout }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200" style={{ paddingTop: 'var(--sat)' }}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700" style={{ paddingTop: 'var(--sat)' }}>
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">設定</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">設定</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage('main')}
-              className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 active:scale-95 transition-all"
+              className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 transition-all"
             >
               取消
             </button>
             <button
               onClick={onLogout}
-              className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 active:scale-95 transition-all"
+              className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 active:scale-95 transition-all"
             >
               登出
             </button>
@@ -88,16 +90,16 @@ export default function SettingsPage({ onLogout }: Props) {
             onReorder={setStationOrder}
           />
 
-        <hr className="border-gray-200 my-6" />
+        <hr className="border-gray-200 dark:border-gray-700 my-6" />
 
         {/* 生物辨識開關 */}
         {biometricAvailable && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">安全設定</h2>
-            <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">安全設定</h2>
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div>
-                <p className="text-sm font-medium text-gray-900">啟用指紋 / 臉部辨識</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">啟用指紋 / 臉部辨識</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   開啟後，下次登入可直接使用生物辨識快速登入
                 </p>
               </div>
@@ -108,22 +110,46 @@ export default function SettingsPage({ onLogout }: Props) {
                   onChange={(e) => setBiometricEnabled(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
           </div>
         )}
 
-        <hr className="border-gray-200 my-6" />
+        <hr className="border-gray-200 dark:border-gray-700 my-6" />
+
+        {/* 夜間暗色模式 */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">顯示設定</h2>
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">夜間暗色模式</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                夜間使用時，切換為深色背景減少眼睛疲勞
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={darkMode}
+                onChange={(e) => setDarkMode(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+            </label>
+          </div>
+        </div>
+
+        <hr className="border-gray-200 dark:border-gray-700 my-6" />
 
         {/* 背景服務檢查頻率 */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">背景檢查設定</h2>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">背景檢查設定</h2>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-sm font-medium text-gray-900">背景檢查頻率</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">背景檢查頻率</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                   手機休眠時，每隔多久檢查一次水位與機組狀態
                 </p>
               </div>
@@ -131,7 +157,7 @@ export default function SettingsPage({ onLogout }: Props) {
                 <button
                   type="button"
                   onClick={() => setBackgroundIntervalSec(Math.max(30, backgroundIntervalSec - 10))}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-lg font-bold"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 transition-all text-lg font-bold"
                 >−</button>
                 <input
                   type="number"
@@ -145,14 +171,14 @@ export default function SettingsPage({ onLogout }: Props) {
                   min={30}
                   max={600}
                   step={10}
-                  className="w-16 h-8 px-1 text-sm font-mono border border-gray-300 rounded text-center outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-300"
+                  className="w-16 h-8 px-1 text-sm font-mono border border-gray-300 dark:border-gray-600 rounded text-center outline-none focus:border-blue-400 dark:focus:border-blue-500 focus:ring-1 focus:ring-blue-300 dark:focus:ring-blue-800 dark:bg-gray-800 dark:text-gray-200"
                 />
                 <button
                   type="button"
                   onClick={() => setBackgroundIntervalSec(Math.min(600, backgroundIntervalSec + 10))}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-lg font-bold"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 transition-all text-lg font-bold"
                 >+</button>
-                <span className="text-sm text-gray-500 ml-1">秒</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">秒</span>
               </div>
             </div>
 
@@ -164,15 +190,15 @@ export default function SettingsPage({ onLogout }: Props) {
               step={10}
               value={backgroundIntervalSec}
               onChange={(e) => setBackgroundIntervalSec(parseInt(e.target.value, 10))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2"
+              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2"
             />
-            <div className="flex justify-between text-xs text-gray-400 px-0.5">
+            <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 px-0.5">
               <span>30秒</span>
               <span>300秒</span>
               <span>600秒（10分）</span>
             </div>
 
-            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1.5 mt-3">
+            <div className="flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 rounded px-2 py-1.5 mt-3">
               <span>⚠</span>
               <span>
                 頻率越高越耗電，建議 60~300 秒。最小值 30 秒，預設 {DEFAULT_BACKGROUND_INTERVAL_SEC} 秒。
@@ -181,16 +207,16 @@ export default function SettingsPage({ onLogout }: Props) {
           </div>
         </div>
 
-        <hr className="border-gray-200 my-6" />
+        <hr className="border-gray-200 dark:border-gray-700 my-6" />
 
         {/* 背景服務運作提示（Xiaomi / HyperOS 用戶） */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">背景服務注意事項</h2>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
-            <p className="text-sm text-amber-800">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">背景服務注意事項</h2>
+          <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 space-y-2">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
               ⚠ 手機休眠時若收不到警報，請確認以下設定：
             </p>
-            <ol className="text-xs text-amber-700 list-decimal list-inside space-y-1">
+            <ol className="text-xs text-amber-700 dark:text-amber-300 list-decimal list-inside space-y-1">
               <li>
                 <span className="font-medium">自啟動</span>：設定 → 應用程式 → 水位機組警報系統 → 開啟「自啟動」
               </li>

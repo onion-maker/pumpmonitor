@@ -15,12 +15,12 @@ export default function WaterLevelBar({ label, value, alarmLevel, isAlert, showT
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-sm text-gray-600">{label}</span>
-        <span className={`text-lg font-mono font-bold ${isAlert ? 'text-red-600' : 'text-gray-900'}`}>
+        <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
+        <span className={`text-lg font-mono font-bold ${isAlert ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>
           {value !== null ? `${value.toFixed(2)} m` : '--'}
         </span>
       </div>
-      <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+      <div className="relative w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         {/* 水位填充條 */}
         <div
           className={`h-full rounded-full transition-all duration-500 ${
@@ -37,7 +37,7 @@ export default function WaterLevelBar({ label, value, alarmLevel, isAlert, showT
         )}
       </div>
       {/* 圖例 */}
-      <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+      <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-0.5">
         <span>0</span>
         {showThreshold && (
           <span className="text-red-500">警報: {alarmLevel.toFixed(2)}m</span>

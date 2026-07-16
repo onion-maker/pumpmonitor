@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* 安全區域變數（手機狀態列 + 底部導覽列） */
 :root {

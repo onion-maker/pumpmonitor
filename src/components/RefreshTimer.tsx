@@ -28,14 +28,14 @@ export default function RefreshTimer() {
   if (remain === 0 || showUpdating) {
     return (
       <div className="text-center py-2">
-        <span className="text-xs text-gray-400">更新中…</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">更新中…</span>
       </div>
     );
   }
 
   return (
     <div className="text-center py-2">
-      <span className="text-xs text-gray-400">{remain} 秒後自動更新</span>
+      <span className="text-xs text-gray-400 dark:text-gray-500">{remain} 秒後自動更新</span>
     </div>
   );
 }

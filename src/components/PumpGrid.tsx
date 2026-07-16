@@ -20,22 +20,22 @@ export default function PumpGrid({ pumps }: Props) {
   if (pumps.length === 0) {
     return (
       <div className="mb-3">
-        <p className="text-sm text-gray-500 mb-1">抽水機</p>
-        <p className="text-xs text-gray-400 italic">無抽水機資料</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">抽水機</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 italic">無抽水機資料</p>
       </div>
     );
   }
 
   return (
     <div className="mb-3">
-      <p className="text-sm text-gray-600 mb-2">抽水機</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">抽水機</p>
       <div className="grid grid-cols-4 gap-2">
         {pumps.map((p) => {
           const cfg = STATUS_CONFIG[p.status];
           return (
             <div key={p.id} className="flex flex-col items-center gap-1">
               <div className={`w-7 h-7 rounded-full ${cfg.className} shadow-sm`} title={cfg.label} />
-              <span className="text-xs text-gray-500">#{p.id}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">#{p.id}</span>
             </div>
           );
         })}

@@ -51,14 +51,14 @@ export default function AudioUploader({
 
   return (
     <div>
-      <p className="text-sm text-gray-500 mb-2">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
         {label} — .mp3 / .wav / .ogg（最大 2MB）
       </p>
 
       <div className="flex items-center gap-2 flex-wrap">
         <button
           onClick={() => inputRef.current?.click()}
-          className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 transition-all"
+          className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all"
         >
           {currentBase64 ? '更換' : '上傳'}
         </button>
@@ -87,7 +87,7 @@ export default function AudioUploader({
         )}
 
         {!currentBase64 && (
-          <span className="text-xs text-gray-400">未設定（無聲音）</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">未設定（無聲音）</span>
         )}
       </div>
 

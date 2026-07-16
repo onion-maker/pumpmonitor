@@ -19,15 +19,15 @@ export default function DoorGrid({ doors }: Props) {
   if (doors.length === 0) {
     return (
       <div className="mb-1">
-        <p className="text-sm text-gray-500 mb-1">閘門</p>
-        <p className="text-xs text-gray-400 italic">無閘門資料</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">閘門</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 italic">無閘門資料</p>
       </div>
     );
   }
 
   return (
     <div className="mb-1">
-      <p className="text-sm text-gray-600 mb-2">閘門</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">閘門</p>
       <div className="flex flex-wrap gap-2">
         {doors.map((d) => {
           const cfg = STATUS_CONFIG[d.status];
