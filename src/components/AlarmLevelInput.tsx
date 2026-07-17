@@ -16,10 +16,6 @@ export default function AlarmLevelInput({ value, onChange }: Props) {
       setError('請輸入有效數值');
       return;
     }
-    if (num < 0.01) {
-      setError('最小值為 0.01 m');
-      return;
-    }
     if (num > 10.0) {
       setError('最大值為 10.0 m');
       return;
@@ -42,7 +38,6 @@ export default function AlarmLevelInput({ value, onChange }: Props) {
           value={value}
           onChange={handleChange}
           step="0.01"
-          min="0.01"
           max="10.0"
           className="w-32 px-3 py-2 text-lg font-mono text-gray-900 dark:text-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
         />
