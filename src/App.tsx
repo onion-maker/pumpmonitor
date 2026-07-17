@@ -71,6 +71,8 @@ export default function App() {
                 stationGateAlarmSwitches: state.stationGateAlarmSwitches,
                 stationTideAlarmSwitches: state.stationTideAlarmSwitches,
                 monitoringEnabled: state.monitoringEnabled,
+                alarmDismissTimestamps: state.alarmDismissTimestamps,
+                lastFullDismissTime: state.lastFullDismissTime,
               });
               startBackgroundService();
             }
@@ -124,6 +126,8 @@ export default function App() {
           stationGateAlarmSwitches: state.stationGateAlarmSwitches,
           stationTideAlarmSwitches: state.stationTideAlarmSwitches,
           monitoringEnabled: state.monitoringEnabled,
+          alarmDismissTimestamps: state.alarmDismissTimestamps,
+          lastFullDismissTime: state.lastFullDismissTime,
         });
         // 設定沒變就不同步（避免每輪 poll 觸發）
         if (snapshot === lastSyncedRef.current) return;
@@ -136,6 +140,8 @@ export default function App() {
           stationGateAlarmSwitches: state.stationGateAlarmSwitches,
           stationTideAlarmSwitches: state.stationTideAlarmSwitches,
           monitoringEnabled: state.monitoringEnabled,
+          alarmDismissTimestamps: state.alarmDismissTimestamps,
+          lastFullDismissTime: state.lastFullDismissTime,
         });
       }, 1000);
     };
@@ -165,6 +171,8 @@ export default function App() {
               stationGateAlarmSwitches: state.stationGateAlarmSwitches,
               stationTideAlarmSwitches: state.stationTideAlarmSwitches,
               monitoringEnabled: state.monitoringEnabled,
+              alarmDismissTimestamps: state.alarmDismissTimestamps,
+              lastFullDismissTime: state.lastFullDismissTime,
             });
             startBackgroundService();
           }
@@ -181,6 +189,10 @@ export default function App() {
         const state = useStore.getState();
         if (state.lastTideCheckTime !== 0) {
           useStore.setState({ lastTideCheckTime: 0 });
+        }
+        // 檢查當前警報狀態，確保UI與背景服務同步
+        if (state.stationData.length > 0) {
+          state.checkAlarm(state.stationData);
         }
         ensureService();
       }

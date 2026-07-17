@@ -52,7 +52,7 @@ export function isBackgroundServiceRunning(): boolean {
 
 /**
  * 將使用者設定同步到 Native SharedPreferences
- * 供背景服務讀取（水位門檻、選取站點）
+ * 供背景服務讀取（水位門檻、選取站點、警報冷卻等）
  */
 export function syncSettingsToNative(params: {
   selectedStations: string[];
@@ -62,17 +62,22 @@ export function syncSettingsToNative(params: {
   stationGateAlarmSwitches: Record<string, GateAlarmSwitches>;
   stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
   monitoringEnabled: boolean;
+  alarmDismissTimestamps: Record<string, number>;
+  lastFullDismissTime: number;
 }): void {
   const bridge = getBridge();
   if (!bridge) return;
 
   const payload = JSON.stringify({
     selectedStations: JSON.stringify(params.selectedStations),
+    stationOrder: JSON.stringify(params.stationOrder),
     stationAlarmLevels: JSON.stringify(params.stationAlarmLevels),
     backgroundIntervalSec: params.backgroundIntervalSec,
     stationGateAlarmSwitches: JSON.stringify(params.stationGateAlarmSwitches),
     stationTideAlarmSwitches: JSON.stringify(params.stationTideAlarmSwitches),
     monitoringEnabled: params.monitoringEnabled,
+    alarmDismissTimestamps: JSON.stringify(params.alarmDismissTimestamps),
+    lastFullDismissTime: params.lastFullDismissTime,
   });
 
   bridge.syncSettings(payload);
@@ -82,6 +87,10 @@ export function syncSettingsToNative(params: {
 export function dismissBackgroundAlarm(): void {
   const bridge = getBridge();
   if (bridge) {
-    bridge.dismissAlarm();
+    try {
+      bridge.dismissAlarm();
+    } catch (err) {
+      console.warn('Failed to dismiss background alarm:', err);
+    }
   }
 }
