@@ -141,7 +141,7 @@ export default function StationCard({ station }: Props) {
 
   const handleLevelBlur = () => {
     const num = parseFloat(editValue);
-    if (!isNaN(num) && num >= 0.01 && num <= 10.0) {
+    if (!isNaN(num) && num >= -10.0 && num <= 10.0) {
       setStationAlarmLevel(station.stationno, Math.round(num * 100) / 100);
     } else {
       setEditValue(alarmLevel.toFixed(2));
