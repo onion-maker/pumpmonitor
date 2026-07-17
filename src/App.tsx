@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useStore } from './store/useStore';
+import { usePumpData } from './hooks/usePumpData';
 import MainPage from './pages/MainPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
@@ -21,6 +22,7 @@ export default function App() {
   const sessionCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null);
   const lastSyncedRef = useRef('');
+  const { refresh } = usePumpData();
 
   /** 被踢出處理 */
   const handleKickedOut = useCallback(async (reason?: string) => {
@@ -190,10 +192,8 @@ export default function App() {
         if (state.lastTideCheckTime !== 0) {
           useStore.setState({ lastTideCheckTime: 0 });
         }
-        // 檢查當前警報狀態，確保UI與背景服務同步
-        if (state.stationData.length > 0) {
-          state.checkAlarm(state.stationData);
-        }
+        // 立即觸發一次資料更新，確保UI能即時顯示警報狀態
+        refresh();
         ensureService();
       }
     };
