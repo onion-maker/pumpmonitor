@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   value: number;
@@ -7,12 +7,27 @@ interface Props {
 
 export default function AlarmLevelInput({ value, onChange }: Props) {
   const [error, setError] = useState<string | null>(null);
+  /* 本地字串 state：讓輸入中的中間狀態（"-"、"-1"）不會被數字 state 彈回 */
+  const [inputValue, setInputValue] = useState(String(value));
+
+  /* 外部 prop 變化時同步到本地（例如重新載入設定） */
+  useEffect(() => {
+    setInputValue(String(value));
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
+    setInputValue(raw);
+
+    /* 允許輸入中的負號中間狀態 */
+    if (raw === '' || raw === '-' || raw === '-.') {
+      setError(null);
+      return;
+    }
+
     const num = parseFloat(raw);
 
-    if (raw === '' || isNaN(num)) {
+    if (isNaN(num)) {
       setError('請輸入有效數值');
       return;
     }
@@ -35,7 +50,7 @@ export default function AlarmLevelInput({ value, onChange }: Props) {
       <div className="flex items-center gap-2">
         <input
           type="number"
-          value={value}
+          value={inputValue}
           onChange={handleChange}
           step="0.01"
           min="-10.0"
