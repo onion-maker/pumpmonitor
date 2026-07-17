@@ -38,6 +38,7 @@ export default function AlarmLevelInput({ value, onChange }: Props) {
           value={value}
           onChange={handleChange}
           step="0.01"
+          min="-10.0"
           max="10.0"
           className="w-32 px-3 py-2 text-lg font-mono text-gray-900 dark:text-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
         />
