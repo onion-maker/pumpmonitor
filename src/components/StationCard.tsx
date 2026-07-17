@@ -202,7 +202,7 @@ export default function StationCard({ station }: Props) {
           onBlur={handleLevelBlur}
           onKeyDown={handleLevelKeyDown}
           step="0.01"
-          min="0.01"
+          min="-10.0"
           max="10.0"
           className={`w-20 px-1.5 py-0.5 text-sm font-mono border rounded text-center outline-none
             ${isWaterAlarm
