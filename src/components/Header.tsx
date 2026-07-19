@@ -55,10 +55,10 @@ export default function Header({ onRefresh, isLoading }: Props) {
                 {monitoringEnabled ? '監控中' : '已暫停'}
               </span>
             </label>
-            {/* 測試警報（開發用） */}
-            {!isAlarming && (
-              <button onClick={simulateAlarm} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/50 active:scale-95 transition-all">
-                🧪 測試警報
+            {/* 警報確認按鈕 */}
+            {isAlarming && (
+              <button onClick={dismissAllAlarms} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 dark:bg-red-800 border border-red-500 dark:border-red-600 rounded-lg hover:bg-red-700 dark:hover:bg-red-700 active:scale-95 transition-all">
+                ⚠ 警報確認
               </button>
             )}
           </div>

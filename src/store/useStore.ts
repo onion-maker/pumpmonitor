@@ -300,8 +300,14 @@ export const useStore = create<AppStore>()((set, get) => ({
       const inCooldown = (now - Math.max(stationDismissTs, lastFullDismissTime)) < ALARM_COOLDOWN_MS;
       const isCurrentlyAlarming = prevAlarmingNos.has(station.stationno);
 
+      // 寬限期：剛關閉警報後允許檢查狀態（用於UI更新），但防止頻繁檢查觸發警報
+      const GRACE_PERIOD_MS = 30 * 1000; // 30秒寬限期
+      const timeSinceDismissal = now - Math.max(stationDismissTs, lastFullDismissTime);
+      const recentlyDismissed = timeSinceDismissal < GRACE_PERIOD_MS;
+
       // 冷卻中 + 尚未在警報中 → 跳過水位/機組/閘門檢查
-      const skipAlarmChecks = inCooldown && !isCurrentlyAlarming;
+      // 但剛關閉警報時（寬限期內）不跳過檢查，以便更新UI顯示
+      const skipAlarmChecks = inCooldown && !isCurrentlyAlarming && !recentlyDismissed;
 
       // ── 水位檢查（智慧觸發） ──
       const levelIn = station.level_in;
@@ -322,9 +328,11 @@ export const useStore = create<AppStore>()((set, get) => ({
             detail: `水位 ${levelIn.toFixed(2)}m 超過警報值 ${alarmThreshold.toFixed(2)}m`,
           });
         }
-      } else {
+      } else if (!skipAlarmChecks) {
+        // Only reset tracking if we actually evaluated the condition (not skipping due to cooldown)
         newLastAlarmed[station.stationno] = null;
       }
+      // If skipAlarmChecks is true, preserve existing newLastAlarmed value for future comparisons
 
       // ── Pump 變化檢查（冷卻中只記錄狀態，不觸發警報） ──
       const prevPumps = previousPumpMap[station.stationno] ?? {};
@@ -352,7 +360,7 @@ export const useStore = create<AppStore>()((set, get) => ({
         const gateSwitches = stationGateAlarmSwitches[station.stationno];
         const levelOut = station.level_out;
 
-        if (gateSwitches && levelIn !== null && levelOut !== null) {
+        if (!skipAlarmChecks && gateSwitches && levelIn !== null && levelOut !== null) {
           const allDoorsClosed = station.doors.length > 0 && station.doors.every(d => d.status === '1');
 
           if (gateSwitches.innerHighAlarm && levelIn > levelOut && allDoorsClosed) {
@@ -361,6 +369,9 @@ export const useStore = create<AppStore>()((set, get) => ({
               detail: `內水位 ${levelIn.toFixed(2)}m 高於外水位 ${levelOut.toFixed(2)}m，閘門全閉`,
             });
           }
+        } else if (!skipAlarmChecks) {
+          // If we're skipping gate checks due to cooldown, we don't need to do anything here
+          // The gate checking logic doesn't modify state that needs to be preserved across skips
         }
       }
 
@@ -407,7 +418,18 @@ export const useStore = create<AppStore>()((set, get) => ({
     // ── 音頻管理 ──
     const newNos = new Set(newAlarming.map((a) => a.stationno));
     for (const alarm of newAlarming) {
-      if (!prevAlarmingNos.has(alarm.stationno)) {
+      const wasPreviouslyAlarming = prevAlarmingNos.has(alarm.stationno);
+      const isNewAlarm = !wasPreviouslyAlarming;
+
+      // Check if this specific station is in cooldown due to recent dismissal
+      const stationDismissTs = alarmDismissTimestamps[alarm.stationno] ?? 0;
+      const timeSinceDismissal = now - Math.max(stationDismissTs, lastFullDismissTime);
+      const isInCooldown = timeSinceDismissal < ALARM_COOLDOWN_MS;
+
+      // Play sound if:
+      // 1. This is a new alarm (wasn't previously alarming), AND
+      // 2. We're not in cooldown (to prevent immediate re-alert after dismissal)
+      if (isNewAlarm && !isInCooldown) {
         playStationAlarm(alarm.stationno, DEFAULT_ALARM_AUDIO_URL);
       }
     }
@@ -523,9 +545,20 @@ export const useStore = create<AppStore>()((set, get) => ({
    *  每 10 分鐘由 usePumpData 觸發 */
   updateTide: (tideRecords) => {
     const state = get();
-    const { tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations } = state;
+    const ALARM_COOLDOWN_MS = 10 * 60 * 1000; // 10 分鐘（與 Java 端同步）
+    const now = Date.now();
+    const { tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations,
+            alarmDismissTimestamps, lastFullDismissTime } = state;
     const newDirections: Record<string, TideDirection> = {};
     const tideReasons: StationAlarmInfo[] = [];
+
+    // 寬限期：剛關閉警報後允許檢查狀態（用於UI更新），但防止頻繁檢查觸發警報
+    const GRACE_PERIOD_MS = 30 * 1000; // 30秒寬限期
+    const timeSinceDismissal = now - Math.max(
+      Object.values(alarmDismissTimestamps).reduce((max, val) => Math.max(max, val), 0),
+      lastFullDismissTime
+    );
+    const recentlyDismissed = timeSinceDismissal < GRACE_PERIOD_MS;
 
     /** 用指定站號的 level_out 做 5 筆 pairwise 多數決 */
     const detectTide = (records: TideRecord[] | undefined, stationNo: string): TideDirection => {

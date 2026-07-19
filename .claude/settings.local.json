@@ -14,7 +14,11 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(npm run *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git tag *)",
+      "Bash(grep -E \"\\\\.md$\")"
     ]
   }
 }
