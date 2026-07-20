@@ -11,7 +11,6 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const fetchError = useStore((s) => s.fetchError);
   const setPage = useStore((s) => s.setPage);
   const dismissAllAlarms = useStore((s) => s.dismissAllAlarms);
-  const isAlarming = useStore((s) => s.isAlarming);
   const stationData = useStore((s) => s.stationData);
   const monitoringEnabled = useStore((s) => s.monitoringEnabled);
   const setMonitoringEnabled = useStore((s) => s.setMonitoringEnabled);
@@ -56,11 +55,9 @@ export default function Header({ onRefresh, isLoading }: Props) {
               </span>
             </label>
             {/* 警報確認按鈕 */}
-            {isAlarming && (
-              <button onClick={dismissAllAlarms} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 dark:bg-red-800 border border-red-500 dark:border-red-600 rounded-lg hover:bg-red-700 dark:hover:bg-red-700 active:scale-95 transition-all">
-                ⚠ 警報確認
-              </button>
-            )}
+            <button onClick={dismissAllAlarms} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 dark:bg-red-800 border border-red-500 dark:border-red-600 rounded-lg hover:bg-red-700 dark:hover:bg-red-700 active:scale-95 transition-all">
+              ⚠ 警報確認
+            </button>
           </div>
         </div>
 
