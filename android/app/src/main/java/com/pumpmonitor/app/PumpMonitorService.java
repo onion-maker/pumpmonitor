@@ -88,8 +88,6 @@ public class PumpMonitorService extends Service {
     private String lastAlarmMessage = "";
     private long alarmDismissedMs = 0;  // 使用者最後一次按確認的時間戳
     private long lastSilentNotificationDuringCooldown = 0; // for throttling silent notifications during cooldown
-    private long lastSilentNotificationDuringCooldown = 0; // for throttling silent notifications during cooldown
-    private static final long ALARM_COOLDOWN_MS = 10 * 60 * 1000;  // 冷卻 10 分鐘
     private MediaPlayer mediaPlayer;
     private PowerManager.WakeLock wakeLock;
 
@@ -549,18 +547,9 @@ public class PumpMonitorService extends Service {
                     // 同一條警報：冷卻期內只更新通知（不響音），冷卻期外才恢復響音
                     boolean inCooldown = (System.currentTimeMillis() - alarmDismissedMs) < ALARM_COOLDOWN_MS;
                     if (inCooldown) {
-                        // 只更新通知，不響音 → 但加入節流：每 5 分鐘最多發送一次靜音通知
-                        long now = System.currentTimeMillis();
-                        if (now - lastSilentNotificationDuringCooldown > 5 * 60 * 1000) {
-                            sendSilentNotification(alarmCount + " 個站點觸發警報", msg);
-                            lastSilentNotificationDuringCooldown = now;
-                        }
                         // 只更新通知，不響音
                         sendSilentNotification(alarmCount + " 個站點觸發警報", msg);
                     } else {
-                        // 冷卻結束，恢復正常警報
-                        sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
-                        lastSilentNotificationDuringCooldown = 0; // 重置計時器（可選）
                         // 冷卻結束，恢復正常警報
                         sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
                     }
