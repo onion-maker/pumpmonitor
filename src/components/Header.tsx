@@ -30,6 +30,16 @@ export default function Header({ onRefresh, isLoading }: Props) {
   // 連線狀態：有資料且無錯誤 = OK
   const isConnected = stationData.length > 0 && !fetchError;
 
+  // 資料新鮮度檢查：超過 60 分鐘顯示黃色警告
+  const [dataStale, setDataStale] = useState(false);
+  useEffect(() => {
+    if (!lastUpdateTime) return;
+    const lastTs = new Date(lastUpdateTime).getTime();
+    const nowTs = Date.now();
+    const diffMin = (nowTs - lastTs) / 1000 / 60;
+    setDataStale(diffMin > 60);
+  }, [lastUpdateTime]);
+
   return (
     <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700" style={{ paddingTop: 'var(--sat)' }}>
       <div className="max-w-7xl mx-auto px-4 py-3">
@@ -54,6 +64,12 @@ export default function Header({ onRefresh, isLoading }: Props) {
                 {monitoringEnabled ? '監控中' : '已暫停'}
               </span>
             </label>
+            {/* 資料新鮮度警告 */}
+            {dataStale && (
+              <span className="text-xs text-orange-600 dark:text-orange-400 ml-2" title="資料超過 60 分鐘，建議重新整理">
+                ⚠
+              </span>
+            )}
             {/* 警報確認按鈕 */}
             <button onClick={dismissAllAlarms} className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 dark:bg-red-800 border border-red-500 dark:border-red-600 rounded-lg hover:bg-red-700 dark:hover:bg-red-700 active:scale-95 transition-all">
               ⚠ 警報確認
@@ -63,7 +79,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
 
         {/* 第二行：系統時間 + 連線狀態 + 最後更新 + 設定/重整按鈕（靠右） */}
         <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 flex-1 flex-wrap">
+          <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500 flex-1 flex-wrap">
             {/* 系統時間 */}
             <span className="whitespace-nowrap">🕐 {clock}</span>
 
