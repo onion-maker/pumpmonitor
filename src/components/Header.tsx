@@ -10,7 +10,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const lastUpdateTime = useStore((s) => s.lastUpdateTime);
   const fetchError = useStore((s) => s.fetchError);
   const setPage = useStore((s) => s.setPage);
-  const simulateAlarm = useStore((s) => s.simulateAlarm);
+  const dismissAllAlarms = useStore((s) => s.dismissAllAlarms);
   const isAlarming = useStore((s) => s.isAlarming);
   const stationData = useStore((s) => s.stationData);
   const monitoringEnabled = useStore((s) => s.monitoringEnabled);

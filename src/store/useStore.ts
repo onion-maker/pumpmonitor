@@ -545,20 +545,9 @@ export const useStore = create<AppStore>()((set, get) => ({
    *  每 10 分鐘由 usePumpData 觸發 */
   updateTide: (tideRecords) => {
     const state = get();
-    const ALARM_COOLDOWN_MS = 10 * 60 * 1000; // 10 分鐘（與 Java 端同步）
-    const now = Date.now();
-    const { tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations,
-            alarmDismissTimestamps, lastFullDismissTime } = state;
+    const { tideDirection: prevDirections, stationTideAlarmSwitches, selectedStations } = state;
     const newDirections: Record<string, TideDirection> = {};
     const tideReasons: StationAlarmInfo[] = [];
-
-    // 寬限期：剛關閉警報後允許檢查狀態（用於UI更新），但防止頻繁檢查觸發警報
-    const GRACE_PERIOD_MS = 30 * 1000; // 30秒寬限期
-    const timeSinceDismissal = now - Math.max(
-      Object.values(alarmDismissTimestamps).reduce((max, val) => Math.max(max, val), 0),
-      lastFullDismissTime
-    );
-    const recentlyDismissed = timeSinceDismissal < GRACE_PERIOD_MS;
 
     /** 用指定站號的 level_out 做 5 筆 pairwise 多數決 */
     const detectTide = (records: TideRecord[] | undefined, stationNo: string): TideDirection => {

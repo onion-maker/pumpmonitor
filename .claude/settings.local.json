@@ -19,7 +19,10 @@
       "Bash(git push *)",
       "Bash(git tag *)",
       "Bash(grep -E \"\\\\.md$\")",
-      "Bash(npm version *)"
+      "Bash(npm version *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(npx cap *)"
     ]
   }
 }
