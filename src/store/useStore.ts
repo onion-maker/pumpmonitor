@@ -482,7 +482,18 @@ export const useStore = create<AppStore>()((set, get) => ({
     dismissBackgroundAlarm();
   },
 
-  setMonitoringEnabled: (v) => set({ monitoringEnabled: v }),
+  setMonitoringEnabled: (v) => {
+    set({ monitoringEnabled: v });
+    // 立即同步至 Android 端
+    try {
+      const bridge = (window as any).AndroidPump;
+      if (bridge && typeof bridge.syncSettingsToNative === 'function') {
+        const settings = { monitoringEnabled: v };
+        bridge.syncSettingsToNative(JSON.stringify(settings));
+      }
+    } catch { /* ignore */ }
+  },
+
 
   setDarkMode: (darkMode) => set({ darkMode }),
 
