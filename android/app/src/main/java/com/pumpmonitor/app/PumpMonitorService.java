@@ -63,6 +63,25 @@ public class PumpMonitorService extends Service {
         put("108", new String[]{"door01", "door02", "door03"});
     }};
 
+    /** 各站點名稱對照表（通知顯示用） */
+    private static final Map<String, String> STATION_NAMES = new HashMap<String, String>() {{
+        put("101", "林森");
+        put("102", "長安");
+        put("103", "長春");
+        put("104", "民權");
+        put("105", "民生");
+        put("106", "錦州");
+        put("107", "圓山");
+        put("108", "中山");
+        put("109", "中山擴");
+        put("110", "建國");
+        put("111", "建國擴");
+        put("112", "新生");
+        put("113", "新生擴");
+        put("114", "特一左");
+        put("115", "特一右");
+    }};
+
     private static boolean running = false;
 
     private String lastAlarmMessage = "";
@@ -373,7 +392,7 @@ public class PumpMonitorService extends Service {
                     double levelIn = station.getDouble("level_in");
                     if (levelIn > alarmLevel) {
                         if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(stationNo).append(" 水位 ").append(String.format("%.2f", levelIn)).append("m");
+                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 水位 ").append(String.format("%.2f", levelIn)).append("m");
                         alarmCount++;
                     }
                 }
@@ -394,11 +413,11 @@ public class PumpMonitorService extends Service {
 
                     if (prev.equals("0") && nowRunning) {
                         if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(stationNo).append(" #").append(p).append(" 抽水機啟動");
+                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" #").append(p).append(" 抽水機啟動");
                         alarmCount++;
                     } else if (prevWasRunning && curr.equals("0")) {
                         if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(stationNo).append(" #").append(p).append(" 抽水機停止");
+                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" #").append(p).append(" 抽水機停止");
                         alarmCount++;
                     }
                 }
@@ -426,7 +445,7 @@ public class PumpMonitorService extends Service {
 
                     if (innerHighAlarm && levelIn > levelOut && allClosed) {
                         if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(stationNo).append(" 內高外低閘門全閉");
+                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 內高外低閘門全閉");
                         alarmCount++;
                     }
                 }
@@ -481,7 +500,7 @@ public class PumpMonitorService extends Service {
                             }
                             if (allClosed) {
                                 if (alarmCount > 0) alarmMsg.append("\n");
-                                alarmMsg.append(stationNo).append(" 退潮請開閘門");
+                                alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 退潮請開閘門");
                                 alarmCount++;
                             }
                         }
@@ -495,7 +514,7 @@ public class PumpMonitorService extends Service {
                             }
                             if (anyOpen) {
                                 if (alarmCount > 0) alarmMsg.append("\n");
-                                alarmMsg.append(stationNo).append(" 漲潮請關閘門");
+                                alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 漲潮請關閘門");
                                 alarmCount++;
                             }
                         }
