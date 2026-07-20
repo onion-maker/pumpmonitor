@@ -89,6 +89,7 @@ public class PumpMonitorService extends Service {
     private long alarmDismissedMs = 0;  // 使用者最後一次按確認的時間戳
     private long lastSilentNotificationDuringCooldown = 0; // for throttling silent notifications during cooldown
     private MediaPlayer mediaPlayer;
+    private static final long ALARM_COOLDOWN_MS = 10 * 60 * 1000;  // 冷卻 10 分鐘
     private PowerManager.WakeLock wakeLock;
 
     private static long getIntervalMs(Context context) {

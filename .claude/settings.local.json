@@ -23,7 +23,11 @@
       "Bash(git fetch *)",
       "Bash(git checkout *)",
       "Bash(npx cap *)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(./gradlew assembleRelease)",
+      "Bash(gh *)",
+      "Bash(env)",
+      "Bash(./gradlew assembleDebug)"
     ]
   }
 }
