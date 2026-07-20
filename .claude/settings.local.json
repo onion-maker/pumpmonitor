@@ -22,7 +22,8 @@
       "Bash(npm version *)",
       "Bash(git fetch *)",
       "Bash(git checkout *)",
-      "Bash(npx cap *)"
+      "Bash(npx cap *)",
+      "Bash(git reset *)"
     ]
   }
 }
