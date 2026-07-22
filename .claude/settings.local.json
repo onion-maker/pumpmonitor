@@ -27,7 +27,16 @@
       "Bash(./gradlew assembleRelease)",
       "Bash(gh *)",
       "Bash(env)",
-      "Bash(./gradlew assembleDebug)"
+      "Bash(./gradlew assembleDebug)",
+      "Bash(node /tmp/fix_import.js)",
+      "Bash(node /tmp/fix_all.js)",
+      "Bash(node /tmp/transform.js)",
+      "Bash(grep *)",
+      "Bash(node /tmp/fix_imports.js)",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(node *)",
+      "Bash(awk 'NR>=7 && NR<=10' src/store/useStore.ts)"
     ]
   }
 }

@@ -300,6 +300,35 @@ public class MainActivity extends BridgeActivity {
                 return "0.0.0";
             }
         }
+
+        // ── 操作紀錄橋接 ──
+
+        /** 取得操作紀錄 */
+        @JavascriptInterface
+        public String getOperationLogs() {
+            try {
+                JSONObject result = new JSONObject();
+                org.json.JSONArray pumpLogs = PumpMonitorService.getPumpOperationLogs(MainActivity.this);
+                result.put("pumpLog", pumpLogs);
+                result.put("gateLog", PumpMonitorService.getGateOperationLogs(MainActivity.this));
+                return result.toString();
+            } catch (Exception e) {
+                Log.e(TAG, "getOperationLogs 失敗", e);
+                return "{}";
+            }
+        }
+
+        /** 清除操作紀錄 */
+        @JavascriptInterface
+        public void clearLogs() {
+            PumpMonitorService.clearOperationLogs(MainActivity.this);
+        }
+
+        /** 取得設備資訊 */
+        @JavascriptInterface
+        public String getDeviceInfo() {
+            return PumpMonitorService.getDeviceInfo(MainActivity.this).toString();
+        }
     }
 
     /** Android 13+ 通知權限請求 */

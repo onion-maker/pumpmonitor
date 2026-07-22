@@ -12,6 +12,9 @@ interface Bridge {
   isServiceRunning: () => boolean;
   syncSettings: (json: string) => void;
   dismissAlarm: () => void;
+  getOperationLogs: () => string;
+  clearLogs: () => void;
+  getDeviceInfo: () => string;
 }
 
 /** 取得 Android 原生橋接物件（不存在時回傳 null） */
@@ -92,5 +95,82 @@ export function dismissBackgroundAlarm(): void {
     } catch (err) {
       console.warn('Failed to dismiss background alarm:', err);
     }
+  }
+}
+
+/** 取得操作紀錄 */
+
+export interface OperationLogs {
+  pumpLog: Array<{ timestamp: number; stationNo: string; pumpId: number; action: 'start' | 'stop' }>;
+  gateLog: Array<{ timestamp: number; stationNo: string; gateId: string; action: 'open' | 'close' }>;
+}
+
+export function getOperationLogs(): OperationLogs {
+  const bridge = getBridge();
+  if (!bridge) return { pumpLog: [], gateLog: [] };
+
+  try {
+    const result = bridge.getOperationLogs();
+    return JSON.parse(result);
+  } catch (err) {
+    console.warn('Failed to get operation logs:', err);
+    return { pumpLog: [], gateLog: [] };
+  }
+}
+
+/** 清除操作紀錄 */
+export function clearOperationLogs(): void {
+  const bridge = getBridge();
+  if (!bridge) return;
+
+  try {
+    bridge.clearLogs();
+  } catch (err) {
+    console.warn('Failed to clear operation logs:', err);
+  }
+}
+
+/**
+ * 取得設備資訊
+ */
+export interface DeviceInfo {
+  model: string;
+  manufacturer: string;
+  device: string;
+  sdkInt: number;
+  release: string;
+  versionName: string;
+  isEmulator: boolean;
+  error?: string;
+}
+
+export function getDeviceInfo(): DeviceInfo {
+  const bridge = getBridge();
+  if (!bridge) {
+    return {
+      model: 'Unknown',
+      manufacturer: 'Unknown',
+      device: 'Unknown',
+      sdkInt: 0,
+      release: 'Unknown',
+      versionName: '0.0.0',
+      isEmulator: false
+    };
+  }
+
+  try {
+    const result = bridge.getDeviceInfo();
+    return JSON.parse(result);
+  } catch (err) {
+    console.warn('Failed to get device info:', err);
+    return {
+      model: 'Unknown',
+      manufacturer: 'Unknown',
+      device: 'Unknown',
+      sdkInt: 0,
+      release: 'Unknown',
+      versionName: '0.0.0',
+      isEmulator: false
+    };
   }
 }

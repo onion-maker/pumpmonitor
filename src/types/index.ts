@@ -110,3 +110,20 @@ export type TideDirection = 'rising' | 'falling' | 'slack';
 export interface TideAlarmSwitch {
   tideAlarm: boolean;
 }
+// ── 操作紀錄型別（T15-T16） ──
+
+/** 抽水機操作紀錄 */
+export interface PumpOperationLogEntry {
+  timestamp: number;              // epoch ms
+  stationNo: string;              // 站點編號
+  pumpId: number;                 // 抽水機編號 (1-16)
+  action: 'start' | 'stop';       // 動作類型
+}
+
+/** 閘門操作紀錄 */
+export interface GateOperationLogEntry {
+  timestamp: number;              // epoch ms
+  stationNo: string;              // 站點編號
+  gateId: string;                 // 閘門編號 ("door01"-"door16")
+  action: 'open' | 'close';       // 動作類型
+}

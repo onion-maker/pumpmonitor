@@ -150,6 +150,92 @@ public class PumpMonitorService extends Service {
         }
     }
 
+    // 存儲操作紀錄的 key
+    private static final String PUMP_LOGS_KEY = "pump_operation_logs";
+    private static final String GATE_LOGS_KEY = "gate_operation_logs";
+
+    /** 取得抽水機操作紀錄 */
+    public static JSONArray getPumpOperationLogs(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(PUMP_LOGS_KEY, "[]");
+        try {
+            return new JSONArray(json);
+        } catch (JSONException e) {
+            return new JSONArray();
+        }
+    }
+
+    /** 取得閘門操作紀錄 */
+    public static JSONObject getGateOperationLogs(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(GATE_LOGS_KEY, "[]");
+        try {
+            return new JSONObject(json);
+        } catch (JSONException e) {
+            return new JSONObject();
+        }
+    }
+
+    /** 清除操作紀錄 */
+    public static void clearOperationLogs(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(PUMP_LOGS_KEY, "[]").apply();
+        prefs.edit().putString(GATE_LOGS_KEY, "[]").apply();
+    }
+
+    /** 取得設備資訊 */
+    public static JSONObject getDeviceInfo(Context context) {
+        JSONObject info = new JSONObject();
+        try {
+            info.put("model", android.os.Build.MODEL);
+            info.put("manufacturer", android.os.Build.MANUFACTURER);
+            info.put("device", android.os.Build.DEVICE);
+            info.put("sdkInt", android.os.Build.VERSION.SDK_INT);
+            info.put("release", android.os.Build.VERSION.RELEASE);
+            info.put("versionName", context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName);
+            info.put("isEmulator", android.os.Build.FINGERPRINT.startsWith("generic"));
+        } catch (Exception e) {
+            info.put("error", e.getMessage());
+        }
+        return info;
+    }
+
+    /** 記錄抽水機操作 */
+    public static void logPumpOperation(Context context, String stationNo, int pumpId, String action) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            String existing = prefs.getString(PUMP_LOGS_KEY, "[]");
+            JSONArray arr = new JSONArray(existing);
+            JSONObject entry = new JSONObject();
+            entry.put("timestamp", System.currentTimeMillis());
+            entry.put("stationNo", stationNo);
+            entry.put("pumpId", pumpId);
+            entry.put("action", action);
+            arr.put(entry);
+            prefs.edit().putString(PUMP_LOGS_KEY, arr.toString()).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "logPumpOperation 失敗", e);
+        }
+    }
+
+    /** 記錄閘門操作 */
+    public static void logGateOperation(Context context, String stationNo, String gateId, String action) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            String existing = prefs.getString(GATE_LOGS_KEY, "[]");
+            JSONArray arr = new JSONArray(existing);
+            JSONObject entry = new JSONObject();
+            entry.put("timestamp", System.currentTimeMillis());
+            entry.put("stationNo", stationNo);
+            entry.put("gateId", gateId);
+            entry.put("action", action);
+            arr.put(entry);
+            prefs.edit().putString(GATE_LOGS_KEY, arr.toString()).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "logGateOperation 失敗", e);
+        }
+    }
+
     private static void cancelAlarms(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
