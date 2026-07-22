@@ -22,6 +22,7 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -195,7 +196,11 @@ public class PumpMonitorService extends Service {
             info.put("versionName", context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName);
             info.put("isEmulator", android.os.Build.FINGERPRINT.startsWith("generic"));
         } catch (Exception e) {
-            info.put("error", e.getMessage());
+            try {
+                info.put("error", e.getMessage());
+            } catch (JSONException ex) {
+                // ignore
+            }
         }
         return info;
     }
