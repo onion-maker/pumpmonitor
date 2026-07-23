@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import StationSelector from '../components/StationSelector';
+import OperationLogs from '../components/OperationLogs';
 import { PUMP_STATUS_LABEL, DEFAULT_BACKGROUND_INTERVAL_SEC } from '../config/stations';
 
 interface Props {
@@ -234,6 +235,9 @@ export default function SettingsPage({ onLogout }: Props) {
         </div>
 
         <hr className="border-gray-200 my-6" />
+
+        {/* 操作紀錄 */}
+        <OperationLogs />
 
         {/* 抽水機狀態顏色對照表 */}
         <div className="mb-6">

@@ -313,3 +313,49 @@ export async function fetchTideRecords(): Promise<Record<string, TideRecord[]>> 
 
   return out;
 }
+/**
+ * 取得單一站點近 2 小時的水位歷史紀錄
+ * 供圖表顯示使用
+ */
+export async function fetchWaterLevelHistory(
+  stationNo: string,
+  hours: number = 2,
+): Promise<TideRecord | null> {
+  const now = new Date();
+  const sEnd = new Date(now.getTime() + 60 * 60 * 1000); // now + 1hr
+  const sBgn = new Date(sEnd.getTime() - hours * 60 * 60 * 1000); // sEnd - hours
+
+  const fmt = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
+  const sBgnDate = fmt(sBgn);
+  const sEndDate = fmt(sEnd);
+
+  const primary = await fetchRawTide(TIDE_API_URL, sBgnDate, sEndDate, stationNo);
+  const backup = await fetchRawTide(TIDE_API_URL_BACKUP, sBgnDate, sEndDate, stationNo);
+
+  // 合併取最新
+  const map = new Map<string, TideRecord>();
+  const addRecords = (list: RawStationData[] | null) => {
+    if (!list) return;
+    for (const r of list) {
+      const key = r.rectime;
+      if (!map.has(key) || r.rectime > (map.get(key)!.rectime)) {
+        map.set(key, {
+          rectime: r.rectime,
+          level_in: r.level_in,
+          level_out: r.level_out,
+          doors: {} as Record<string, string | null>,
+        });
+      }
+    }
+  };
+
+  addRecords(primary);
+  addRecords(backup);
+
+  const records = Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
+  return records.length > 0 ? records[records.length - 1] : null;
+}

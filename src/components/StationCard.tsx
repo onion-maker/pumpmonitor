@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import { DEFAULT_ALARM_LEVEL } from '../config/stations';
 import { TIDE_STATIONS } from '../config/stations';
 import WaterLevelBar from './WaterLevelBar';
+import WaterLevelChart from './WaterLevelChart';
 import PumpGrid from './PumpGrid';
 import DoorGrid from './DoorGrid';
 
@@ -244,6 +245,13 @@ export default function StationCard({ station }: Props) {
         alarmLevel={alarmLevel}
         isAlert={false}
         showThreshold={false}
+      />
+
+      {/* 水位曲線圖 */}
+      <WaterLevelChart
+        level_in={station.level_in}
+        level_out={station.level_out}
+        alarmLevel={alarmLevel}
       />
 
       {/* 抽水機 */}

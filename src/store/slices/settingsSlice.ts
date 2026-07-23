@@ -17,7 +17,8 @@ export interface SettingsSlice {
   stationTideAlarmSwitches: Record<string, TideAlarmSwitch>;
   monitoringEnabled: boolean;
   darkMode: boolean;
-
+  wakeLockMode: 'low' | 'normal';
+  setWakeLockMode: (mode: 'low' | 'normal') => void;
   setSelectedStations: (ids: string[]) => void;
   setStationOrder: (order: string[]) => void;
   setStationAlarmLevel: (stationno: string, level: number) => void;
@@ -42,6 +43,7 @@ export const createSettingsSlice: StateCreator<AppStore, [], [], SettingsSlice> 
   stationTideAlarmSwitches: {},
   monitoringEnabled: true,
   darkMode: false,
+  wakeLockMode: 'low',
 
   setSelectedStations: (ids) => set({ selectedStations: ids }),
   setStationOrder: (order) => set({ stationOrder: order }),
@@ -80,4 +82,5 @@ export const createSettingsSlice: StateCreator<AppStore, [], [], SettingsSlice> 
     } catch { /* ignore */ }
   },
   setDarkMode: (v) => set({ darkMode: v }),
+  setWakeLockMode: (mode) => set({ wakeLockMode: mode }),
 });

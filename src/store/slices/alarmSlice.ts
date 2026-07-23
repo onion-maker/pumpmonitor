@@ -28,6 +28,7 @@ export interface AlarmSlice {
   lastFullDismissTime: number;
   pumpOperationLog: PumpOperationLogEntry[];
   gateOperationLog: GateOperationLogEntry[];
+  notificationSuppressed: Record<string, boolean>;
 
   checkAlarm: (data: PumpStationData[]) => void;
   dismissStationAlarm: (stationno: string) => void;
@@ -36,6 +37,10 @@ export interface AlarmSlice {
   addPumpOperationLog: (entry: PumpOperationLogEntry) => void;
   addGateOperationLog: (entry: GateOperationLogEntry) => void;
   clearOperationLogs: () => void;
+  getPumpLogsByStation: (stationno: string) => PumpOperationLogEntry[];
+  getGateLogsByStation: (stationno: string) => GateOperationLogEntry[];
+  suppressNotification: (stationno: string) => void;
+  resolveNotification: (stationno: string) => void;
 }
 
 function buildPumpMap(pumps: { id: number; status: PumpStatus }[]): PumpStatusMap {
@@ -65,6 +70,7 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
   lastFullDismissTime: 0,
   pumpOperationLog: [],
   gateOperationLog: [],
+  notificationSuppressed: {},
 
   checkAlarm: (data) => {
     const state = get();
@@ -340,4 +346,30 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
 
   clearOperationLogs: () =>
     set({ pumpOperationLog: [], gateOperationLog: [] }),
+
+  /** 取得指定站點的抽水機操作紀錄（最後 N 筆） */
+  getPumpLogsByStation: (stationno) => {
+    const state = get();
+    return state.pumpOperationLog.filter(log => log.stationNo === stationno).slice(-100);
+  },
+
+  /** 取得指定站點的閘門操作紀錄（最後 N 筆） */
+  getGateLogsByStation: (stationno) => {
+    const state = get();
+    return state.gateOperationLog.filter(log => log.stationNo === stationno).slice(-10);
+  },
+
+  /** 抑制指定站點的通知（用於避免重複通知） */
+  suppressNotification: (stationno) => {
+    set((s) => ({
+      notificationSuppressed: { ...s.notificationSuppressed, [stationno]: true }
+    }));
+  },
+
+  /** 解除抑制指定站點的通知 */
+  resolveNotification: (stationno) => {
+    set((s) => ({
+      notificationSuppressed: { ...s.notificationSuppressed, [stationno]: false }
+    }));
+  },
 });
