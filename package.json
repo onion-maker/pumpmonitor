@@ -14,11 +14,12 @@
     "firebase": "^11.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "recharts": "^3.10.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0",
     "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^19.0.0",
