@@ -126,6 +126,7 @@ export default function StationCard({ station }: Props) {
 
   const alarmLevel = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
   const [editValue, setEditValue] = useState(alarmLevel.toFixed(2));
+  const [chartModalOpen, setChartModalOpen] = useState(false);
   const historyRecords = waterLevelHistories[station.stationno] ?? [];
 
   // 該站是否有警報
@@ -253,7 +254,36 @@ export default function StationCard({ station }: Props) {
       <WaterLevelChart
         records={historyRecords}
         alarmLevel={alarmLevel}
-      />
+        onChartClick={() => setChartModalOpen(true)}
+      />{/* Chart modal */}
+      {chartModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setChartModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-[90vw] max-w-2xl max-h-[80vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                {station.stationName} — 水位趨勢
+              </h3>
+              <button
+                onClick={() => setChartModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none px-1"
+              >
+                ✕
+              </button>
+            </div>
+            <WaterLevelChart
+              records={historyRecords}
+              alarmLevel={alarmLevel}
+              height={300}
+            />
+          </div>
+        </div>
+      )}
 
       {/* 抽水機 */}
       <PumpGrid pumps={station.pumps} />

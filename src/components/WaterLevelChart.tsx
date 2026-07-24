@@ -70,7 +70,7 @@ export default function WaterLevelChart({
     >
       <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">水位趨勢</div>
       <ResponsiveContainer width="100%" height={height}>
-        <LineChart data={chartData}>
+        <LineChart data={chartData} onClick={onChartClick}>
           <XAxis dataKey="time" fontSize={8} tick={{ fontSize: 8 }} interval="preserveStartEnd" />
           <YAxis
             fontSize={8}
@@ -81,13 +81,15 @@ export default function WaterLevelChart({
             axisLine={false}
           />
           <Tooltip
+            labelFormatter={(label) => `時間: ${label}`}
+            contentStyle={{ fontSize: '10px', padding: '4px' }}
             formatter={((value: any, name: any) => {
               const numValue = Number(value);
               if (isNaN(numValue)) return ['--', name];
-              return [`${numValue.toFixed(2)}m`, name === 'level_in' ? '內池' : '外池'];
+              // name 可能是 dataKey (level_in/level_out) 或 Line 的 name prop (內池/外池)
+              const label = name === 'level_in' || name === '內池' ? '內池' : '外池';
+              return [`${numValue.toFixed(2)}m`, label];
             }) as any}
-            labelFormatter={(label) => `時間: ${label}`}
-            contentStyle={{ fontSize: '10px', padding: '4px' }}
           />
           {alarmLevel !== undefined && (
             <ReferenceLine
