@@ -22,7 +22,7 @@ export default function App() {
   const sessionCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null);
   const lastSyncedRef = useRef('');
-  const { refresh, refreshLight } = usePumpData();
+  const { refreshLight } = usePumpData();
 
   /** 被踢出處理 */
   const handleKickedOut = useCallback(async (reason?: string) => {
