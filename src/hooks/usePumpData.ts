@@ -29,6 +29,20 @@ export function usePumpData() {
   // ref 存最近一次 fetch 歷史水位的時間
   const lastHistoryFetchRef = useRef(0);
 
+  /** 輕量 refresh：只拉主 API + 警報判斷，不拉歷史水位和潮汐（回到前景用） */
+  const fetchDataLight = useCallback(async () => {
+    if (useStore.getState().page === 'settings') return;
+
+    try {
+      const data = await fetchAllStations();
+      if (!mountedRef.current) return;
+      setStationData(data);
+      checkAlarm(data);
+    } catch {
+      // 失敗則保持目前資料
+    }
+  }, [setStationData, checkAlarm]);
+
   const fetchData = useCallback(async () => {
     if (useStore.getState().page === 'settings') return;
 
@@ -124,5 +138,5 @@ export function usePumpData() {
     };
   }, [page]);
 
-  return { refresh: fetchData, isLoading, isInitialLoading };
+  return { refresh: fetchData, refreshLight: fetchDataLight, isLoading, isInitialLoading };
 }

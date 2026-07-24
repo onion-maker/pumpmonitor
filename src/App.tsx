@@ -22,7 +22,7 @@ export default function App() {
   const sessionCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null);
   const lastSyncedRef = useRef('');
-  const { refresh } = usePumpData();
+  const { refresh, refreshLight } = usePumpData();
 
   /** 被踢出處理 */
   const handleKickedOut = useCallback(async (reason?: string) => {
@@ -192,8 +192,8 @@ export default function App() {
         if (state.lastTideCheckTime !== 0) {
           useStore.setState({ lastTideCheckTime: 0 });
         }
-        // 立即觸發一次資料更新，確保UI能即時顯示警報狀態
-        refresh();
+        // 立即觸發一次輕量資料更新（只拉主 API，不拉歷史水位/潮汐），確保UI能即時顯示警報狀態
+        refreshLight();
         ensureService();
       }
     };
