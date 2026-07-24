@@ -122,9 +122,11 @@ export default function StationCard({ station }: Props) {
   const alarmingStations = useStore((s) => s.alarmingStations);
   const dismissStationAlarm = useStore((s) => s.dismissStationAlarm);
   const tideDirection = useStore((s) => s.tideDirection);
+  const waterLevelHistories = useStore((s) => s.waterLevelHistories);
 
   const alarmLevel = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
   const [editValue, setEditValue] = useState(alarmLevel.toFixed(2));
+  const historyRecords = waterLevelHistories[station.stationno] ?? [];
 
   // 該站是否有警報
   const stationAlarm = alarmingStations.find(
@@ -249,8 +251,7 @@ export default function StationCard({ station }: Props) {
 
       {/* 水位曲線圖 */}
       <WaterLevelChart
-        level_in={station.level_in}
-        level_out={station.level_out}
+        records={historyRecords}
         alarmLevel={alarmLevel}
       />
 

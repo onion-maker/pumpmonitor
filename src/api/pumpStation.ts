@@ -314,13 +314,13 @@ export async function fetchTideRecords(): Promise<Record<string, TideRecord[]>> 
   return out;
 }
 /**
- * 取得單一站點近 2 小時的水位歷史紀錄
+ * 取得單一站點近 N 小時的水位歷史紀錄（陣列）
  * 供圖表顯示使用
  */
 export async function fetchWaterLevelHistory(
   stationNo: string,
   hours: number = 2,
-): Promise<TideRecord | null> {
+): Promise<TideRecord[]> {
   const now = new Date();
   const sEnd = new Date(now.getTime() + 60 * 60 * 1000); // now + 1hr
   const sBgn = new Date(sEnd.getTime() - hours * 60 * 60 * 1000); // sEnd - hours
@@ -356,6 +356,5 @@ export async function fetchWaterLevelHistory(
   addRecords(primary);
   addRecords(backup);
 
-  const records = Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
-  return records.length > 0 ? records[records.length - 1] : null;
+  return Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
 }

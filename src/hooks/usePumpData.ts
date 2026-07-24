@@ -1,13 +1,16 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store/useStore';
-import { fetchAllStations, fetchTideRecords } from '../api/pumpStation';
+import { fetchAllStations, fetchTideRecords, fetchWaterLevelHistory } from '../api/pumpStation';
+import type { TideRecord } from '../api/pumpStation';
 import { POLL_INTERVAL_MS } from '../config/stations';
 
 const TIDE_CHECK_INTERVAL_MS = 10 * 60 * 1000; // 10 分鐘
+const HISTORY_FETCH_INTERVAL_MS = 5 * 60 * 1000; // 每 5 分鐘更新一次歷史水位
 
 export function usePumpData() {
   const page = useStore((s) => s.page);
   const setStationData = useStore((s) => s.setStationData);
+  const setWaterLevelHistories = useStore((s) => s.setWaterLevelHistories);
   const setLoading = useStore((s) => s.setLoading);
   const setFetchError = useStore((s) => s.setFetchError);
   const setInitialLoading = useStore((s) => s.setInitialLoading);
@@ -23,6 +26,9 @@ export function usePumpData() {
   const monitoringEnabledRef = useRef(monitoringEnabled);
   monitoringEnabledRef.current = monitoringEnabled;
 
+  // ref 存最近一次 fetch 歷史水位的時間
+  const lastHistoryFetchRef = useRef(0);
+
   const fetchData = useCallback(async () => {
     if (useStore.getState().page === 'settings') return;
 
@@ -31,6 +37,29 @@ export function usePumpData() {
       const data = await fetchAllStations();
       if (!mountedRef.current) return;
       setStationData(data);
+
+      // 歷史水位（每 5 分鐘更新一次，所有站平行 fetch）
+      if (Date.now() - lastHistoryFetchRef.current >= HISTORY_FETCH_INTERVAL_MS) {
+        lastHistoryFetchRef.current = Date.now();
+        try {
+          const stationNos = data.map((s) => s.stationno);
+          const results = await Promise.allSettled(
+            stationNos.map((no) => fetchWaterLevelHistory(no, 2)),
+          );
+          if (mountedRef.current) {
+            const histories: Record<string, TideRecord[]> = {};
+            stationNos.forEach((no, i) => {
+              const r = results[i];
+              if (r.status === 'fulfilled' && r.value.length > 0) {
+                histories[no] = r.value;
+              }
+            });
+            setWaterLevelHistories(histories);
+          }
+        } catch {
+          // 歷史水位 API 失敗則跳過本次
+        }
+      }
 
       // 潮汐檢查（每 10 分鐘用 GetAutoPumpWaterMins API 判斷）
       const state = useStore.getState();
@@ -54,7 +83,7 @@ export function usePumpData() {
         setInitialLoading(false);
       }
     }
-  }, [setStationData, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
+  }, [setStationData, setWaterLevelHistories, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
 
   // ref 存最新 fetchData，避免 effect 因 fetchData reference 改變而 rebuild
   const fetchDataRef = useRef(fetchData);
