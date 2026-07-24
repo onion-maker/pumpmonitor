@@ -48,6 +48,8 @@ useStore.subscribe((state) => {
       darkMode: state.darkMode,
       pumpOperationLog: state.pumpOperationLog,
       gateOperationLog: state.gateOperationLog,
+      previousPumpMap: state.previousPumpMap,
+      previousDoorMap: state.previousDoorMap,
     };
     try {
       localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));

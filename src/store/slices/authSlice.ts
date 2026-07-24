@@ -45,6 +45,8 @@ export const createAuthSlice: StateCreator<AppStore, [], [], AuthSlice> = (set, 
           darkMode: data.darkMode ?? false,
           pumpOperationLog: data.pumpOperationLog ?? [],
           gateOperationLog: data.gateOperationLog ?? [],
+          previousPumpMap: data.previousPumpMap ?? {},
+          previousDoorMap: data.previousDoorMap ?? {},
         });
       } else {
         set({ currentUid: uid });
@@ -70,6 +72,8 @@ export const createAuthSlice: StateCreator<AppStore, [], [], AuthSlice> = (set, 
       darkMode: s.darkMode,
       pumpOperationLog: s.pumpOperationLog,
       gateOperationLog: s.gateOperationLog,
+      previousPumpMap: s.previousPumpMap,
+      previousDoorMap: s.previousDoorMap,
     };
     try {
       localStorage.setItem(storageKey(s.currentUid), JSON.stringify(payload));

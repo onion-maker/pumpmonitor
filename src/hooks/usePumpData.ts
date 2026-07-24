@@ -99,15 +99,22 @@ export function usePumpData() {
     }
   }, [setStationData, setWaterLevelHistories, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
 
-  // ref 存最新 fetchData，避免 effect 因 fetchData reference 改變而 rebuild
+  // ref 存最新 fetchData/fetchDataLight，避免 effect 因 callback reference 改變而 rebuild
   const fetchDataRef = useRef(fetchData);
   fetchDataRef.current = fetchData;
+  const fetchDataLightRef = useRef(fetchDataLight);
+  fetchDataLightRef.current = fetchDataLight;
 
-  // 首次載入與 page 切換時 fetch
+  // 首次載入時用完整 fetch，從設定切回時用 light refresh（store 已有資料）
   useEffect(() => {
     mountedRef.current = true;
     if (page === 'main') {
-      fetchDataRef.current();
+      const alreadyLoaded = useStore.getState().stationData.length > 0;
+      if (alreadyLoaded) {
+        fetchDataLightRef.current();
+      } else {
+        fetchDataRef.current();
+      }
     }
     return () => {
       mountedRef.current = false;
