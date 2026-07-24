@@ -47,6 +47,13 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        const { initializeApp } = await import('firebase/app');
+        const firebaseConfig = (await import('./firebase/config')).default;
+        const isConfigured = firebaseConfig.apiKey !== 'YOUR_API_KEY';
+        if (isConfigured) {
+          initializeApp(firebaseConfig);
+        }
+
         const { getAuth, onAuthStateChanged } = await import('firebase/auth');
         const { getApp } = await import('firebase/app');
         const auth = getAuth(getApp());

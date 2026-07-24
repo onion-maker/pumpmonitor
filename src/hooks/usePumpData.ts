@@ -52,23 +52,28 @@ export function usePumpData() {
       if (!mountedRef.current) return;
       setStationData(data);
 
-      // 歷史水位（每 5 分鐘更新一次，所有站平行 fetch）
+      // 歷史水位（每 5 分鐘更新一次，只對已選取站點平行 fetch）
       if (Date.now() - lastHistoryFetchRef.current >= HISTORY_FETCH_INTERVAL_MS) {
         lastHistoryFetchRef.current = Date.now();
         try {
-          const stationNos = data.map((s) => s.stationno);
-          const results = await Promise.allSettled(
-            stationNos.map((no) => fetchWaterLevelHistory(no, 2)),
-          );
-          if (mountedRef.current) {
-            const histories: Record<string, TideRecord[]> = {};
-            stationNos.forEach((no, i) => {
+          const selected = useStore.getState().selectedStations;
+          const stationNos = data
+            .filter((s) => selected.includes(s.stationno))
+            .map((s) => s.stationno);
+          if (stationNos.length > 0) {
+            const results = await Promise.allSettled(
+              stationNos.map((no) => fetchWaterLevelHistory(no, 2)),
+            );
+            if (mountedRef.current) {
+              const histories: Record<string, TideRecord[]> = {};
+              stationNos.forEach((no, i) => {
               const r = results[i];
               if (r.status === 'fulfilled' && r.value.length > 0) {
                 histories[no] = r.value;
               }
             });
             setWaterLevelHistories(histories);
+          }
           }
         } catch {
           // 歷史水位 API 失敗則跳過本次

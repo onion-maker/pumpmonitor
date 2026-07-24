@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { PumpStatus } from '../types';
 
 interface PumpInfo {
@@ -16,7 +17,7 @@ const STATUS_CONFIG: Record<PumpStatus, { label: string; className: string }> = 
   '3': { label: '現場手動運轉', className: 'bg-orange-500 animate-pulse' },
 };
 
-export default function PumpGrid({ pumps }: Props) {
+const PumpGrid = memo(function PumpGrid({ pumps }: Props) {
   if (pumps.length === 0) {
     return (
       <div className="mb-3">
@@ -42,4 +43,6 @@ export default function PumpGrid({ pumps }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default PumpGrid;

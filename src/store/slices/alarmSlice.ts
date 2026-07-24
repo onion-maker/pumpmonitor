@@ -59,6 +59,8 @@ function buildDoorMap(doors: { id: number; status: string }[]): DoorStatusMap {
   return map;
 }
 
+const MAX_LOG_ENTRIES = 500;
+
 export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set, get) => ({
   alarmingStations: [],
   isAlarming: false,
@@ -339,10 +341,10 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
   },
 
   addPumpOperationLog: (entry) =>
-    set((s) => ({ pumpOperationLog: [...s.pumpOperationLog, entry] })),
+    set((s) => ({ pumpOperationLog: [...s.pumpOperationLog.slice(-(MAX_LOG_ENTRIES - 1)), entry] })),
 
   addGateOperationLog: (entry) =>
-    set((s) => ({ gateOperationLog: [...s.gateOperationLog, entry] })),
+    set((s) => ({ gateOperationLog: [...s.gateOperationLog.slice(-(MAX_LOG_ENTRIES - 1)), entry] })),
 
   clearOperationLogs: () =>
     set({ pumpOperationLog: [], gateOperationLog: [] }),

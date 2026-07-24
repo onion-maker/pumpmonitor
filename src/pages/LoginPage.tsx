@@ -1,43 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 import { createSession } from '../firebase/session';
-
-/** 檢查 Android 生物辨識是否可用 */
-async function checkBiometric(): Promise<boolean> {
-  try {
-    const bridge = (window as any).AndroidBiometric;
-    return bridge && typeof bridge.isAvailable === 'function'
-      ? bridge.isAvailable()
-      : false;
-  } catch {
-    return false;
-  }
-}
-
-/** 啟動 Android 生物辨識 */
-function authenticateBiometric(): Promise<'success' | 'failed' | 'error'> {
-  return new Promise((resolve) => {
-    const bridge = (window as any).AndroidBiometric;
-    if (!bridge || typeof bridge.authenticate !== 'function') {
-      resolve('error');
-      return;
-    }
-
-    (window as any).__biometricResult__ = (result: string) => {
-      (window as any).__biometricResult__ = undefined;
-      resolve(result as 'success' | 'failed' | 'error');
-    };
-
-    bridge.authenticate();
-
-    setTimeout(() => {
-      if ((window as any).__biometricResult__) {
-        (window as any).__biometricResult__ = undefined;
-        resolve('error');
-      }
-    }, 15000);
-  });
-}
+import { checkBiometric, authenticateBiometric, cleanupBiometric } from '../utils/biometric';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -55,6 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     checkBiometric().then(setBiometricAvailable);
+    return () => { cleanupBiometric(); };
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -99,6 +64,12 @@ export default function LoginPage() {
     try {
       const result = await authenticateBiometric();
       if (result === 'success') {
+        // 登出時保留了 currentUid，用儲存的 UID 復原設定
+        const uid = useStore.getState().currentUid;
+        if (uid) {
+          loadUserSettings(uid);
+          try { await createSession(uid); } catch { /* session 失敗不影響登入 */ }
+        }
         setIsLoggedIn(true);
       } else {
         setError('生物辨識驗證失敗');
@@ -108,7 +79,7 @@ export default function LoginPage() {
     } finally {
       setBiometricLoading(false);
     }
-  }, [setIsLoggedIn]);
+  }, [setIsLoggedIn, loadUserSettings]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">

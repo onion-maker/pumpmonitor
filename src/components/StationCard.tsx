@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import type { PumpStationData, AlarmReason, GateAlarmSwitches } from '../types';
 import { useStore } from '../store/useStore';
 import { DEFAULT_ALARM_LEVEL } from '../config/stations';
@@ -23,7 +23,7 @@ const REASON_ICONS: Record<string, string> = {
 };
 
 /** 單一警報原因 badge */
-function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
+const AlarmReasonBadge = memo(function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
   const icon = REASON_ICONS[reason.type] ?? '⚠';
   const colors: Record<string, string> = {
     water_level: 'bg-red-100 text-red-700 border-red-300',
@@ -42,10 +42,10 @@ function AlarmReasonBadge({ reason }: { reason: AlarmReason }) {
       {icon} {reason.detail}
     </span>
   );
-}
+});
 
 /** 閘門警報開關元件 */
-function GateAlarmToggle({ station }: Props) {
+const GateAlarmToggle = memo(function GateAlarmToggle({ station }: Props) {
   const stationGateAlarmSwitches = useStore((s) => s.stationGateAlarmSwitches);
   const setStationGateAlarmSwitch = useStore((s) => s.setStationGateAlarmSwitch);
   const stationTideAlarmSwitches = useStore((s) => s.stationTideAlarmSwitches);
@@ -114,7 +114,7 @@ function GateAlarmToggle({ station }: Props) {
       )}
     </div>
   );
-}
+});
 
 export default function StationCard({ station }: Props) {
   const stationAlarmLevels = useStore((s) => s.stationAlarmLevels);

@@ -16,15 +16,28 @@ export default function Header({ onRefresh, isLoading }: Props) {
   const setMonitoringEnabled = useStore((s) => s.setMonitoringEnabled);
   const [clock, setClock] = useState('');
 
-  // 系統時鐘（每秒更新）
+  // 系統時鐘（每秒更新，背景時暫停）
   useEffect(() => {
     const tick = () => {
       const now = new Date();
       setClock(now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     };
+    let id: ReturnType<typeof setInterval> | null = setInterval(tick, 1000);
     tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        tick();
+        id = setInterval(tick, 1000);
+      } else if (id) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (id) clearInterval(id);
+    };
   }, []);
 
   // 連線狀態：有資料且無錯誤 = OK
@@ -33,10 +46,8 @@ export default function Header({ onRefresh, isLoading }: Props) {
   // 資料新鮮度檢查：超過 60 分鐘顯示黃色警告
   const [dataStale, setDataStale] = useState(false);
   useEffect(() => {
-    if (!lastUpdateTime) return;
-    const lastTs = new Date(lastUpdateTime).getTime();
-    const nowTs = Date.now();
-    const diffMin = (nowTs - lastTs) / 1000 / 60;
+    if (lastUpdateTime == null) return;
+    const diffMin = (Date.now() - lastUpdateTime) / 1000 / 60;
     setDataStale(diffMin > 60);
   }, [lastUpdateTime]);
 
@@ -94,7 +105,7 @@ export default function Header({ onRefresh, isLoading }: Props) {
 
             {/* 最後更新時間 */}
             {lastUpdateTime && (
-              <span className="whitespace-nowrap">最後更新：{lastUpdateTime}</span>
+              <span className="whitespace-nowrap">最後更新：{new Date(lastUpdateTime).toLocaleString('zh-TW')}</span>
             )}
           </div>
 

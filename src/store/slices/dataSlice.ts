@@ -8,7 +8,8 @@ import type { TideRecord } from '../../api/pumpStation';
 
 export interface DataSlice {
   stationData: PumpStationData[];
-  lastUpdateTime: string | null;
+  /** 最後更新時間 epoch ms */
+  lastUpdateTime: number | null;
   isLoading: boolean;
   isInitialLoading: boolean;
   fetchError: string | null;
@@ -31,7 +32,7 @@ export const createDataSlice: StateCreator<AppStore, [], [], DataSlice> = (set) 
   setStationData: (data) =>
     set({
       stationData: data,
-      lastUpdateTime: new Date().toLocaleString('zh-TW'),
+      lastUpdateTime: Date.now(),
       isInitialLoading: false,
       fetchError: null,
     }),

@@ -46,7 +46,7 @@ export const POLL_INTERVAL_MS = 30000;
 export const DEFAULT_BACKGROUND_INTERVAL_SEC = 120;
 
 /** 預設警報音頻 URL（放在 public/ 目錄下） */
-export const DEFAULT_ALARM_AUDIO_URL = './freesound_community-security-alarm-63578.mp3';
+export const DEFAULT_ALARM_AUDIO_URL = './sounds/freesound_community-security-alarm-63578.mp3';
 
 /** 抽水機與閘門的欄位對應（用於動態取值） */
 export const PUMP_FIELDS = Array.from({ length: 16 }, (_, i) =>

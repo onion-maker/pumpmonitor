@@ -24,35 +24,59 @@ export const useStore = create<AppStore>()((...a) => ({
   ...createAlarmSlice(...a),
 }));
 
-// ── 自動儲存：監聽 store 變化，使用者設定變更時 debounce 存檔 ──
+// ── 自動儲存：監聽 store 變化，僅使用者設定變更時 debounce 存檔 ──
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let lastSavedSnapshot = '';
+const SAVE_KEYS = [
+  'selectedStations', 'stationOrder', 'stationAlarmLevels', 'stationAlarmAudios',
+  'biometricEnabled', 'backgroundIntervalSec', 'stationGateAlarmSwitches',
+  'stationTideAlarmSwitches', 'monitoringEnabled', 'darkMode',
+  'pumpOperationLog', 'gateOperationLog', 'previousPumpMap', 'previousDoorMap',
+] as const;
 
 function storageKey(uid: string) {
   return `pump-monitor-settings-${uid}`;
 }
 
 useStore.subscribe((state) => {
+  if (!state.currentUid) return;
+  // 只取需要 persist 的欄位做 lightweight diff，避免每次 stationData 更新都 trigger save
+  const partial: Record<string, unknown> = {};
+  for (const k of SAVE_KEYS) partial[k] = state[k as keyof typeof state];
+  const snap = JSON.stringify(partial);
+  if (snap === lastSavedSnapshot) return;
+  lastSavedSnapshot = snap;
+
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    if (!state.currentUid) return;
+    const s = useStore.getState();
+    if (!s.currentUid) return;
     const payload = {
-      selectedStations: state.selectedStations,
-      stationOrder: state.stationOrder,
-      stationAlarmLevels: state.stationAlarmLevels,
-      stationAlarmAudios: state.stationAlarmAudios,
-      biometricEnabled: state.biometricEnabled,
-      backgroundIntervalSec: state.backgroundIntervalSec,
-      stationGateAlarmSwitches: state.stationGateAlarmSwitches,
-      stationTideAlarmSwitches: state.stationTideAlarmSwitches,
-      monitoringEnabled: state.monitoringEnabled,
-      darkMode: state.darkMode,
-      pumpOperationLog: state.pumpOperationLog,
-      gateOperationLog: state.gateOperationLog,
-      previousPumpMap: state.previousPumpMap,
-      previousDoorMap: state.previousDoorMap,
+      selectedStations: s.selectedStations,
+      stationOrder: s.stationOrder,
+      stationAlarmLevels: s.stationAlarmLevels,
+      stationAlarmAudios: s.stationAlarmAudios,
+      biometricEnabled: s.biometricEnabled,
+      backgroundIntervalSec: s.backgroundIntervalSec,
+      stationGateAlarmSwitches: s.stationGateAlarmSwitches,
+      stationTideAlarmSwitches: s.stationTideAlarmSwitches,
+      monitoringEnabled: s.monitoringEnabled,
+      darkMode: s.darkMode,
+      pumpOperationLog: s.pumpOperationLog,
+      gateOperationLog: s.gateOperationLog,
+      previousPumpMap: s.previousPumpMap,
+      previousDoorMap: s.previousDoorMap,
     };
     try {
-      localStorage.setItem(storageKey(state.currentUid), JSON.stringify(payload));
+      const raw = JSON.stringify(payload);
+      // 安全閥：payload 超過 3MB 時，移除自訂音頻（base64 可能過大）以保護 localStorage 上限
+      if (raw.length > 3 * 1024 * 1024 && Object.keys(payload.stationAlarmAudios).length > 0) {
+        console.warn('[pumpmonitor] localStorage payload 超過 3MB，跳過自訂音頻儲存');
+        const slim = { ...payload, stationAlarmAudios: {} };
+        localStorage.setItem(storageKey(s.currentUid), JSON.stringify(slim));
+        return;
+      }
+      localStorage.setItem(storageKey(s.currentUid), raw);
     } catch { /* ignore */ }
   }, 500);
 });

@@ -136,16 +136,28 @@ public class PumpMonitorService extends Service {
         try {
             JSONObject json = new JSONObject(settingsJson);
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            prefs.edit()
-                .putString("stationAlarmLevels", json.optString("stationAlarmLevels", "{}"))
-                .putString("selectedStations", json.optString("selectedStations", "[]"))
-                .putInt("backgroundIntervalSec", json.optInt("backgroundIntervalSec", 120))
-                .putString("stationGateAlarmSwitches", json.optString("stationGateAlarmSwitches", "{}"))
-                .putString("stationTideAlarmSwitches", json.optString("stationTideAlarmSwitches", "{}"))
-                .putBoolean("monitoringEnabled", json.optBoolean("monitoringEnabled", true))
-                .apply();
-            int sec = json.optInt("backgroundIntervalSec", 120);
-            Log.d(TAG, "設定已同步至背景服務（間隔 " + sec + " 秒）");
+            SharedPreferences.Editor editor = prefs.edit();
+            // 結構化 JSON：直接取子物件再 toString 存為 SharedPreferences string
+            if (json.has("stationAlarmLevels"))
+                editor.putString("stationAlarmLevels", json.getJSONObject("stationAlarmLevels").toString());
+            if (json.has("selectedStations"))
+                editor.putString("selectedStations", json.getJSONArray("selectedStations").toString());
+            if (json.has("stationOrder"))
+                editor.putString("stationOrder", json.getJSONArray("stationOrder").toString());
+            if (json.has("backgroundIntervalSec"))
+                editor.putInt("backgroundIntervalSec", json.getInt("backgroundIntervalSec"));
+            if (json.has("stationGateAlarmSwitches"))
+                editor.putString("stationGateAlarmSwitches", json.getJSONObject("stationGateAlarmSwitches").toString());
+            if (json.has("stationTideAlarmSwitches"))
+                editor.putString("stationTideAlarmSwitches", json.getJSONObject("stationTideAlarmSwitches").toString());
+            if (json.has("monitoringEnabled"))
+                editor.putBoolean("monitoringEnabled", json.getBoolean("monitoringEnabled"));
+            if (json.has("alarmDismissTimestamps"))
+                editor.putString("alarmDismissTimestamps", json.getJSONObject("alarmDismissTimestamps").toString());
+            if (json.has("lastFullDismissTime"))
+                editor.putLong("lastFullDismissTime", json.getLong("lastFullDismissTime"));
+            editor.apply();
+            Log.d(TAG, "設定已同步至背景服務（間隔 " + json.optInt("backgroundIntervalSec", 120) + " 秒）");
         } catch (Exception e) {
             Log.e(TAG, "同步設定失敗", e);
         }

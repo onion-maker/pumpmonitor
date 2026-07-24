@@ -43,8 +43,8 @@ export const createAuthSlice: StateCreator<AppStore, [], [], AuthSlice> = (set, 
           stationTideAlarmSwitches: data.stationTideAlarmSwitches ?? {},
           monitoringEnabled: data.monitoringEnabled ?? true,
           darkMode: data.darkMode ?? false,
-          pumpOperationLog: data.pumpOperationLog ?? [],
-          gateOperationLog: data.gateOperationLog ?? [],
+          pumpOperationLog: (data.pumpOperationLog ?? []).slice(-500),
+          gateOperationLog: (data.gateOperationLog ?? []).slice(-500),
           previousPumpMap: data.previousPumpMap ?? {},
           previousDoorMap: data.previousDoorMap ?? {},
         });
@@ -81,6 +81,7 @@ export const createAuthSlice: StateCreator<AppStore, [], [], AuthSlice> = (set, 
   },
 
   clearUserSettings: () => {
-    set({ currentUid: null });
+    // 登出時保留 currentUid 和 biometricEnabled，讓下次指紋辨識可以直接復原使用者設定
+    set({});
   },
 });

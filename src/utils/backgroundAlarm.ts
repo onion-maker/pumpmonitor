@@ -71,17 +71,7 @@ export function syncSettingsToNative(params: {
   const bridge = getBridge();
   if (!bridge) return;
 
-  const payload = JSON.stringify({
-    selectedStations: JSON.stringify(params.selectedStations),
-    stationOrder: JSON.stringify(params.stationOrder),
-    stationAlarmLevels: JSON.stringify(params.stationAlarmLevels),
-    backgroundIntervalSec: params.backgroundIntervalSec,
-    stationGateAlarmSwitches: JSON.stringify(params.stationGateAlarmSwitches),
-    stationTideAlarmSwitches: JSON.stringify(params.stationTideAlarmSwitches),
-    monitoringEnabled: params.monitoringEnabled,
-    alarmDismissTimestamps: JSON.stringify(params.alarmDismissTimestamps),
-    lastFullDismissTime: params.lastFullDismissTime,
-  });
+  const payload = JSON.stringify(params);
 
   bridge.syncSettings(payload);
 }

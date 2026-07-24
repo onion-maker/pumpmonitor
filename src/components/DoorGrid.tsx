@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { DoorStatus } from '../types';
 
 interface DoorInfo {
@@ -15,7 +16,7 @@ const STATUS_CONFIG: Record<DoorStatus, { label: string; icon: string; className
   '2': { label: '半開', icon: '◐', className: 'bg-red-100 text-red-700 border-red-300' },
 };
 
-export default function DoorGrid({ doors }: Props) {
+const DoorGrid = memo(function DoorGrid({ doors }: Props) {
   if (doors.length === 0) {
     return (
       <div className="mb-1">
@@ -44,4 +45,6 @@ export default function DoorGrid({ doors }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default DoorGrid;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { calcLevelPercent } from '../utils/format';
 
 interface Props {
@@ -6,10 +6,10 @@ interface Props {
   value: number | null;
   alarmLevel: number;
   isAlert: boolean;
-  showThreshold?: boolean;  // 是否顯示警報標記線
+  showThreshold?: boolean;
 }
 
-export default function WaterLevelBar({ label, value, alarmLevel, isAlert, showThreshold = true }: Props) {
+const WaterLevelBar = memo(function WaterLevelBar({ label, value, alarmLevel, isAlert, showThreshold = true }: Props) {
   const pct = useMemo(() => calcLevelPercent(value, alarmLevel), [value, alarmLevel]);
 
   return (
@@ -21,14 +21,12 @@ export default function WaterLevelBar({ label, value, alarmLevel, isAlert, showT
         </span>
       </div>
       <div className="relative w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-        {/* 水位填充條 */}
         <div
           className={`h-full rounded-full transition-all duration-500 ${
             isAlert ? 'bg-red-500 animate-shake' : 'bg-blue-500'
           }`}
           style={{ width: `${pct}%` }}
         />
-        {/* 警報標記線（可選） */}
         {showThreshold && (
           <div
             className="absolute top-0 bottom-0 border-l-2 border-red-600 z-10"
@@ -36,7 +34,6 @@ export default function WaterLevelBar({ label, value, alarmLevel, isAlert, showT
           />
         )}
       </div>
-      {/* 圖例 */}
       <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-0.5">
         <span>0</span>
         {showThreshold && (
@@ -45,4 +42,6 @@ export default function WaterLevelBar({ label, value, alarmLevel, isAlert, showT
       </div>
     </div>
   );
-}
+});
+
+export default WaterLevelBar;
