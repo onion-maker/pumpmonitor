@@ -1,10 +1,10 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store/useStore';
-import { fetchAllStations, fetchTideRecords, fetchWaterLevelHistory } from '../api/pumpStation';
+import { fetchAllStations, fetchTideRecords, fetchWaterLevelHistory, fetchPumpHistoryForStations } from '../api/pumpStation';
 import type { TideRecord } from '../api/pumpStation';
 import { POLL_INTERVAL_MS } from '../config/stations';
 
-const TIDE_CHECK_INTERVAL_MS = 10 * 60 * 1000; // 10 分鐘
+const TIDE_CHECK_INTERVAL_MS = 90 * 1000; // 90 秒（原 10 分鐘過長，錯過漲潮變化）
 const HISTORY_FETCH_INTERVAL_MS = 5 * 60 * 1000; // 每 5 分鐘更新一次歷史水位
 
 export function usePumpData() {
@@ -15,6 +15,7 @@ export function usePumpData() {
   const setFetchError = useStore((s) => s.setFetchError);
   const setInitialLoading = useStore((s) => s.setInitialLoading);
   const checkAlarm = useStore((s) => s.checkAlarm);
+  const checkPumpHistoryAlarm = useStore((s) => s.checkPumpHistoryAlarm);
   const updateTide = useStore((s) => s.updateTide);
   const isLoading = useStore((s) => s.isLoading);
   const isInitialLoading = useStore((s) => s.isInitialLoading);
@@ -92,6 +93,19 @@ export function usePumpData() {
       }
 
       checkAlarm(data);
+
+      // 方案 B：用歷史 API 做 pump/door 逐對變化檢查（避免 30 秒 snapshot 漏報）
+      try {
+        const selected = useStore.getState().selectedStations;
+        if (selected.length > 0) {
+          const history = await fetchPumpHistoryForStations(selected, 2);
+          if (mountedRef.current && Object.keys(history).length > 0) {
+            checkPumpHistoryAlarm(data, history);
+          }
+        }
+      } catch {
+        // 歷史 API 失敗不影響主流程
+      }
     } catch (err) {
       if (!mountedRef.current) return;
       const msg = err instanceof Error ? err.message : '取得資料失敗';
@@ -102,7 +116,7 @@ export function usePumpData() {
         setInitialLoading(false);
       }
     }
-  }, [setStationData, setWaterLevelHistories, setLoading, setFetchError, checkAlarm, updateTide, setInitialLoading]);
+  }, [setStationData, setWaterLevelHistories, setLoading, setFetchError, checkAlarm, checkPumpHistoryAlarm, updateTide, setInitialLoading]);
 
   // ref 存最新 fetchData/fetchDataLight，避免 effect 因 callback reference 改變而 rebuild
   const fetchDataRef = useRef(fetchData);

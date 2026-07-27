@@ -106,9 +106,10 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
           }
         }
       } else if (newDir === 'rising') {
-        const cond1 = (pi2_lo === pi_lo && pi_lo === ni_lo);
-        const cond2 = (pi2_lo === pi_lo && ni_lo > pi_lo);
-        if (cond1 || cond2) {
+        // 漲潮：三筆中，最後兩筆的平均值 > 前兩筆的平均值 → 趨勢上升
+        const tailAvg = (pi_lo + ni_lo) / 2;
+        const headAvg = (pi2_lo + pi_lo) / 2;
+        if (tailAvg > headAvg) {
           const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
           const anyOpen = doorCols.some(d => newest.doors[d] === '2');
           if (anyOpen) {
@@ -122,11 +123,6 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       }
     }
 
-    // 合併潮汐警報到現有警報列表
-    const existingAlarms = currentAlarms.filter(a =>
-      !a.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate')
-    );
-
     // 保留本週期未重新產生的既有潮汐警報（使用者尚未確認則持續顯示）
     const currentTideNos = new Set(tideReasons.map(t => t.stationno));
     for (const existing of currentAlarms) {
@@ -136,8 +132,6 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       }
     }
 
-    const newAlarming = [...existingAlarms, ...tideReasons];
-
     // 播放新警報音
     const prevNos = new Set(currentAlarms.map(a => a.stationno));
     for (const alarm of tideReasons) {
@@ -146,11 +140,20 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       }
     }
 
-    set({
-      tideDirection: newDirections,
-      lastTideCheckTime: Date.now(),
-      alarmingStations: newAlarming,
-      isAlarming: newAlarming.length > 0,
+    set((s) => {
+      // 保留現有警報中的非潮汐警報（避免覆蓋 checkAlarm 產生的 pump/水位警報）
+      const nonTideAlarms = s.alarmingStations.filter(a =>
+        !a.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate')
+      );
+      const tideNos = new Set(tideReasons.map(t => t.stationno));
+      const merged = [...nonTideAlarms.filter(a => !tideNos.has(a.stationno))];
+      merged.push(...tideReasons);
+      return {
+        tideDirection: newDirections,
+        lastTideCheckTime: Date.now(),
+        alarmingStations: merged,
+        isAlarming: merged.length > 0,
+      };
     });
   },
 });

@@ -188,6 +188,8 @@ export interface TideRecord {
   level_out: number | null;
   /** 閘門狀態 (door01~door16)，key 為欄位名 */
   doors: Record<string, string | null>;
+  /** 抽水機狀態 (pumb01~pumb16)，key 為欄位名 */
+  pumps: Record<string, string | null>;
 }
 
 /** 潮汐 API 回傳格式 */
@@ -299,6 +301,12 @@ export async function fetchTideRecords(): Promise<Record<string, TideRecord[]>> 
                 return [f, (r as unknown as Record<string, string | null>)[f] ?? null];
               }),
             ),
+            pumps: Object.fromEntries(
+              Array.from({ length: 16 }, (_, j) => {
+                const f = `pumb${String(j + 1).padStart(2, '0')}`;
+                return [f, (r as unknown as Record<string, string | null>)[f] ?? null];
+              }),
+            ),
           });
         }
       }
@@ -348,6 +356,7 @@ export async function fetchWaterLevelHistory(
           level_in: r.level_in,
           level_out: r.level_out,
           doors: {} as Record<string, string | null>,
+          pumps: {} as Record<string, string | null>,
         });
       }
     }
@@ -357,4 +366,79 @@ export async function fetchWaterLevelHistory(
   addRecords(backup);
 
   return Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
+}
+
+/**
+ * 批次查詢所有選取站點過去 N 分鐘的完整歷史資料（含 pump + door）
+ * 用於替代 snapshot 比對，確保不遺漏 30 秒內發生的啟停變化
+ * 回傳格式：{ stationno: TideRecord[] }
+ */
+export async function fetchPumpHistoryForStations(
+  stationNos: string[],
+  windowMinutes: number = 2,
+): Promise<Record<string, TideRecord[]>> {
+  if (stationNos.length === 0) return {};
+
+  const now = new Date();
+  const sEnd = new Date(now.getTime() + 60 * 1000);
+  const sBgn = new Date(sEnd.getTime() - windowMinutes * 60 * 1000);
+
+  const fmt = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
+  const sBgnDate = fmt(sBgn);
+  const sEndDate = fmt(sEnd);
+
+  // 所有站點 × 雙 API 並行請求
+  const results = await Promise.all(
+    stationNos.flatMap((no) => [
+      fetchRawTide(TIDE_API_URL, sBgnDate, sEndDate, no),
+      fetchRawTide(TIDE_API_URL_BACKUP, sBgnDate, sEndDate, no),
+    ]),
+  );
+
+  const out: Record<string, TideRecord[]> = {};
+
+  for (let i = 0; i < stationNos.length; i++) {
+    const no = stationNos[i];
+    const primary = results[i * 2];
+    const backup = results[i * 2 + 1];
+
+    const map = new Map<string, TideRecord>();
+    const addRecords = (list: RawStationData[] | null) => {
+      if (!list) return;
+      for (const r of list) {
+        const key = r.rectime;
+        if (!map.has(key) || r.rectime > (map.get(key)!.rectime)) {
+          map.set(key, {
+            rectime: r.rectime,
+            level_in: r.level_in,
+            level_out: r.level_out,
+            doors: Object.fromEntries(
+              Array.from({ length: 16 }, (_, j) => {
+                const f = `door${String(j + 1).padStart(2, '0')}`;
+                return [f, (r as unknown as Record<string, string | null>)[f] ?? null];
+              }),
+            ),
+            pumps: Object.fromEntries(
+              Array.from({ length: 16 }, (_, j) => {
+                const f = `pumb${String(j + 1).padStart(2, '0')}`;
+                return [f, (r as unknown as Record<string, string | null>)[f] ?? null];
+              }),
+            ),
+          });
+        }
+      }
+    };
+
+    addRecords(primary);
+    addRecords(backup);
+
+    const records = Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
+    if (records.length > 0) out[no] = records;
+  }
+
+  return out;
 }

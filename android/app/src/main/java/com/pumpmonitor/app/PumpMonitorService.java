@@ -610,9 +610,10 @@ public class PumpMonitorService extends Service {
                             }
                         }
                     } else if (dir.equals("rising")) {
-                        boolean cond1 = (pi2_lo == pi_lo && pi_lo == ni_lo);
-                        boolean cond2 = (pi2_lo == pi_lo && ni_lo > pi_lo);
-                        if ((cond1 || cond2) && doorCols != null) {
+                        // 漲潮：只要最後三筆 level_out 的趨勢向上（尾均值 > 頭均值），就算漲潮關閉條件
+                        double tailAvg = (pi_lo + ni_lo) / 2.0;
+                        double headAvg = (pi2_lo + pi_lo) / 2.0;
+                        if (tailAvg > headAvg && doorCols != null) {
                             boolean anyOpen = false;
                             for (String d : doorCols) {
                                 if (newest.optString(d, "").equals("2")) { anyOpen = true; break; }

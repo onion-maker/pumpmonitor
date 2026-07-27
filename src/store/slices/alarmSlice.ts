@@ -13,6 +13,7 @@ import type {
   PumpOperationLogEntry,
   GateOperationLogEntry,
 } from '../../types';
+import type { TideRecord } from '../../api/pumpStation';
 import { DEFAULT_ALARM_LEVEL, DEFAULT_ALARM_AUDIO_URL, PUMP_STATUS_LABEL } from '../../config/stations';
 import { playStationAlarm, stopStationAlarm, stopAllAlarms } from '../../utils/audio';
 import { dismissBackgroundAlarm } from '../../utils/backgroundAlarm';
@@ -29,8 +30,14 @@ export interface AlarmSlice {
   pumpOperationLog: PumpOperationLogEntry[];
   gateOperationLog: GateOperationLogEntry[];
   notificationSuppressed: Record<string, boolean>;
+  /** 記錄已警報過的 pump 事件 (stationNo:pumpId:action → timestamp)，避免歷史 API 重複觸發 */
+  alarmedPumpEvents: Record<string, number>;
+  /** 記錄已警報過的 door 事件，避免歷史 API 重複觸發 */
+  alarmedDoorEvents: Record<string, number>;
 
   checkAlarm: (data: PumpStationData[]) => void;
+  /** 用歷史 API 做 pump/door 逐對變化檢查（取代 snapshot 比對） */
+  checkPumpHistoryAlarm: (data: PumpStationData[], history: Record<string, TideRecord[]>) => void;
   dismissStationAlarm: (stationno: string) => void;
   dismissAllAlarms: () => void;
   simulateAlarm: () => void;
@@ -73,6 +80,8 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
   pumpOperationLog: [],
   gateOperationLog: [],
   notificationSuppressed: {},
+  alarmedPumpEvents: {},
+  alarmedDoorEvents: {},
 
   checkAlarm: (data) => {
     const state = get();
@@ -309,6 +318,172 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
     dismissBackgroundAlarm();
   },
 
+  /** 用歷史 API (GetAutoPumpWaterMins) 做 pump/door 逐對變化檢查
+   *  解決 30 秒 snapshot 輪詢會遺漏中間狀態變化的問題 */
+  checkPumpHistoryAlarm: (data, history) => {
+    const state = get();
+    const now = Date.now();
+    const ALARM_COOLDOWN_MS = 10 * 60 * 1000;
+
+    if (!state.monitoringEnabled) return;
+    if (Object.keys(history).length === 0) return;
+
+    const { selectedStations, alarmDismissTimestamps, lastFullDismissTime,
+            pumpOperationLog, gateOperationLog, alarmingStations: currentAlarms,
+            alarmedPumpEvents, alarmedDoorEvents } = state;
+
+    const newPumpLog: PumpOperationLogEntry[] = [...pumpOperationLog];
+    const newGateLog: GateOperationLogEntry[] = [...gateOperationLog];
+    const newAlarmedPumps = { ...alarmedPumpEvents };
+    const newAlarmedDoor = { ...alarmedDoorEvents };
+
+    // 收集這次歷史檢查產生的新警報原因
+    const historyReasons: Record<string, AlarmReason[]> = {};
+
+    for (const stationNo of Object.keys(history)) {
+      if (!selectedStations.includes(stationNo)) continue;
+
+      const stationDismissTs = alarmDismissTimestamps[stationNo] ?? 0;
+      const inCooldown = (now - Math.max(stationDismissTs, lastFullDismissTime)) < ALARM_COOLDOWN_MS;
+      if (inCooldown) continue;
+
+      const records = history[stationNo];
+      if (records.length < 2) continue;
+
+      // 對每對相鄰 record 做 pump/door 狀態比較
+      for (let i = 1; i < records.length; i++) {
+        const prev = records[i - 1];
+        const curr = records[i];
+
+        // ── Pump 變化 ──
+        for (let pId = 1; pId <= 16; pId++) {
+          const pKey = `pumb${String(pId).padStart(2, '0')}`;
+          const prevV = prev.pumps[pKey];
+          const currV = curr.pumps[pKey];
+          if (!currV || !prevV) continue;
+
+          const prevRunning = prevV === '1' || prevV === '2' || prevV === '3';
+          const nowRunning = currV === '1' || currV === '2' || currV === '3';
+
+          if (prevV === '0' && nowRunning) {
+            const dedupKey = `${stationNo}:${pId}:start`;
+            // 去重：同一事件已經在 pumpOperationLog 或 alarmedPumpEvents 中就不重複
+            const alreadyLogged = newPumpLog.some(
+              l => l.stationNo === stationNo && l.pumpId === pId && l.action === 'start'
+            );
+            const alreadyAlarmed = newAlarmedPumps[dedupKey];
+            if (!alreadyLogged && !alreadyAlarmed) {
+              newAlarmedPumps[dedupKey] = now;
+              newPumpLog.push({ timestamp: now, stationNo, pumpId: pId, action: 'start' });
+              const reasons = historyReasons[stationNo] ?? [];
+              reasons.push({
+                type: 'pump_start',
+                detail: `#${pId} 抽水機${PUMP_STATUS_LABEL[currV]}`,
+                pumpId: pId,
+              });
+              historyReasons[stationNo] = reasons;
+            }
+          } else if (prevRunning && currV === '0') {
+            const dedupKey = `${stationNo}:${pId}:stop`;
+            const alreadyLogged = newPumpLog.some(
+              l => l.stationNo === stationNo && l.pumpId === pId && l.action === 'stop'
+            );
+            const alreadyAlarmed = newAlarmedPumps[dedupKey];
+            if (!alreadyLogged && !alreadyAlarmed) {
+              newAlarmedPumps[dedupKey] = now;
+              newPumpLog.push({ timestamp: now, stationNo, pumpId: pId, action: 'stop' });
+              const reasons = historyReasons[stationNo] ?? [];
+              reasons.push({
+                type: 'pump_stop',
+                detail: `#${pId} 抽水機停止`,
+                pumpId: pId,
+              });
+              historyReasons[stationNo] = reasons;
+            }
+          }
+        }
+
+        // ── door 變化 ──
+        for (let dId = 1; dId <= 16; dId++) {
+          const dKey = `door${String(dId).padStart(2, '0')}`;
+          const prevD = prev.doors[dKey];
+          const currD = curr.doors[dKey];
+          if (!currD || !prevD) continue;
+          if (prevD === currD) continue;
+
+          if (currD === '0') {
+            const dedupKey = `${stationNo}:${dKey}:open`;
+            const alreadyLogged = newGateLog.some(
+              l => l.stationNo === stationNo && l.gateId === dKey && l.action === 'open'
+            );
+            const alreadyAlarmed = newAlarmedDoor[dedupKey];
+            if (!alreadyLogged && !alreadyAlarmed) {
+              newAlarmedDoor[dedupKey] = now;
+              newGateLog.push({ timestamp: now, stationNo, gateId: dKey, action: 'open' });
+            }
+          } else if (currD === '1') {
+            const dedupKey = `${stationNo}:${dKey}:close`;
+            const alreadyLogged = newGateLog.some(
+              l => l.stationNo === stationNo && l.gateId === dKey && l.action === 'close'
+            );
+            const alreadyAlarm = newAlarmedDoor[dedupKey];
+            if (!alreadyLogged && !alreadyAlarm) {
+              newAlarmedDoor[dedupKey] = now;
+              newGateLog.push({ timestamp: now, stationNo, gateId: dKey, action: 'close' });
+            }
+          }
+        }
+      }
+    }
+
+    // ── 合併到現有警報列表 ──
+    if (Object.keys(historyReasons).length === 0) {
+      // 只更新 log 和去重表，不改變警報狀態
+      set({ pumpOperationLog: newPumpLog, gateOperationLog: newGateLog,
+        alarmedPumpEvents: newAlarmedPumps, alarmedDoorEvents: newAlarmedDoor });
+      return;
+    }
+
+    const newAlarming: StationAlarmInfo[] = [...currentAlarms];
+
+    for (const [stationNo, reasons] of Object.entries(historyReasons)) {
+      if (reasons.length === 0) continue;
+      const stationData = data.find(s => s.stationno === stationNo);
+      const stationName = stationData?.stationName ?? stationNo;
+      const existingIdx = newAlarming.findIndex(a => a.stationno === stationNo);
+      if (existingIdx >= 0) {
+        // 合併究 reasons 到既有警報項目中
+        const merged = { ...newAlarming[existingIdx] };
+        const existingReasonTexts = new Set(merged.reasons.map(r => r.detail));
+        for (const r of reasons) {
+          if (!existingReasonTexts.has(r.detail)) {
+            merged.reasons = [...merged.reasons, r];
+          }
+        }
+        newAlarming[existingIdx] = merged;
+      } else {
+        newAlarming.push({ stationno: stationNo, stationName, reasons });
+      }
+    }
+
+    // 為新警報播放音頻
+    const prevNos = new Set(currentAlarms.map(a => a.stationno));
+    for (const [stationNo] of Object.entries(historyReasons)) {
+      if (!prevNos.has(stationNo)) {
+        playStationAlarm(stationNo, DEFAULT_ALARM_AUDIO_URL);
+      }
+    }
+
+    set({
+      alarmingStations: newAlarming,
+      isAlarming: newAlarming.length > 0,
+      pumpOperationLog: newPumpLog,
+      gateOperationLog: newGateLog,
+      alarmedPumpEvents: newAlarmedPumps,
+      alarmedDoorEvents: newAlarmedDoor,
+    });
+  },
+
   simulateAlarm: () => {
     const state = get();
     const { stationData, selectedStations } = state;
@@ -347,7 +522,7 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
     set((s) => ({ gateOperationLog: [...s.gateOperationLog.slice(-(MAX_LOG_ENTRIES - 1)), entry] })),
 
   clearOperationLogs: () =>
-    set({ pumpOperationLog: [], gateOperationLog: [] }),
+    set({ pumpOperationLog: [], gateOperationLog: [], alarmedPumpEvents: {}, alarmedDoorEvents: {} }),
 
   /** 取得指定站點的抽水機操作紀錄（最後 N 筆） */
   getPumpLogsByStation: (stationno) => {
