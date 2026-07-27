@@ -125,15 +125,25 @@ export default function StationCard({ station }: Props) {
   const waterLevelHistories = useStore((s) => s.waterLevelHistories);
   const getPumpLogsByStation = useStore((s) => s.getPumpLogsByStation);
   const getGateLogsByStation = useStore((s) => s.getGateLogsByStation);
+  const getTideLogsByStation = useStore((s) => s.getTideLogsByStation);
 
   const alarmLevel = stationAlarmLevels[station.stationno] ?? DEFAULT_ALARM_LEVEL;
   const [editValue, setEditValue] = useState(alarmLevel.toFixed(2));
   const [chartModalOpen, setChartModalOpen] = useState(false);
   const [logModalOpen, setLogModalOpen] = useState(false);
+  const [logTab, setLogTab] = useState<'pump' | 'gate' | 'tide'>('pump');
   const historyRecords = waterLevelHistories[station.stationno] ?? [];
 
   const pumpLogs = getPumpLogsByStation(station.stationno);
   const gateLogs = getGateLogsByStation(station.stationno);
+  const tideLogs = getTideLogsByStation(station.stationno);
+  const isTideStation = TIDE_STATIONS.includes(station.stationno);
+
+  const DIRECTION_LABEL: Record<string, string> = {
+    rising: '漲潮',
+    falling: '退潮',
+    slack: '平潮',
+  };
 
   // 該站是否有警報
   const stationAlarm = alarmingStations.find(
@@ -297,14 +307,22 @@ export default function StationCard({ station }: Props) {
       {/* 閘門 */}
       <DoorGrid doors={station.doors} />
 
-      {/* 操作紀錄按鈕 + modal */}
-      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+      {/* 操作紀錄 / 潮汐紀錄 按鈕群 */}
+      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
         <button
-          onClick={() => setLogModalOpen(true)}
+          onClick={() => { setLogTab('pump'); setLogModalOpen(true); }}
           className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
         >
           操作紀錄 ({pumpLogs.length + gateLogs.length})
         </button>
+        {isTideStation && (
+          <button
+            onClick={() => { setLogTab('tide'); setLogModalOpen(true); }}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
+          >
+            潮汐紀錄 ({tideLogs.length})
+          </button>
+        )}
       </div>
       {logModalOpen && (
             <div
@@ -317,7 +335,7 @@ export default function StationCard({ station }: Props) {
               >
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                    {station.stationName} — 操作紀錄
+                    {station.stationName} — {logTab === 'tide' ? '潮汐紀錄' : '操作紀錄'}
                   </h3>
                   <button
                     onClick={() => setLogModalOpen(false)}
@@ -326,36 +344,119 @@ export default function StationCard({ station }: Props) {
                     ✕
                   </button>
                 </div>
-                {pumpLogs.length === 0 && gateLogs.length === 0 ? (
-                  <p className="text-xs text-gray-400 dark:text-gray-500">暫無紀錄</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="text-xs text-gray-600 dark:text-gray-400 w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-700">
-                          <th className="text-left px-2 py-1">時間</th>
-                          <th className="text-left px-2 py-1">設備</th>
-                          <th className="text-left px-2 py-1">動作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[...(pumpLogs.map(log => ({ ...log, type: 'pump' as const, deviceId: `#${log.pumpId} 抽水機`, actionText: log.action === 'start' ? '啟動' : '停止' }))),
-                         ...(gateLogs.map(log => ({
-                           ...log, type: 'gate' as const,
-                           deviceId: `#${log.gateId.replace('door', '')} 閘門` + (log.source === 'tide' ? ' (潮汐建議)' : ''),
-                           actionText: log.action === 'open' ? '開啟' : '關閉',
-                         })))]
-                          .sort((a, b) => b.timestamp - a.timestamp)
-                          .map((log, i) => (
+
+                {/* Tab 切換 */}
+                <div className="flex gap-2 mb-3">
+                  <button
+                    onClick={() => setLogTab('pump')}
+                    className={`px-3 py-1 text-xs font-medium rounded ${
+                      logTab === 'pump'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    抽水機
+                  </button>
+                  <button
+                    onClick={() => setLogTab('gate')}
+                    className={`px-3 py-1 text-xs font-medium rounded ${
+                      logTab === 'gate'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    閘門
+                  </button>
+                  {isTideStation && (
+                    <button
+                      onClick={() => setLogTab('tide')}
+                      className={`px-3 py-1 text-xs font-medium rounded ${
+                        logTab === 'tide'
+                          ? 'bg-teal-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      潮汐
+                    </button>
+                  )}
+                </div>
+
+                {/* 潮汐 tab 內容 */}
+                {logTab === 'tide' ? (
+                  tideLogs.length === 0 ? (
+                    <p className="text-xs text-gray-400 dark:text-gray-500">暫無紀錄</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="text-xs text-gray-600 dark:text-gray-400 w-full">
+                        <thead>
+                          <tr className="border-b border-gray-200 dark:border-gray-700">
+                            <th className="text-left px-2 py-1">時間</th>
+                            <th className="text-left px-2 py-1">變化</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tideLogs.map((log, i) => (
                             <tr key={`${log.stationNo}-${log.timestamp}-${i}`} className="border-b border-gray-100 dark:border-gray-700">
                               <td className="px-2 py-1">{new Date(log.timestamp).toLocaleString('zh-TW')}</td>
-                              <td className="px-2 py-1">{log.deviceId}</td>
-                              <td className={`px-2 py-1 ${log.actionText === '啟動' || log.actionText === '開啟' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>{log.actionText}</td>
+                              <td className="px-2 py-1">
+                                <span className={log.from === 'falling' ? 'text-blue-500' : log.from === 'rising' ? 'text-red-500' : 'text-gray-400'}>
+                                  {DIRECTION_LABEL[log.from] ?? log.from}
+                                </span>
+                                <span className="mx-1 text-gray-400">→</span>
+                                <span className={log.to === 'falling' ? 'text-blue-500' : log.to === 'rising' ? 'text-red-500' : 'text-gray-400'}>
+                                  {DIRECTION_LABEL[log.to] ?? log.to}
+                                </span>
+                              </td>
                             </tr>
                           ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                ) : (
+                  /* 操作紀錄內容（pump / gate） */
+                  <>
+                    {logTab === 'pump' && pumpLogs.length === 0 ? (
+                      <p className="text-xs text-gray-400 dark:text-gray-500">暫無紀錄</p>
+                    ) : logTab === 'gate' && gateLogs.length === 0 ? (
+                      <p className="text-xs text-gray-400 dark:text-gray-500">暫無紀錄</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="text-xs text-gray-600 dark:text-gray-400 w-full">
+                          <thead>
+                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                              <th className="text-left px-2 py-1">時間</th>
+                              <th className="text-left px-2 py-1">設備</th>
+                              <th className="text-left px-2 py-1">動作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {logTab === 'pump'
+                              ? pumpLogs.map((log, i) => (
+                                  <tr key={`${log.stationNo}-${log.timestamp}-${i}`} className="border-b border-gray-100 dark:border-gray-700">
+                                    <td className="px-2 py-1">{new Date(log.timestamp).toLocaleString('zh-TW')}</td>
+                                    <td className="px-2 py-1">#{log.pumpId} 抽水機</td>
+                                    <td className={`px-2 py-1 ${log.action === 'start' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                                      {log.action === 'start' ? '啟動' : '停止'}
+                                    </td>
+                                  </tr>
+                                ))
+                              : logTab === 'gate'
+                                ? gateLogs.map((log, i) => (
+                                    <tr key={`${log.stationNo}-${log.timestamp}-${i}`} className="border-b border-gray-100 dark:border-gray-700">
+                                      <td className="px-2 py-1">{new Date(log.timestamp).toLocaleString('zh-TW')}</td>
+                                      <td className="px-2 py-1">#{log.gateId.replace('door', '')} 閘門{log.source === 'tide' ? ' (潮汐建議)' : ''}</td>
+                                      <td className={`px-2 py-1 ${log.action === 'open' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                                        {log.action === 'open' ? '開啟' : '關閉'}
+                                      </td>
+                                    </tr>
+                                  ))
+                                : null}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

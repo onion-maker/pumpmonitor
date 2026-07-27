@@ -3,7 +3,7 @@
  */
 import type { StateCreator } from 'zustand';
 import type { AppStore } from '../types';
-import type { TideDirection, StationAlarmInfo } from '../../types';
+import type { TideDirection, StationAlarmInfo, TideLogEntry } from '../../types';
 import type { TideRecord } from '../../api/pumpStation';
 import { TIDE_STATIONS, TIDE_DOOR_COLS, DEFAULT_ALARM_AUDIO_URL } from '../../config/stations';
 import { playStationAlarm } from '../../utils/audio';
@@ -12,16 +12,20 @@ export interface TideSlice {
   tideBuffer: Record<string, { time: number; level: number }[]>;
   tideDirection: Record<string, TideDirection>;
   lastTideCheckTime: number;
+  tideOperationLog: TideLogEntry[];
 
   recordLevelOut: (stationno: string, rectime: string, levelOut: number | null) => void;
   /** 改用 GetAutoPumpWaterMins API 資料做潮汐判斷（shinshun 5 筆多數決法） */
   updateTide: (tideRecords: Record<string, TideRecord[]>) => void;
+  getTideLogsByStation: (stationno: string) => TideLogEntry[];
+  clearTideLogs: () => void;
 }
 
 export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, get) => ({
   tideBuffer: {},
   tideDirection: {},
   lastTideCheckTime: 0,
+  tideOperationLog: [],
 
   recordLevelOut: (stationno, rectime, levelOut) => {
     if (levelOut === null) return;
@@ -69,6 +73,19 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
 
     // 中山(108) 獨立用自己的 level_out 判斷
     newDirections['108'] = detectTide(tideRecords['108'], '108');
+
+    // ── 潮汐方向變化紀錄 ──
+    const now = Date.now();
+    const newTideLog: TideLogEntry[] = [...state.tideOperationLog];
+    for (const stationNo of TIDE_STATIONS) {
+      const prevDir = prevDirections[stationNo];
+      const newDir = newDirections[stationNo];
+      // 只在有明確方向變化時才記錄（排除 slack ↔ slack 及初始狀態）
+      if (prevDir && newDir && prevDir !== newDir) {
+        newTideLog.push({ timestamp: now, stationNo, from: prevDir, to: newDir });
+      }
+    }
+    set({ tideOperationLog: newTideLog.slice(-500) });
 
     // ── 閘門啟閉警報 ──
     for (const stationNo of TIDE_STATIONS) {
@@ -165,5 +182,13 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
         isAlarming: merged.length > 0,
       };
     });
+  },
+
+  getTideLogsByStation: (stationno) => {
+    return get().tideOperationLog.filter(l => l.stationNo === stationno).slice(-50);
+  },
+
+  clearTideLogs: () => {
+    set({ tideOperationLog: [] });
   },
 });

@@ -7,12 +7,14 @@ interface Props {}
 export default function OperationLogs({}: Props) {
   const pumpLog = useStore((s) => s.pumpOperationLog);
   const gateLog = useStore((s) => s.gateOperationLog);
+  const tideLog = useStore((s) => s.tideOperationLog);
   const clearOperationLogs = useStore((s) => s.clearOperationLogs);
-  const [activeTab, setActiveTab] = useState<'pump' | 'gate'>('pump');
+  const clearTideLogs = useStore((s) => s.clearTideLogs);
+  const [activeTab, setActiveTab] = useState<'pump' | 'gate' | 'tide'>('pump');
   const [selectedStation, setSelectedStation] = useState<string>('all');
 
   const stations = Array.from(new Set(
-    [...pumpLog.map(l => l.stationNo), ...gateLog.map(l => l.stationNo)]
+    [...pumpLog.map(l => l.stationNo), ...gateLog.map(l => l.stationNo), ...tideLog.map(l => l.stationNo)]
   )).sort();
 
   const getStationName = (stationNo: string) => STATION_NAMES[stationNo] || stationNo;
@@ -24,6 +26,7 @@ export default function OperationLogs({}: Props) {
   const handleClear = () => {
     if (window.confirm('確要清除所有操作紀錄嗎？')) {
       clearOperationLogs();
+      clearTideLogs();
     }
   };
 
@@ -35,12 +38,20 @@ export default function OperationLogs({}: Props) {
     ? (selectedStation === 'all' ? gateLog : gateLog.filter(l => l.stationNo === selectedStation))
     : [];
 
-  const activeLog = activeTab === 'pump' ? pumpLogFiltered : gateLogFiltered;
+  const tideLogFiltered = activeTab === 'tide'
+    ? (selectedStation === 'all' ? tideLog : tideLog.filter(l => l.stationNo === selectedStation))
+    : [];
+
+  const DIRECTION_LABEL: Record<string, string> = {
+    rising: '漲潮',
+    falling: '退潮',
+    slack: '平潮',
+  };
 
   return (
     <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">操作紀錄</h2>
-      
+
       {/* 篩選條件 */}
       <div className="flex items-center gap-2 mb-3">
         <select
@@ -88,51 +99,102 @@ export default function OperationLogs({}: Props) {
         >
           閘門紀錄
         </button>
+        <button
+          onClick={() => setActiveTab('tide')}
+          className={`px-3 py-1 text-xs font-medium rounded ${
+            activeTab === 'tide'
+              ? 'bg-teal-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+        >
+          潮汐紀錄
+        </button>
       </div>
 
-      {/* 紀錄表格 */}
-      {activeLog.length === 0 ? (
-        <p className="text-xs text-gray-400 dark:text-gray-500">暂无纪录</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="text-xs text-gray-600 dark:text-gray-400">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left px-2 py-1">时间</th>
-                <th className="text-left px-2 py-1">站点</th>
-                <th className="text-left px-2 py-1">设备编号</th>
-                <th className="text-left px-2 py-1">动作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeLog.map((log, index) => {
-                const isPumpLog = 'pumpId' in log;
-                const deviceId = isPumpLog
-                  ? log.pumpId
-                  : log.gateId.replace('door', '');
-                const isTide = !isPumpLog && log.source === 'tide';
-                const deviceLabel = isPumpLog
-                  ? `#${deviceId}`
-                  : `#${deviceId}${isTide ? ' (潮汐建議)' : ''}`;
-                const actionText = isPumpLog
-                  ? (log.action === 'start' ? '启动' : '停止')
-                  : (log.action === 'open' ? '开启' : '关闭');
-                
-                return (
-                  <tr 
-                    key={`${log.stationNo}-${log.timestamp}-${index}`} 
+      {/* 潮汐 tab */}
+      {activeTab === 'tide' ? (
+        tideLogFiltered.length === 0 ? (
+          <p className="text-xs text-gray-400 dark:text-gray-500">暫無紀錄</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="text-xs text-gray-600 dark:text-gray-400">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left px-2 py-1">時間</th>
+                  <th className="text-left px-2 py-1">站點</th>
+                  <th className="text-left px-2 py-1">方向變化</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tideLogFiltered.map((log, index) => (
+                  <tr
+                    key={`${log.stationNo}-${log.timestamp}-${index}`}
                     className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <td className="px-2 py-1">{formatTime(log.timestamp)}</td>
                     <td className="px-2 py-1">{getStationName(log.stationNo)}</td>
-                    <td className="px-2 py-1">{deviceLabel}</td>
-                    <td className="px-2 py-1">{actionText}</td>
+                    <td className="px-2 py-1">
+                      <span className={log.from === 'falling' ? 'text-blue-500' : log.from === 'rising' ? 'text-red-500' : 'text-gray-400'}>
+                        {DIRECTION_LABEL[log.from] ?? log.from}
+                      </span>
+                      <span className="mx-1">→</span>
+                      <span className={log.to === 'falling' ? 'text-blue-500' : log.to === 'rising' ? 'text-red-500' : 'text-gray-400'}>
+                        {DIRECTION_LABEL[log.to] ?? log.to}
+                      </span>
+                    </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : (
+        /* 操作紀錄表格（pump / gate） */
+        <>
+          {(activeTab === 'pump' ? pumpLogFiltered : gateLogFiltered).length === 0 ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">暫無紀錄</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="text-xs text-gray-600 dark:text-gray-400">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left px-2 py-1">時間</th>
+                    <th className="text-left px-2 py-1">站點</th>
+                    <th className="text-left px-2 py-1">設備編號</th>
+                    <th className="text-left px-2 py-1">動作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(activeTab === 'pump' ? pumpLogFiltered : gateLogFiltered).map((log, index) => {
+                    const isPumpLog = 'pumpId' in log;
+                    const deviceId = isPumpLog
+                      ? log.pumpId
+                      : log.gateId.replace('door', '');
+                    const isTide = !isPumpLog && log.source === 'tide';
+                    const deviceLabel = isPumpLog
+                      ? `#${deviceId}`
+                      : `#${deviceId}${isTide ? ' (潮汐建議)' : ''}`;
+                    const actionText = isPumpLog
+                      ? (log.action === 'start' ? '啟動' : '停止')
+                      : (log.action === 'open' ? '開啟' : '關閉');
+
+                    return (
+                      <tr
+                        key={`${log.stationNo}-${log.timestamp}-${index}`}
+                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <td className="px-2 py-1">{formatTime(log.timestamp)}</td>
+                        <td className="px-2 py-1">{getStationName(log.stationNo)}</td>
+                        <td className="px-2 py-1">{deviceLabel}</td>
+                        <td className="px-2 py-1">{actionText}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

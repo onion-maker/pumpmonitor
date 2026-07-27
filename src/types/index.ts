@@ -129,3 +129,11 @@ export interface GateOperationLogEntry {
   /** 來源：tide=潮汐建議，未指定=API 實際狀態變化 */
   source?: 'tide';
 }
+
+/** 潮汐方向變化紀錄 */
+export interface TideLogEntry {
+  timestamp: number;              // epoch ms
+  stationNo: string;              // 站點編號
+  from: TideDirection;            // 先前方向
+  to: TideDirection;              // 新方向
+}

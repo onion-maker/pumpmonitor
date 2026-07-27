@@ -32,6 +32,7 @@ const SAVE_KEYS = [
   'biometricEnabled', 'backgroundIntervalSec', 'stationGateAlarmSwitches',
   'stationTideAlarmSwitches', 'monitoringEnabled', 'darkMode',
   'pumpOperationLog', 'gateOperationLog', 'previousPumpMap', 'previousDoorMap',
+  'tideOperationLog',
 ] as const;
 
 function storageKey(uid: string) {
@@ -64,6 +65,7 @@ useStore.subscribe((state) => {
       darkMode: s.darkMode,
       pumpOperationLog: s.pumpOperationLog,
       gateOperationLog: s.gateOperationLog,
+      tideOperationLog: s.tideOperationLog,
       previousPumpMap: s.previousPumpMap,
       previousDoorMap: s.previousDoorMap,
     };
