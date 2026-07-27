@@ -107,8 +107,14 @@ export default function OperationLogs({}: Props) {
             <tbody>
               {activeLog.map((log, index) => {
                 const isPumpLog = 'pumpId' in log;
-                const deviceId = isPumpLog ? log.pumpId : log.gateId.replace('door', '');
-                const actionText = isPumpLog 
+                const deviceId = isPumpLog
+                  ? log.pumpId
+                  : log.gateId.replace('door', '');
+                const isTide = !isPumpLog && log.source === 'tide';
+                const deviceLabel = isPumpLog
+                  ? `#${deviceId}`
+                  : `#${deviceId}${isTide ? ' (潮汐建議)' : ''}`;
+                const actionText = isPumpLog
                   ? (log.action === 'start' ? '启动' : '停止')
                   : (log.action === 'open' ? '开启' : '关闭');
                 
@@ -119,7 +125,7 @@ export default function OperationLogs({}: Props) {
                   >
                     <td className="px-2 py-1">{formatTime(log.timestamp)}</td>
                     <td className="px-2 py-1">{getStationName(log.stationNo)}</td>
-                    <td className="px-2 py-1">#{deviceId}</td>
+                    <td className="px-2 py-1">{deviceLabel}</td>
                     <td className="px-2 py-1">{actionText}</td>
                   </tr>
                 );

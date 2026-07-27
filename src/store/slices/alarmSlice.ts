@@ -187,14 +187,17 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
         for (const door of station.doors) {
           const prevDoorStatus = prevDoors[door.id];
           if (prevDoorStatus !== undefined && prevDoorStatus !== door.status) {
-            if (door.status === '0') {
+            // 由「關」變成半開或全開 → 開啟
+            if (prevDoorStatus === '1' && (door.status === '2' || door.status === '0')) {
               newGateLog.push({
                 timestamp: now,
                 stationNo: station.stationno,
                 gateId: `door${String(door.id).padStart(2, '0')}`,
                 action: 'open',
               });
-            } else if (door.status === '1') {
+            }
+            // 由半開或全開變成「關」 → 關閉
+            else if ((prevDoorStatus === '0' || prevDoorStatus === '2') && door.status === '1') {
               newGateLog.push({
                 timestamp: now,
                 stationNo: station.stationno,
@@ -411,7 +414,8 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
           if (!currD || !prevD) continue;
           if (prevD === currD) continue;
 
-          if (currD === '0') {
+          // 由「關」變成半開或全開 → 開啟
+          if (prevD === '1' && (currD === '2' || currD === '0')) {
             const dedupKey = `${stationNo}:${dKey}:open`;
             const alreadyLogged = newGateLog.some(
               l => l.stationNo === stationNo && l.gateId === dKey && l.action === 'open'
@@ -421,7 +425,9 @@ export const createAlarmSlice: StateCreator<AppStore, [], [], AlarmSlice> = (set
               newAlarmedDoor[dedupKey] = now;
               newGateLog.push({ timestamp: now, stationNo, gateId: dKey, action: 'open' });
             }
-          } else if (currD === '1') {
+          }
+          // 由半開或全開變成「關」 → 關閉
+          else if ((prevD === '0' || prevD === '2') && currD === '1') {
             const dedupKey = `${stationNo}:${dKey}:close`;
             const alreadyLogged = newGateLog.some(
               l => l.stationNo === stationNo && l.gateId === dKey && l.action === 'close'

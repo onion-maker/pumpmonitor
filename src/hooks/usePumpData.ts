@@ -98,7 +98,7 @@ export function usePumpData() {
       try {
         const selected = useStore.getState().selectedStations;
         if (selected.length > 0) {
-          const history = await fetchPumpHistoryForStations(selected, 2);
+          const history = await fetchPumpHistoryForStations(selected, 10);
           if (mountedRef.current && Object.keys(history).length > 0) {
             checkPumpHistoryAlarm(data, history);
           }

@@ -298,17 +298,15 @@ export default function StationCard({ station }: Props) {
       <DoorGrid doors={station.doors} />
 
       {/* 操作紀錄按鈕 + modal */}
-      {(pumpLogs.length > 0 || gateLogs.length > 0) && (
-        <>
-          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-            <button
-              onClick={() => setLogModalOpen(true)}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-            >
-              操作紀錄 ({pumpLogs.length + gateLogs.length})
-            </button>
-          </div>
-          {logModalOpen && (
+      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+        <button
+          onClick={() => setLogModalOpen(true)}
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+        >
+          操作紀錄 ({pumpLogs.length + gateLogs.length})
+        </button>
+      </div>
+      {logModalOpen && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
               onClick={() => setLogModalOpen(false)}
@@ -341,8 +339,12 @@ export default function StationCard({ station }: Props) {
                         </tr>
                       </thead>
                       <tbody>
-                        {[...pumpLogs.map(log => ({ ...log, type: 'pump' as const, deviceId: `#${log.pumpId} 抽水機`, actionText: log.action === 'start' ? '啟動' : '停止' })),
-                         ...gateLogs.map(log => ({ ...log, type: 'gate' as const, deviceId: `#${log.gateId.replace('door', '')} 閘門`, actionText: log.action === 'open' ? '開啟' : '關閉' }))]
+                        {[...(pumpLogs.map(log => ({ ...log, type: 'pump' as const, deviceId: `#${log.pumpId} 抽水機`, actionText: log.action === 'start' ? '啟動' : '停止' }))),
+                         ...(gateLogs.map(log => ({
+                           ...log, type: 'gate' as const,
+                           deviceId: `#${log.gateId.replace('door', '')} 閘門` + (log.source === 'tide' ? ' (潮汐建議)' : ''),
+                           actionText: log.action === 'open' ? '開啟' : '關閉',
+                         })))]
                           .sort((a, b) => b.timestamp - a.timestamp)
                           .map((log, i) => (
                             <tr key={`${log.stationNo}-${log.timestamp}-${i}`} className="border-b border-gray-100 dark:border-gray-700">
@@ -358,8 +360,6 @@ export default function StationCard({ station }: Props) {
               </div>
             </div>
           )}
-        </>
-      )}
 
       {/* 閘門警報開關 */}
       <GateAlarmToggle station={station} />

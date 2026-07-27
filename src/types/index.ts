@@ -126,4 +126,6 @@ export interface GateOperationLogEntry {
   stationNo: string;              // 站點編號
   gateId: string;                 // 閘門編號 ("door01"-"door16")
   action: 'open' | 'close';       // 動作類型
+  /** 來源：tide=潮汐建議，未指定=API 實際狀態變化 */
+  source?: 'tide';
 }
