@@ -13,8 +13,6 @@ export interface TideSlice {
   tideDirection: Record<string, TideDirection>;
   lastTideCheckTime: number;
   tideOperationLog: TideLogEntry[];
-  /** 暫存的方向變化候選（需連續兩次確認才記錄，避免 API 更新頻率造成的抖動） */
-  _pendingTideChange: Record<string, { from: TideDirection; to: TideDirection; timestamp: number }>;
 
   recordLevelOut: (stationno: string, rectime: string, levelOut: number | null) => void;
   /** 改用 GetAutoPumpWaterMins API 資料做潮汐判斷（shinshun 5 筆多數決法） */
@@ -28,7 +26,6 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
   tideDirection: {},
   lastTideCheckTime: 0,
   tideOperationLog: [],
-  _pendingTideChange: {},
 
   recordLevelOut: (stationno, rectime, levelOut) => {
     if (levelOut === null) return;
@@ -77,35 +74,22 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
     // 中山(108) 獨立用自己的 level_out 判斷
     newDirections['108'] = detectTide(tideRecords['108'], '108');
 
-    // ── 潮汐方向變化紀錄（需連續兩次確認才寫入，避免 API 更新頻率造成的抖動） ──
+    // ── 潮汐方向變化紀錄 ──
     const now = Date.now();
-    const newTideLog: TideLogEntry[] = [...state.tideOperationLog];
-    const pending = { ...state._pendingTideChange };
+    const newTideLog: TideLogEntry[] = [];
 
     for (const stationNo of TIDE_STATIONS) {
       const prevDir = prevDirections[stationNo];
       const newDir = newDirections[stationNo];
-      if (!newDir) continue;
-      // 初始狀態：記錄第一個方向但不當作"變化"
-      if (!prevDir) continue;
-      if (prevDir === newDir) {
-        // 方向沒變，清除 pending
-        delete pending[stationNo];
-        continue;
-      }
+      if (!newDir || !prevDir) continue;
+      if (prevDir === newDir) continue;
 
-      const existing = state._pendingTideChange[stationNo];
-
-      if (existing && existing.to === newDir) {
-        // 第二次確認：跟上次 pending 同方向，正式寫入紀錄
-        newTideLog.push({ timestamp: existing.timestamp, stationNo, from: prevDir, to: newDir });
-        delete pending[stationNo];
-      } else {
-        // 第一次看到這組變化，暫存起來等下次確認
-        pending[stationNo] = { from: prevDir, to: newDir, timestamp: now };
-      }
+      newTideLog.push({ timestamp: now, stationNo, from: prevDir, to: newDir });
     }
-    set({ tideOperationLog: newTideLog.slice(-500), _pendingTideChange: pending });
+
+    if (newTideLog.length > 0) {
+      set({ tideOperationLog: [...state.tideOperationLog, ...newTideLog].slice(-500) });
+    }
 
     // ── 閘門啟閉警報 ──
     for (const stationNo of TIDE_STATIONS) {
