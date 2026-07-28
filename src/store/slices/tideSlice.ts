@@ -124,11 +124,7 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
               stationName,
               reasons: [{ type: 'tide_open_gate', detail: '退潮中外水位已低於內水位，建議開啟閘門排水' }],
             });
-            // 寫入閘門操作紀錄（潮汐建議開閘）
-            const now = Date.now();
-            for (const d of doorCols) {
-              get().addGateOperationLog({ timestamp: now, stationNo, gateId: d, action: 'open', source: 'tide' });
-            }
+            get().addGateOperationLog({ timestamp: Date.now(), stationNo, gateId: '潮汐建議', action: 'open', source: 'tide' });
           }
         }
       } else if (newDir === 'rising') {
@@ -144,11 +140,7 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
               stationName,
               reasons: [{ type: 'tide_close_gate', detail: '漲潮中外水位上升或持平，建議關閉閘門防止河水倒灌' }],
             });
-            // 寫入閘門操作紀錄（潮汐建議關閘）
-            const now = Date.now();
-            for (const d of doorCols) {
-              get().addGateOperationLog({ timestamp: now, stationNo, gateId: d, action: 'close', source: 'tide' });
-            }
+            get().addGateOperationLog({ timestamp: Date.now(), stationNo, gateId: '潮汐建議', action: 'close', source: 'tide' });
           }
         }
       }

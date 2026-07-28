@@ -445,7 +445,7 @@ export default function StationCard({ station }: Props) {
                                 ? gateLogs.map((log, i) => (
                                     <tr key={`${log.stationNo}-${log.timestamp}-${i}`} className="border-b border-gray-100 dark:border-gray-700">
                                       <td className="px-2 py-1">{new Date(log.timestamp).toLocaleString('zh-TW')}</td>
-                                      <td className="px-2 py-1">#{log.gateId.replace('door', '')} 閘門{log.source === 'tide' ? ' (潮汐建議)' : ''}</td>
+                                      <td className="px-2 py-1">{log.gateId === '潮汐建議' ? '潮汐建議閘門' : `#${log.gateId.replace('door', '')} 閘門`}</td>
                                       <td className={`px-2 py-1 ${log.action === 'open' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
                                         {log.action === 'open' ? '開啟' : '關閉'}
                                       </td>
