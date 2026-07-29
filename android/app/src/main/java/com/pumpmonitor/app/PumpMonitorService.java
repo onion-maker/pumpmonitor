@@ -753,7 +753,7 @@ public class PumpMonitorService extends Service {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.HOUR_OF_DAY, 1);
             String sEnd = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(cal.getTime());
-            cal.add(Calendar.HOUR_OF_DAY, -2);
+            cal.add(Calendar.HOUR_OF_DAY, -12);
             String sBgn = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.TAIWAN).format(cal.getTime());
 
             JSONObject body = new JSONObject();

@@ -254,10 +254,10 @@ async function fetchRawTide(
  * 雙 API 合併，取 rectime 較新者
  * 回傳格式：{ stationno: TideRecord[] }
  */
-export async function fetchTideRecords(): Promise<Record<string, TideRecord[]>> {
+export async function fetchTideRecords(hoursBack: number = 2): Promise<Record<string, TideRecord[]>> {
   const now = new Date();
   const sEnd = new Date(now.getTime() + 60 * 60 * 1000); // now + 1hr
-  const sBgn = new Date(sEnd.getTime() - 2 * 60 * 60 * 1000); // sEnd - 2hr
+  const sBgn = new Date(sEnd.getTime() - hoursBack * 60 * 60 * 1000);
 
   const fmt = (d: Date) => {
     const pad = (n: number) => String(n).padStart(2, '0');

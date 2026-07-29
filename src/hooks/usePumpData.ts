@@ -81,15 +81,18 @@ export function usePumpData() {
         }
       }
 
-      // 潮汐檢查（每 10 分鐘用 GetAutoPumpWaterMins API 判斷）
+      // 潮汐檢查（背景非同步，不阻塞首頁載入）
       const state = useStore.getState();
       if (Date.now() - state.lastTideCheckTime >= TIDE_CHECK_INTERVAL_MS) {
-        try {
-          const tideRecords = await fetchTideRecords();
+        // 冷啟動（無任何潮汐狀態）拉 12hr 補缺口，正常運作只拉 2hr
+        const hasPrevDir = Object.keys(state.tideDirection).length > 0;
+        const hoursBack = hasPrevDir ? 2 : 12;
+        // fire-and-forget：不 await，結果回來後自己更新 store
+        fetchTideRecords(hoursBack).then(tideRecords => {
           if (mountedRef.current) updateTide(tideRecords);
-        } catch {
-          // 潮汐 API 失敗則跳過本次，等下次週期
-        }
+        }).catch(() => {
+          // 潮汐 API 失敗則跳過本次
+        });
       }
 
       checkAlarm(data);

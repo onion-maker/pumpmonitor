@@ -74,17 +74,71 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
     // 中山(108) 獨立用自己的 level_out 判斷
     newDirections['108'] = detectTide(tideRecords['108'], '108');
 
+    /** 從 TideRecord 的 rectime 取得 epoch ms */
+    const rectimeToMs = (rectime: string): number => {
+      const m = rectime.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+      if (!m) return 0;
+      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
+    };
+
+    /** 在指定 records subset 上跑 detectTide（不帶 prevDirection fallback） */
+    const detectOnSlice = (records: TideRecord[]): TideDirection | null => {
+      const valid = records.map(r => r.level_out).filter(v => v !== null) as number[];
+      if (valid.length < 2) return null;
+      let inc = 0, dec = 0;
+      for (let i = 1; i < valid.length; i++) {
+        if (valid[i] > valid[i - 1]) inc++;
+        else if (valid[i] < valid[i - 1]) dec++;
+      }
+      if (dec > inc) return 'falling';
+      if (inc > dec) return 'rising';
+      return 'slack';
+    };
+
     // ── 潮汐方向變化紀錄 ──
-    const now = Date.now();
     const newTideLog: TideLogEntry[] = [];
 
     for (const stationNo of TIDE_STATIONS) {
-      const prevDir = prevDirections[stationNo];
+      const records = tideRecords[stationNo];
+      if (!records || records.length < 5) continue;
       const newDir = newDirections[stationNo];
-      if (!newDir || !prevDir) continue;
-      if (prevDir === newDir) continue;
+      if (!newDir) continue;
 
-      newTideLog.push({ timestamp: now, stationNo, from: prevDir, to: newDir });
+      const prevDir = prevDirections[stationNo];
+      if (prevDir) {
+        // 正常運作中：前一方向存在，直接比較
+        if (prevDir !== newDir) {
+          newTideLog.push({ timestamp: rectimeToMs(records[records.length - 1].rectime), stationNo, from: prevDir, to: newDir });
+        }
+      } else {
+        // 冷啟動（重開 app 或第一次載入）：掃描全部 records，找出窗口內所有方向變化
+        // 若已有該站 log 則只補最後一次變化後的缺口（以最後一筆 log 的 timestamp 為起點）
+        const existingLogs = state.tideOperationLog.filter(l => l.stationNo === stationNo);
+        const lastLoggedTime = existingLogs.length > 0
+          ? Math.max(...existingLogs.map(l => l.timestamp))
+          : 0;
+
+        const windowSize = 5;
+        let lastDir: TideDirection | null = null;
+        for (let i = windowSize; i <= records.length; i += 1) {
+          const slice = records.slice(i - windowSize, i);
+          const recordTime = rectimeToMs(records[i - 1].rectime);
+          // 跳過已經紀錄過的變化（相同 timestamp 視為重複）
+          if (recordTime <= lastLoggedTime) {
+            // 仍需更新 lastDir 以維持方向連續性
+            const dir = detectOnSlice(slice);
+            if (dir) lastDir = dir;
+            continue;
+          }
+          const dir = detectOnSlice(slice);
+          if (!dir) continue;
+          if (lastDir !== null && dir !== lastDir) {
+            // 方向變化發生在 slice 的最後一筆 record 附近
+            newTideLog.push({ timestamp: recordTime, stationNo, from: lastDir, to: dir });
+          }
+          lastDir = dir;
+        }
+      }
     }
 
     if (newTideLog.length > 0) {
