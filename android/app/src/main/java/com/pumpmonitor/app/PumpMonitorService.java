@@ -582,7 +582,6 @@ public class PumpMonitorService extends Service {
                     JSONArray records = tideRecords.optJSONArray(stationNo);
                     if (records == null || records.length() < 3) continue;
 
-                    String dir = newTideDir.optString(stationNo, prevTideDir.optString(stationNo, "slack"));
 
                     int rlen = records.length();
                     JSONObject newest = records.getJSONObject(rlen - 1);
@@ -594,10 +593,12 @@ public class PumpMonitorService extends Service {
                     double pi_lo = prev.optDouble("level_out", 0);
                     double pi_li = prev.optDouble("level_in", 0);
                     double pi2_lo = prev2.optDouble("level_out", 0);
+                    double tailAvg = (pi_lo + ni_lo) / 2.0;
+                    double headAvg = (pi2_lo + pi_lo) / 2.0;
 
                     String[] doorCols = TIDE_DOOR_COLS.get(stationNo);
 
-                    if (dir.equals("falling")) {
+                    if (tailAvg < headAvg) {
                         if (ni_lo < ni_li && pi_lo >= pi_li && doorCols != null) {
                             boolean allClosed = true;
                             for (String d : doorCols) {
@@ -609,20 +610,16 @@ public class PumpMonitorService extends Service {
                                 alarmCount++;
                             }
                         }
-                    } else if (dir.equals("rising")) {
-                        // 漲潮：只要最後三筆 level_out 的趨勢向上（尾均值 > 頭均值），就算漲潮關閉條件
-                        double tailAvg = (pi_lo + ni_lo) / 2.0;
-                        double headAvg = (pi2_lo + pi_lo) / 2.0;
-                        if (tailAvg > headAvg && doorCols != null) {
-                            boolean anyOpen = false;
-                            for (String d : doorCols) {
-                                if (newest.optString(d, "").equals("2")) { anyOpen = true; break; }
-                            }
-                            if (anyOpen) {
-                                if (alarmCount > 0) alarmMsg.append("\n");
-                                alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 漲潮請關閘門");
-                                alarmCount++;
-                            }
+                    }
+                    if (tailAvg > headAvg && doorCols != null) {
+                        boolean anyOpen = false;
+                        for (String d : doorCols) {
+                            if (newest.optString(d, "").equals("2")) { anyOpen = true; break; }
+                        }
+                        if (anyOpen) {
+                            if (alarmCount > 0) alarmMsg.append("\n");
+                            alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 漲潮請關閘門");
+                            alarmCount++;
                         }
                     }
                 }

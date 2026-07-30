@@ -15,7 +15,6 @@ export interface TideSlice {
   tideOperationLog: TideLogEntry[];
 
   recordLevelOut: (stationno: string, rectime: string, levelOut: number | null) => void;
-  /** 改用 GetAutoPumpWaterMins API 資料做潮汐判斷（shinshun 5 筆多數決法） */
   updateTide: (tideRecords: Record<string, TideRecord[]>) => void;
   getTideLogsByStation: (stationno: string) => TideLogEntry[];
   clearTideLogs: () => void;
@@ -51,7 +50,6 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
     const newDirections: Record<string, TideDirection> = {};
     const tideReasons: StationAlarmInfo[] = [];
 
-    /** 用指定站號的 level_out 做 5 筆 pairwise 多數決 */
     const detectTide = (records: TideRecord[] | undefined, stationNo: string): TideDirection => {
       if (!records || records.length < 2) return prevDirections[stationNo] ?? 'slack';
       const valid = records.slice(-5).map(r => r.level_out).filter(v => v !== null) as number[];
@@ -66,22 +64,20 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       return prevDirections[stationNo] ?? 'slack';
     };
 
-    // 新生(112) 決定潮汐方向 → 112 和 110 共用
+    // 新生(112) 決定方向 → 112 和 110 共用
     const xinshengTide = detectTide(tideRecords['112'], '112');
     newDirections['112'] = xinshengTide;
     newDirections['110'] = xinshengTide;
 
-    // 中山(108) 獨立用自己的 level_out 判斷
+    // 中山(108) 獨立判斷
     newDirections['108'] = detectTide(tideRecords['108'], '108');
 
-    /** 從 TideRecord 的 rectime 取得 epoch ms */
     const rectimeToMs = (rectime: string): number => {
-      const m = rectime.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
-      if (!m) return 0;
-      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
+      const t = rectime.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+      if (!t) return 0;
+      return new Date(+t[1], +t[2] - 1, +t[3], +t[4], +t[5], +t[6]).getTime();
     };
 
-    /** 在指定 records subset 上跑 detectTide（不帶 prevDirection fallback） */
     const detectOnSlice = (records: TideRecord[]): TideDirection | null => {
       const valid = records.map(r => r.level_out).filter(v => v !== null) as number[];
       if (valid.length < 2) return null;
@@ -95,46 +91,66 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       return 'slack';
     };
 
+    // 回掃 records 找轉折點：從尾部往前找到第一對不符合新方向的位置
+    const findReversalIdx = (records: TideRecord[], newDir: TideDirection): number => {
+      for (let i = records.length - 1; i >= 1; i--) {
+        const a = records[i - 1].level_out;
+        const b = records[i].level_out;
+        if (a === null || b === null) continue;
+        if (newDir === 'rising' && b <= a) return i;
+        if (newDir === 'falling' && b >= a) return i;
+      }
+      return 0;
+    };
+
+    // 在 [lo, hi] range 中回掃找轉折點 (cold start path)
+    const findReversalInRange = (records: TideRecord[], lo: number, hi: number, newDir: TideDirection): number => {
+      for (let i = hi; i > lo; i--) {
+        const a = records[i - 1].level_out;
+        const b = records[i].level_out;
+        if (a === null || b === null) continue;
+        if (newDir === 'rising' && b <= a) return i;
+        if (newDir === 'falling' && b >= a) return i;
+      }
+      return lo;
+    };
+
     // ── 潮汐方向變化紀錄 ──
     const newTideLog: TideLogEntry[] = [];
 
     for (const stationNo of TIDE_STATIONS) {
       const records = tideRecords[stationNo];
-      if (!records || records.length < 5) continue;
+      if (!records || records.length < 3) continue;
       const newDir = newDirections[stationNo];
       if (!newDir) continue;
 
       const prevDir = prevDirections[stationNo];
       if (prevDir) {
-        // 正常運作中：前一方向存在，直接比較
         if (prevDir !== newDir) {
-          newTideLog.push({ timestamp: rectimeToMs(records[records.length - 1].rectime), stationNo, from: prevDir, to: newDir });
+          const revIdx = findReversalIdx(records, newDir);
+          newTideLog.push({ timestamp: rectimeToMs(records[revIdx].rectime), stationNo, from: prevDir, to: newDir });
         }
       } else {
-        // 冷啟動（重開 app 或第一次載入）：掃描全部 records，找出窗口內所有方向變化
-        // 若已有該站 log 則只補最後一次變化後的缺口（以最後一筆 log 的 timestamp 為起點）
         const existingLogs = state.tideOperationLog.filter(l => l.stationNo === stationNo);
         const lastLoggedTime = existingLogs.length > 0
           ? Math.max(...existingLogs.map(l => l.timestamp))
           : 0;
 
-        const windowSize = 5;
+        const win = 5;
         let lastDir: TideDirection | null = null;
-        for (let i = windowSize; i <= records.length; i += 1) {
-          const slice = records.slice(i - windowSize, i);
-          const recordTime = rectimeToMs(records[i - 1].rectime);
-          // 跳過已經紀錄過的變化（相同 timestamp 視為重複）
-          if (recordTime <= lastLoggedTime) {
-            // 仍需更新 lastDir 以維持方向連續性
-            const dir = detectOnSlice(slice);
-            if (dir) lastDir = dir;
+        for (let i = win; i <= records.length; i += 1) {
+          const slice = records.slice(i - win, i);
+          const time = rectimeToMs(records[i - 1].rectime);
+          if (time <= lastLoggedTime) {
+            const d = detectOnSlice(slice);
+            if (d) lastDir = d;
             continue;
           }
           const dir = detectOnSlice(slice);
           if (!dir) continue;
           if (lastDir !== null && dir !== lastDir) {
-            // 方向變化發生在 slice 的最後一筆 record 附近
-            newTideLog.push({ timestamp: recordTime, stationNo, from: lastDir, to: dir });
+            const revIdx = findReversalInRange(records, i - win, i - 1, dir);
+            newTideLog.push({ timestamp: rectimeToMs(records[revIdx].rectime), stationNo, from: lastDir, to: dir });
           }
           lastDir = dir;
         }
@@ -145,13 +161,12 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       set({ tideOperationLog: [...state.tideOperationLog, ...newTideLog].slice(-500) });
     }
 
-    // ── 閘門啟閉警報 ──
+    // ── 閘門啟閉警報（不看 newDir，直接用 level_out 趨勢） ──
     for (const stationNo of TIDE_STATIONS) {
       if (!selectedStations.includes(stationNo)) continue;
       const tideSwitch = stationTideAlarmSwitches[stationNo];
       if (!tideSwitch?.tideAlarm) continue;
 
-      const newDir = newDirections[stationNo] ?? prevDirections[stationNo] ?? 'slack';
       const records = tideRecords[stationNo];
       if (!records || records.length < 3) continue;
 
@@ -168,7 +183,11 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       const stationData = state.stationData.find(s => s.stationno === stationNo);
       const stationName = stationData?.stationName ?? stationNo;
 
-      if (newDir === 'falling') {
+      const ta = (pi_lo + ni_lo) / 2;
+      const ha = (pi2_lo + pi_lo) / 2;
+
+      // 退潮：外水位下降中 (tail < head) 且最新外水低於內水
+      if (ta < ha) {
         if (ni_lo < ni_li && pi_lo >= pi_li) {
           const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
           const allClosed = doorCols.length > 0 && doorCols.every(d => newest.doors[d] === '1');
@@ -181,26 +200,24 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
             get().addGateOperationLog({ timestamp: Date.now(), stationNo, gateId: '潮汐建議', action: 'open', source: 'tide' });
           }
         }
-      } else if (newDir === 'rising') {
-        // 漲潮：三筆中，最後兩筆的平均值 > 前兩筆的平均值 → 趨勢上升
-        const tailAvg = (pi_lo + ni_lo) / 2;
-        const headAvg = (pi2_lo + pi_lo) / 2;
-        if (tailAvg > headAvg) {
-          const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
-          const anyOpen = doorCols.some(d => newest.doors[d] === '2');
-          if (anyOpen) {
-            tideReasons.push({
-              stationno: stationNo,
-              stationName,
-              reasons: [{ type: 'tide_close_gate', detail: '漲潮中外水位上升或持平，建議關閉閘門防止河水倒灌' }],
-            });
-            get().addGateOperationLog({ timestamp: Date.now(), stationNo, gateId: '潮汐建議', action: 'close', source: 'tide' });
-          }
+      }
+
+      // 漲潮：外水位上升中 (tail > head)
+      if (ta > ha) {
+        const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
+        const anyOpen = doorCols.some(d => newest.doors[d] === '2');
+        if (anyOpen) {
+          tideReasons.push({
+            stationno: stationNo,
+            stationName,
+            reasons: [{ type: 'tide_close_gate', detail: '漲潮中外水位上升中，建議關閉閘門防止河水倒灌' }],
+          });
+          get().addGateOperationLog({ timestamp: Date.now(), stationNo, gateId: '潮汐建議', action: 'close', source: 'tide' });
         }
       }
     }
 
-    // 保留本週期未重新產生的既有潮汐警報（使用者尚未確認則持續顯示）
+    // 保留未重新產生的既有潮汐警報
     const currentTideNos = new Set(tideReasons.map(t => t.stationno));
     for (const existing of currentAlarms) {
       if (existing.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate') &&
@@ -209,7 +226,7 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       }
     }
 
-    // 播放新警報音
+    // 播放新警報
     const prevNos = new Set(currentAlarms.map(a => a.stationno));
     for (const alarm of tideReasons) {
       if (!prevNos.has(alarm.stationno)) {
@@ -218,7 +235,6 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
     }
 
     set((s) => {
-      // 保留現有警報中的非潮汐警報（避免覆蓋 checkAlarm 產生的 pump/水位警報）
       const nonTideAlarms = s.alarmingStations.filter(a =>
         !a.reasons.some(r => r.type === 'tide_open_gate' || r.type === 'tide_close_gate')
       );

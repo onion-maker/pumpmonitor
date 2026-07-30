@@ -86,7 +86,7 @@ export function usePumpData() {
       if (Date.now() - state.lastTideCheckTime >= TIDE_CHECK_INTERVAL_MS) {
         // 冷啟動（無任何潮汐狀態）拉 12hr 補缺口，正常運作只拉 2hr
         const hasPrevDir = Object.keys(state.tideDirection).length > 0;
-        const hoursBack = hasPrevDir ? 2 : 12;
+        const hoursBack = hasPrevDir ? 3 : 12;
         // fire-and-forget：不 await，結果回來後自己更新 store
         fetchTideRecords(hoursBack).then(tideRecords => {
           if (mountedRef.current) updateTide(tideRecords);
