@@ -43,6 +43,7 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/pumpmonitor-pool/providers/github
+          service_account: pumpmonitor-deploy@project-d1165e3e-a48c-4491-a1b.iam.gserviceaccount.com
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
