@@ -3,16 +3,7 @@ name: Deploy PumpMonitor Server
 on:
   push:
     branches: [main]
-    paths:
-      - 'server/**'
-      - '.github/workflows/deploy.yml'
   workflow_dispatch:
-
-env:
-  PROJECT_ID: project-d1165e3e-a48c-4491-a1b
-  PROJECT_NUMBER: '324388734718'
-  REGION: asia-east1
-  SERVICE_NAME: pumpmonitor-server
 
 jobs:
   deploy:
@@ -25,43 +16,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install server dependencies
-        working-directory: server
-        run: npm install
-
-      - name: Build server
-        working-directory: server
-        run: npm run build
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/pumpmonitor-pool/providers/github
+          project_id: project-d1165e3e-a48c-4491-a1b
+          workload_identity_provider: projects/324388734718/locations/global/workloadIdentityPools/pumpmonitor-pool/providers/github
           service_account: pumpmonitor-deploy@project-d1165e3e-a48c-4491-a1b.iam.gserviceaccount.com
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker auth
-        run: gcloud auth configure-docker asia-east1-docker.pkg.dev
-
-      - name: Build & Push Docker image
-        working-directory: server
-        run: |
-          docker build -t asia-east1-docker.pkg.dev/${{ env.PROJECT_ID }}/pumpmonitor-server/srv:${{ github.sha }} .
-          docker push asia-east1-docker.pkg.dev/${{ env.PROJECT_ID }}/pumpmonitor-server/srv:${{ github.sha }}
-
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image asia-east1-docker.pkg.dev/${{ env.PROJECT_ID }}/pumpmonitor-server/srv:${{ github.sha }} \
-            --region ${{ env.REGION }} \
+          gcloud run deploy pumpmonitor-server \
+            --source ./server \
+            --region asia-east1 \
             --platform managed \
             --allow-unauthenticated \
             --memory 512Mi
