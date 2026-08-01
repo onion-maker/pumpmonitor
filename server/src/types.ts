@@ -84,11 +84,14 @@ export interface AlarmReason {
   pumpId?: number;
 }
 
-export interface PumpOperationLogEntry {
-  timestamp: number;
-  stationNo: string;
-  pumpId: number;
-  action: 'start' | 'stop';
+export interface PumpRecord {
+  id: number;
+  status: PumpStatus;
+}
+
+export interface GateRecord {
+  id: number;
+  status: DoorStatus;
 }
 
 export interface GateOperationLogEntry {

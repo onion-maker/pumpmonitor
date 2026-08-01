@@ -94,11 +94,12 @@ function toTideRecord(raw: RawStationData): TideRecord {
   for (let i = 1; i <= 16; i++) {
     const d = `door${String(i).padStart(2, '0')}`;
     const p = `pumb${String(i).padStart(2, '0')}`;
-    doors[d] = raw[d as keyof RawStationData] as string | null | undefined;
-    pumps[p] = raw[p as keyof RawStationData] as string | null | undefined;
+    doors[d] = (raw[d as keyof RawStationData] as string | null) ?? null;
+    pumps[p] = (raw[p as keyof RawStationData] as string | null) ?? null;
   }
 
   return {
+    stationno: raw.stationno,
     rectime: raw.rectime,
     level_in: raw.level_in,
     level_out: raw.level_out,

@@ -2,7 +2,7 @@
 
 import express from 'express';
 import cors from 'cors';
-import type { PumpStationData, TideRecord, TideLogEntry } from './types';
+import type { PumpStationData, TideRecord, TideLogEntry, TideDirection } from './types';
 import { fetchAllStations, fetchTideRecords, fetchWaterLevelHistory } from './api';
 import { detectTideDirection, checkTideGate, detectTideOperationLog } from './algorithms';
 import { initFirebase, sendFcmMessage, registerToken } from './fcm';
