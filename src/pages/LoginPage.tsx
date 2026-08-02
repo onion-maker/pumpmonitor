@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 import { createSession } from '../firebase/session';
 import { checkBiometric, authenticateBiometric, cleanupBiometric } from '../utils/biometric';
+import { registerFcmToken } from '../utils/backgroundAlarm';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -37,10 +38,13 @@ export default function LoginPage() {
       const { getApp } = await import('firebase/app');
       const auth = getAuth(getApp());
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const uid = cred.user.uid;
       // 載入該使用者的個人設定
-      loadUserSettings(cred.user.uid);
+      loadUserSettings(uid);
       // 建立 Firestore session（單一裝置登入管制）
-      await createSession(cred.user.uid);
+      await createSession(uid);
+      // 註冊 FCM token（若後端有 server）
+      registerFcmToken(uid).catch(() => {});
       setIsLoggedIn(true);
     } catch (err: any) {
       const code = err?.code ?? '';

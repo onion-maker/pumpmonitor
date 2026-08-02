@@ -6,6 +6,8 @@
 
 import type { GateAlarmSwitches, TideAlarmSwitch } from '../types';
 
+const SERVER_BASE_URL = import.meta.env.VITE_SERVER_URL || '';
+
 interface Bridge {
   startService: () => void;
   stopService: () => void;
@@ -13,6 +15,7 @@ interface Bridge {
   syncSettings: (json: string) => void;
   dismissAlarm: () => void;
   getOperationLogs: () => string;
+  getTideOperationLogs: () => string;
   clearLogs: () => void;
   getDeviceInfo: () => string;
 }
@@ -120,6 +123,25 @@ export function clearOperationLogs(): void {
   }
 }
 
+/** 取得背景服務記錄的潮汐方向變化紀錄 */
+export function getTideOperationLogs(): Array<{
+  timestamp: number;
+  stationNo: string;
+  from: string;
+  to: string;
+}> {
+  const bridge = getBridge();
+  if (!bridge) return [];
+
+  try {
+    const result = bridge.getTideOperationLogs();
+    return JSON.parse(result);
+  } catch (err) {
+    console.warn('Failed to get tide operation logs:', err);
+    return [];
+  }
+}
+
 /**
  * 取得設備資訊
  */
@@ -162,5 +184,63 @@ export function getDeviceInfo(): DeviceInfo {
       versionName: '0.0.0',
       isEmulator: false
     };
+  }
+}
+
+// ═══════════════════════════════════════════
+//  FCM token 管理
+// ═══════════════════════════════════════════
+
+let fcmToken: string | null = null;
+let fcmResolve: ((t: string) => void) | null = null;
+
+/** Android MainActivity 取得 token 後會呼叫此函式 */
+(window as any).__fcmToken__ = (raw: string) => {
+  try {
+    const obj = JSON.parse(raw);
+    fcmToken = obj.token;
+    console.log('[FCM] token received from native:', fcmToken?.substring(0, 20) + '...');
+    if (fcmResolve) {
+      fcmResolve(fcmToken);
+      fcmResolve = null;
+    }
+  } catch {
+    console.warn('[FCM] failed to parse token');
+  }
+};
+
+/** 等待原生層回傳 FCM token（最多等 8 秒） */
+export function waitForFcmToken(): Promise<string | null> {
+  if (fcmToken) return Promise.resolve(fcmToken);
+  return new Promise((resolve) => {
+    fcmResolve = resolve;
+    setTimeout(() => {
+      if (fcmResolve) {
+        fcmResolve = null;
+        resolve(null);
+      }
+    }, 8000);
+  });
+}
+
+/** 向 server 註冊 FCM token */
+export async function registerFcmToken(uid: string): Promise<boolean> {
+  const token = await waitForFcmToken();
+  if (!token || !SERVER_BASE_URL) {
+    console.warn('[FCM] registration skipped: token=' + !!token + ' server=' + SERVER_BASE_URL);
+    return false;
+  }
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/register-fcm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, token }),
+    });
+    const ok = res.ok;
+    console.log('[FCM] register:', ok ? 'OK' : 'FAIL ' + res.status);
+    return ok;
+  } catch (err) {
+    console.error('[FCM] register error:', err);
+    return false;
   }
 }
