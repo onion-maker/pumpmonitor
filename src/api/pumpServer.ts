@@ -27,7 +27,7 @@ export async function fetchTideFromServer(): Promise<Record<string, any[]>> {
 }
 
 /** 從 server 取得指定站點歷史水位 */
-export async function fetchHistoryFromServer(stationNo: string, hours: number = 2): Promise<any[]> {
+export async function fetchHistoryFromServer(stationNo: string, _hours: number = 2): Promise<any[]> {
   if (!BASE) throw new Error('Server URL not configured');
   const res = await fetch(`${BASE}/api/tide/${stationNo}`);
   if (!res.ok) throw new Error(`Server returned ${res.status}`);

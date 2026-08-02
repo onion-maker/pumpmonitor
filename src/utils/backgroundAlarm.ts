@@ -201,7 +201,7 @@ let fcmResolve: ((t: string) => void) | null = null;
     fcmToken = obj.token;
     console.log('[FCM] token received from native:', fcmToken?.substring(0, 20) + '...');
     if (fcmResolve) {
-      fcmResolve(fcmToken);
+      fcmResolve(fcmToken ?? '');
       fcmResolve = null;
     }
   } catch {
