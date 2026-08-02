@@ -9,7 +9,7 @@ import { initFirebase, sendFcmMessage, registerToken } from './fcm';
 import { CONFIG } from './config';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // User token registry (in-memory — server restart 需要重新註冊)
 const userTokens = new Map<string, string>();
