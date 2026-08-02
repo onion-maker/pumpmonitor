@@ -21,16 +21,11 @@ jobs:
         with:
           project_id: project-d1165e3e-a48c-4491-a1b
           workload_identity_provider: projects/324388734718/locations/global/workloadIdentityPools/pumpmonitor-pool/providers/github
-          service_account: pumpmonitor-deploy@project-d1165e3e-a48c-4491-a1b.iam.gserviceaccount.com
-
-      - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy pumpmonitor-server \
-            --source ./server \
-            --region asia-east1 \
-            --platform managed \
-            --allow-unauthenticated \
-            --memory 512Mi
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: pumpmonitor-server
+          source: ./server
+          region: asia-east1
+          project_id: project-d1165e3e-a48c-4491-a1b
