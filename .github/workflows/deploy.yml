@@ -29,3 +29,5 @@ jobs:
           source: ./server
           region: asia-east1
           project_id: project-d1165e3e-a48c-4491-a1b
+          env_vars: |
+            FIREBASE_SERVICE_ACCOUNT_BASE64=${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
