@@ -35,6 +35,42 @@ const SAVE_KEYS = [
   'tideOperationLog',
 ] as const;
 
+/** 冷啟動站點資料快取 — 與設定儲存分離，避免每 30 秒輪詢都觸發寫入 */
+import type { PumpStationData } from '../types';
+
+const CACHE_DATA_VERSION = 1;
+
+function cacheDataKey(uid: string) {
+  return `pump-monitor-cache-data-${uid}`;
+}
+
+export function loadCachedStationData(uid: string): PumpStationData[] | null {
+  if (!uid) return null;
+  try {
+    const raw = localStorage.getItem(cacheDataKey(uid));
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    if (cache.version !== CACHE_DATA_VERSION) return null;
+    if (!Array.isArray(cache.stationData) || cache.stationData.length === 0) return null;
+    return cache.stationData.map((item: any) => ({
+      ...item,
+      rectime: item.rectime ? new Date(item.rectime) : null,
+    })) as PumpStationData[];
+  } catch {
+    return null;
+  }
+}
+
+export function saveCachedStationData(uid: string, stationData: PumpStationData[]): void {
+  if (!uid || stationData.length === 0) return;
+  try {
+    const payload = { version: CACHE_DATA_VERSION, stationData };
+    const raw = JSON.stringify(payload);
+    if (raw.length > 3 * 1024 * 1024) return;
+    localStorage.setItem(cacheDataKey(uid), raw);
+  } catch { /* ignore */ }
+}
+
 function storageKey(uid: string) {
   return `pump-monitor-settings-${uid}`;
 }

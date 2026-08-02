@@ -1,6 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 import { fetchAllStations, fetchTideRecords, fetchWaterLevelHistory, fetchPumpHistoryForStations } from '../api/pumpStation';
+import { fetchStationsFromServer, fetchTideFromServer } from '../api/pumpServer';
+import { saveCachedStationData } from '../store/useStore';
 import type { TideRecord } from '../api/pumpStation';
 import { POLL_INTERVAL_MS } from '../config/stations';
 
@@ -35,9 +37,16 @@ export function usePumpData() {
     if (useStore.getState().page === 'settings') return;
 
     try {
-      const data = await fetchAllStations();
+      let data;
+      try {
+        data = await fetchStationsFromServer();
+      } catch {
+        data = await fetchAllStations();
+      }
       if (!mountedRef.current) return;
       setStationData(data);
+      const uid = useStore.getState().currentUid;
+      if (uid) { try { saveCachedStationData(uid, data); } catch { /* ignore */ } }
       checkAlarm(data);
     } catch {
       // 失敗則保持目前資料
@@ -49,73 +58,92 @@ export function usePumpData() {
 
     setLoading(true);
     try {
-      const data = await fetchAllStations();
+      // ═══════ Phase A: Critical Path — 取得站點資料後立刻顯示 ═══════
+      let data;
+      try {
+        data = await fetchStationsFromServer();
+      } catch {
+        data = await fetchAllStations();
+      }
       if (!mountedRef.current) return;
       setStationData(data);
+      const uid = useStore.getState().currentUid;
+      if (uid) { try { saveCachedStationData(uid, data); } catch { /* ignore */ } }
+      checkAlarm(data);
+      setLoading(false);
 
-      // 歷史水位（每 5 分鐘更新一次，只對已選取站點平行 fetch）
+      if (!mountedRef.current) return;
+
+      // ═══════ Phase B: Background — 不阻塞顯示 ═══════
+
+      // 歷史水位（每 5 分鐘更新一次）
       if (Date.now() - lastHistoryFetchRef.current >= HISTORY_FETCH_INTERVAL_MS) {
         lastHistoryFetchRef.current = Date.now();
-        try {
-          const selected = useStore.getState().selectedStations;
-          const stationNos = data
-            .filter((s) => selected.includes(s.stationno))
-            .map((s) => s.stationno);
-          if (stationNos.length > 0) {
-            const results = await Promise.allSettled(
-              stationNos.map((no) => fetchWaterLevelHistory(no, 2)),
-            );
-            if (mountedRef.current) {
-              const histories: Record<string, TideRecord[]> = {};
-              stationNos.forEach((no, i) => {
-              const r = results[i];
-              if (r.status === 'fulfilled' && r.value.length > 0) {
-                histories[no] = r.value;
+        (async () => {
+          try {
+            const selected = useStore.getState().selectedStations;
+            const stationNos = data
+              .filter((s) => selected.includes(s.stationno))
+              .map((s) => s.stationno);
+            if (stationNos.length > 0) {
+              const results = await Promise.allSettled(
+                stationNos.map((no) => fetchWaterLevelHistory(no, 2)),
+              );
+              if (mountedRef.current) {
+                const histories: Record<string, TideRecord[]> = {};
+                stationNos.forEach((no, i) => {
+                  const r = results[i];
+                  if (r.status === 'fulfilled' && r.value.length > 0) {
+                    histories[no] = r.value;
+                  }
+                });
+                setWaterLevelHistories(histories);
               }
-            });
-            setWaterLevelHistories(histories);
+            }
+          } catch {
+            // 歷史水位 API 失敗則跳過本次
           }
-          }
-        } catch {
-          // 歷史水位 API 失敗則跳過本次
-        }
+        })();
       }
 
       // 潮汐檢查（背景非同步，不阻塞首頁載入）
       const state = useStore.getState();
       if (Date.now() - state.lastTideCheckTime >= TIDE_CHECK_INTERVAL_MS) {
-        // 冷啟動（無任何潮汐狀態）拉 12hr 補缺口，正常運作只拉 2hr
         const hasPrevDir = Object.keys(state.tideDirection).length > 0;
         const hoursBack = hasPrevDir ? 3 : 12;
-        // fire-and-forget：不 await，結果回來後自己更新 store
-        fetchTideRecords(hoursBack).then(tideRecords => {
-          if (mountedRef.current) updateTide(tideRecords);
-        }).catch(() => {
-          // 潮汐 API 失敗則跳過本次
-        });
+        fetchTideFromServer()
+          .then(tideRecords => {
+            if (mountedRef.current) updateTide(tideRecords);
+          })
+          .catch(() => {
+            fetchTideRecords(hoursBack).then(tideRecords => {
+              if (mountedRef.current) updateTide(tideRecords);
+            }).catch(() => {});
+          });
       }
 
-      checkAlarm(data);
-
-      // 方案 B：用歷史 API 做 pump/door 逐對變化檢查（避免 30 秒 snapshot 漏報）
-      try {
-        const selected = useStore.getState().selectedStations;
-        if (selected.length > 0) {
-          const history = await fetchPumpHistoryForStations(selected, 10);
-          if (mountedRef.current && Object.keys(history).length > 0) {
-            checkPumpHistoryAlarm(data, history);
+      // Pump 歷史檢查（背景補救，不阻塞主流程）
+      (async () => {
+        try {
+          const selected = useStore.getState().selectedStations;
+          if (selected.length > 0) {
+            const history = await fetchPumpHistoryForStations(selected, 10);
+            if (mountedRef.current && Object.keys(history).length > 0) {
+              checkPumpHistoryAlarm(data, history);
+            }
           }
+        } catch {
+          // 歷史 API 失敗不影響主流程
         }
-      } catch {
-        // 歷史 API 失敗不影響主流程
-      }
+      })();
+
     } catch (err) {
       if (!mountedRef.current) return;
       const msg = err instanceof Error ? err.message : '取得資料失敗';
       setFetchError(msg);
+      setLoading(false);
     } finally {
       if (mountedRef.current) {
-        setLoading(false);
         setInitialLoading(false);
       }
     }

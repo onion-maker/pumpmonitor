@@ -3,6 +3,9 @@
  */
 import type { StateCreator } from 'zustand';
 import type { AppStore } from '../types';
+import { getTideOperationLogs, registerFcmToken } from '../../utils/backgroundAlarm';
+import { loadCachedStationData } from '../useStore';
+import type { TideLogEntry } from '../../types';
 
 export interface AuthSlice {
   isLoggedIn: boolean;
@@ -26,11 +29,28 @@ export const createAuthSlice: StateCreator<AppStore, [], [], AuthSlice> = (set, 
   page: 'main',
   setPage: (page) => set({ page }),
 
-  loadUserSettings: (uid) => {
+  loadUserSettings: async (uid) => {
     try {
       const raw = localStorage.getItem(storageKey(uid));
       if (raw) {
         const data = JSON.parse(raw);
+        // 合併 native 背景服務記錄的潮汐方向變化，以 timestamp 排序、去重、只保留最後 500 筆
+        let mergedTideLogs: TideLogEntry[] = (data.tideOperationLog ?? []);
+        try {
+          const nativeTideLogs = getTideOperationLogs();
+          if (nativeTideLogs.length > 0) {
+            const seen = new Set<number>();
+            for (const entry of mergedTideLogs) seen.add(entry.timestamp);
+            for (const entry of nativeTideLogs) {
+              if (!seen.has(entry.timestamp)) {
+                mergedTideLogs.push(entry as TideLogEntry);
+                seen.add(entry.timestamp);
+              }
+            }
+            mergedTideLogs.sort((a, b) => a.timestamp - b.timestamp);
+            mergedTideLogs = mergedTideLogs.slice(-500);
+          }
+        } catch { /* native bridge 不可用則略過 */ }
         set({
           currentUid: uid,
           selectedStations: data.selectedStations ?? get().selectedStations,
@@ -45,13 +65,22 @@ export const createAuthSlice: StateCreator<AppStore, [], [], AuthSlice> = (set, 
           darkMode: data.darkMode ?? false,
           pumpOperationLog: (data.pumpOperationLog ?? []).slice(-500),
           gateOperationLog: (data.gateOperationLog ?? []).slice(-500),
-          tideOperationLog: (data.tideOperationLog ?? []).slice(-500),
+          tideOperationLog: mergedTideLogs,
           previousPumpMap: data.previousPumpMap ?? {},
           previousDoorMap: data.previousDoorMap ?? {},
         });
       } else {
         set({ currentUid: uid });
       }
+
+      // ── 冷啟動快取：還原上次的站點資料，讓 MainPage 秒開 ⚡ ──
+      const cached = loadCachedStationData(uid);
+      if (cached && cached.length > 0) {
+        set({ stationData: cached, isInitialLoading: false });
+      }
+
+      // 登入後註冊 FCM token
+      await registerFcmToken(uid);
     } catch {
       set({ currentUid: uid });
     }
