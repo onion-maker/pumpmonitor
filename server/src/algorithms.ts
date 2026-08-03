@@ -130,11 +130,11 @@ export function checkTideGate(
 
   // 漲潮: 關閉
   if (ta > ha) {
-    const anyHalfOpen = doorCols.some(d => {
+    const anyOpen = doorCols.some(d => {
       const ds = newest.doors?.[d];
-      return ds === '2';  // '2' = half-open
+      return ds === '0' || ds === '2';  // '0' = open, '2' = half-open
     });
-    if (anyHalfOpen) {
+    if (anyOpen) {
       return {
         stationNo,
         action: 'close',

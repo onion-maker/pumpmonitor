@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 import { fetchAllStations, fetchTideRecords, fetchWaterLevelHistory, fetchPumpHistoryForStations } from '../api/pumpStation';
-import { fetchStationsFromServer, fetchTideFromServer } from '../api/pumpServer';
 import { saveCachedStationData } from '../store/useStore';
 import type { TideRecord } from '../api/pumpStation';
 import { POLL_INTERVAL_MS } from '../config/stations';
@@ -37,12 +36,7 @@ export function usePumpData() {
     if (useStore.getState().page === 'settings') return;
 
     try {
-      let data;
-      try {
-        data = await fetchStationsFromServer();
-      } catch {
-        data = await fetchAllStations();
-      }
+      const data = await fetchAllStations();
       if (!mountedRef.current) return;
       setStationData(data);
       const uid = useStore.getState().currentUid;
@@ -59,12 +53,7 @@ export function usePumpData() {
     setLoading(true);
     try {
       // ═══════ Phase A: Critical Path — 取得站點資料後立刻顯示 ═══════
-      let data;
-      try {
-        data = await fetchStationsFromServer();
-      } catch {
-        data = await fetchAllStations();
-      }
+      const data = await fetchAllStations();
       if (!mountedRef.current) return;
       setStationData(data);
       const uid = useStore.getState().currentUid;
@@ -111,15 +100,9 @@ export function usePumpData() {
       if (Date.now() - state.lastTideCheckTime >= TIDE_CHECK_INTERVAL_MS) {
         const hasPrevDir = Object.keys(state.tideDirection).length > 0;
         const hoursBack = hasPrevDir ? 3 : 12;
-        fetchTideFromServer()
-          .then(tideRecords => {
-            if (mountedRef.current) updateTide(tideRecords);
-          })
-          .catch(() => {
-            fetchTideRecords(hoursBack).then(tideRecords => {
-              if (mountedRef.current) updateTide(tideRecords);
-            }).catch(() => {});
-          });
+        fetchTideRecords(hoursBack).then(tideRecords => {
+          if (mountedRef.current) updateTide(tideRecords);
+        }).catch(() => {});
       }
 
       // Pump 歷史檢查（背景補救，不阻塞主流程）

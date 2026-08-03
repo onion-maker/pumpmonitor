@@ -205,7 +205,7 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
       // 漲潮：外水位上升中 (tail > head)
       if (ta > ha) {
         const doorCols = TIDE_DOOR_COLS[stationNo] ?? [];
-        const anyOpen = doorCols.some(d => newest.doors[d] === '2');
+        const anyOpen = doorCols.some(d => newest.doors[d] === '0' || newest.doors[d] === '2');
         if (anyOpen) {
           tideReasons.push({
             stationno: stationNo,
