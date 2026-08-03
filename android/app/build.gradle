@@ -1,7 +1,9 @@
 apply plugin: 'com.android.application'
 
-// CI 環境下 release.keystore 存在時才啟用簽名
-def hasReleaseKeystore = file('release.keystore').exists()
+// 只在有設定 keystore 密碼時才啟用簽名（CI 環境）
+def hasReleaseKeystore = file('release.keystore').exists() &&
+    System.getenv("KEYSTORE_PASS") != null &&
+    System.getenv("KEYSTORE_PASS") != ""
 
 android {
     namespace "com.pumpmonitor.app"
@@ -10,8 +12,8 @@ android {
         applicationId "com.pumpmonitor.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 23
-        versionName "1.4.0"
+        versionCode 24
+        versionName "2.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -52,6 +54,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation "androidx.biometric:biometric:1.2.0-alpha05"
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
