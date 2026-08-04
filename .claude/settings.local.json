@@ -80,7 +80,9 @@
       "Bash(adb install *)",
       "Bash(adb *)",
       "Bash(timeout 10 cat)",
-      "Bash(Select-String *)"
+      "Bash(Select-String *)",
+      "Bash(git rm *)",
+      "PowerShell(git add *)"
     ]
   }
 }

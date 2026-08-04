@@ -1,0 +1,7 @@
+
+# Secrets — never commit
+.claude/settings.local.json
+pumpmonitor-eb2c8-firebase-adminsdk-fbsvc-ca852d4edf.json
+key.json
+serviceAccountKey_base64.txt
+.env.production
