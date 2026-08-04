@@ -50,6 +50,13 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
     const newDirections: Record<string, TideDirection> = {};
     const tideReasons: StationAlarmInfo[] = [];
 
+    console.log(`[Tide Debug] updateTide called, stations in tideRecords: ${Object.keys(tideRecords).join(',')}`);
+    for (const k of Object.keys(tideRecords)) {
+      const r = tideRecords[k];
+      const valid = r?.filter(v => v.level_out !== null).length ?? 0;
+      console.log(`[Tide Debug] updateTide: ${k} = ${r?.length ?? 0} records, ${valid} with level_out`);
+    }
+
     const detectTide = (records: TideRecord[] | undefined, stationNo: string): TideDirection => {
       if (!records || records.length < 2) return prevDirections[stationNo] ?? 'slack';
       const valid = records.slice(-5).map(r => r.level_out).filter(v => v !== null) as number[];
@@ -71,6 +78,8 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
 
     // 中山(108) 獨立判斷
     newDirections['108'] = detectTide(tideRecords['108'], '108');
+
+    console.log(`[Tide Debug] updateTide: newDirections — 112:${newDirections['112']}, 110:${newDirections['110']}, 108:${newDirections['108']}`);
 
     const rectimeToMs = (rectime: string): number => {
       const t = rectime.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
@@ -120,15 +129,17 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
 
     for (const stationNo of TIDE_STATIONS) {
       const records = tideRecords[stationNo];
-      if (!records || records.length < 3) continue;
+      if (!records || records.length < 3) { console.warn(`[Tide Debug] updateTide: ${stationNo} — records太少(${records?.length ?? 0}), skip`); continue; }
       const newDir = newDirections[stationNo];
-      if (!newDir) continue;
+      if (!newDir) { console.warn(`[Tide Debug] updateTide: ${stationNo} — newDir falsy, skip`); continue; }
 
       const prevDir = prevDirections[stationNo];
+      console.log(`[Tide Debug] updateTide: station ${stationNo} — records=${records.length}, newDir=${newDir}, prevDir=${prevDir ?? 'undefined'}`);
       if (prevDir) {
         if (prevDir !== newDir) {
           const revIdx = findReversalIdx(records, newDir);
           newTideLog.push({ timestamp: rectimeToMs(records[revIdx].rectime), stationNo, from: prevDir, to: newDir });
+          console.log(`[Tide Debug] updateTide: ${stationNo} warm path reversal: ${prevDir} → ${newDir}`);
         }
       } else {
         const existingLogs = state.tideOperationLog.filter(l => l.stationNo === stationNo);
@@ -138,6 +149,7 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
 
         const win = 5;
         let lastDir: TideDirection | null = null;
+        let logCount = 0;
         for (let i = win; i <= records.length; i += 1) {
           const slice = records.slice(i - win, i);
           const time = rectimeToMs(records[i - 1].rectime);
@@ -151,14 +163,25 @@ export const createTideSlice: StateCreator<AppStore, [], [], TideSlice> = (set, 
           if (lastDir !== null && dir !== lastDir) {
             const revIdx = findReversalInRange(records, i - win, i - 1, dir);
             newTideLog.push({ timestamp: rectimeToMs(records[revIdx].rectime), stationNo, from: lastDir, to: dir });
+            logCount++;
           }
           lastDir = dir;
+        }
+        console.log(`[Tide Debug] updateTide: ${stationNo} cold scan done — ${logCount} reversals, lastDir=${lastDir}`);
+        // 如果沒有找到任何轉折，至少記錄初始潮汐狀態
+        if (logCount === 0 && newDir) {
+          const firstTime = Date.now();
+          newTideLog.push({ timestamp: firstTime, stationNo, from: 'slack', to: newDir });
+          console.log(`[Tide Debug] updateTide: ${stationNo} — fallback initial entry: slack → ${newDir}`);
         }
       }
     }
 
     if (newTideLog.length > 0) {
+      console.log(`[Tide Debug] updateTide: writing ${newTideLog.length} tide log entries`);
       set({ tideOperationLog: [...state.tideOperationLog, ...newTideLog].slice(-500) });
+    } else {
+      console.warn('[Tide Debug] updateTide: newTideLog is empty, nothing to write');
     }
 
     // ── 閘門啟閉警報（不看 newDir，直接用 level_out 趨勢） ──

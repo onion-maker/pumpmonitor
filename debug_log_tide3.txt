@@ -1,0 +1,1241 @@
+--------- beginning of main
+D/PumpMonitor(17883): 服務啟動（action=com.pumpmonitor.START）
+D/PumpMonitor(17883): 原生橋接已註冊
+D/PumpMonitor(17883): FCM token: cfPbr2nQTxO1ILR6Nd__sm:APA91bH7v2a8lt7uGKxghXOx1oao-RjRWvPc9dXfQr3WYzKQMiix3vSpCKk5_HHUXOA8O5MTaldrWBMZEqzqfsx9CNx5BOsYlF9kMfhjPhzz2dBGzBf1o3M
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): 設定已同步至背景服務（間隔 120 秒）
+D/PumpMonitor(17883): 設定已變更，等待 FCM 觸發
+D/PumpMonitor(17883): 服務啟動（action=com.pumpmonitor.START）
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): 設定已同步至背景服務（間隔 120 秒）
+D/PumpMonitor(17883): 設定已變更，等待 FCM 觸發
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(17883): HTTP 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(17883): HTTP POST 狀態碼: 200
+D/PumpMonitor(17883): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): 服務啟動（action=com.pumpmonitor.START）
+D/PumpMonitor(19290): 原生橋接已註冊
+D/PumpMonitor(19290): FCM token: cfPbr2nQTxO1ILR6Nd__sm:APA91bH7v2a8lt7uGKxghXOx1oao-RjRWvPc9dXfQr3WYzKQMiix3vSpCKk5_HHUXOA8O5MTaldrWBMZEqzqfsx9CNx5BOsYlF9kMfhjPhzz2dBGzBf1o3M
+D/PumpMonitor(19290): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(19290): HTTP 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(19290): HTTP 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): 設定已同步至背景服務（間隔 120 秒）
+D/PumpMonitor(19290): 設定已變更，等待 FCM 觸發
+D/PumpMonitor(19290): 服務啟動（action=com.pumpmonitor.START）
+D/PumpMonitor(19290): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(19290): HTTP 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(19290): HTTP 狀態碼: 200
+D/PumpMonitor(19290): 設定已同步至背景服務（間隔 120 秒）
+D/PumpMonitor(19290): 設定已變更，等待 FCM 觸發
+D/PumpMonitor(19290): AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(19290): HTTP 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+D/PumpMonitor(19290): HTTP 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+D/PumpMonitor(19290): HTTP POST 狀態碼: 200
+D/PumpMonitor(19290): AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins

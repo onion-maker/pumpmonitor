@@ -1,0 +1,214 @@
+--------- beginning of main
+08-03 13:25:35.758 31781 32597 E chromium: [0803/132535.757428:ERROR:android_webview/browser/variations/variations_seed_loader.cc:39] Seed missing signature.
+08-03 13:25:35.876 31781 32615 W chromium: [WARNING:net/dns/dns_config_service_android.cc:69] Failed to read DnsConfig.
+08-03 13:25:35.894 31781 31781 W chromium: [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 20971520
+08-03 13:28:11.906  4130  4662 E chromium: [ERROR:android_webview/browser/variations/variations_seed_loader.cc:39] Seed missing signature.
+08-03 13:28:12.041  4130  4130 W chromium: [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 20971520
+08-03 13:28:12.302  4719  4996 W chromium: [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+08-03 13:28:12.365  4719  4996 W chromium: [WARNING:content/child/runtime_features.cc:541] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+08-03 13:28:12.365  4719  4996 W chromium: [WARNING:content/child/runtime_features.cc:566] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+08-03 13:28:12.365  4719  4996 W chromium: [WARNING:content/child/runtime_features.cc:587] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+08-03 13:28:12.487  4719  5086 I chromium: [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:724] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+08-03 13:28:12.487  4719  5086 I chromium: 
+08-03 13:28:45.494 31379  6180 I chromium: [0803/132845.494032:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+08-03 13:28:45.494 31379  6180 I chromium: [0803/132845.494290:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+08-03 13:28:45.518 31379 31379 W chromium: [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 20971520
+08-03 13:28:45.558 31379 31379 D PumpMonitor: 原生橋接已註冊
+08-03 13:28:45.625  6213  6293 W chromium: [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+08-03 13:28:45.656  6213  6293 W chromium: [WARNING:content/child/runtime_features.cc:541] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+08-03 13:28:45.656  6213  6293 W chromium: [WARNING:content/child/runtime_features.cc:566] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+08-03 13:28:45.656  6213  6293 W chromium: [WARNING:content/child/runtime_features.cc:587] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+08-03 13:28:45.663  6213  6306 I chromium: [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:724] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+08-03 13:28:45.663  6213  6306 I chromium: 
+08-03 13:28:45.810 31379  6257 D PumpMonitor: AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+08-03 13:28:46.012 31379  6257 D PumpMonitor: HTTP 狀態碼: 200
+08-03 13:28:46.064 31379  6257 D PumpMonitor: AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+08-03 13:28:46.282 31379  6257 D PumpMonitor: HTTP 狀態碼: 200
+08-03 13:28:46.331 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:46.352 31379 31379 W PumpMonitor: FCM getToken 失敗
+08-03 13:28:46.352 31379 31379 W PumpMonitor: java.io.IOException: java.util.concurrent.ExecutionException: java.io.IOException: SERVICE_NOT_AVAILABLE
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.FirebaseMessaging.blockingGetToken(com.google.firebase:firebase-messaging@@23.0.0:9)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.FirebaseMessaging.lambda$getToken$3$com-google-firebase-messaging-FirebaseMessaging(com.google.firebase:firebase-messaging@@23.0.0:1)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.FirebaseMessaging$$ExternalSyntheticLambda10.run(com.google.firebase:firebase-messaging@@23.0.0:4)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:323)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.common.util.concurrent.zza.run(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:6)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.lang.Thread.run(Thread.java:1572)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: Caused by: java.util.concurrent.ExecutionException: java.io.IOException: SERVICE_NOT_AVAILABLE
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.Tasks.zzb(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:61)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.Tasks.await(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:23)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.FirebaseMessaging.blockingGetToken(com.google.firebase:firebase-messaging@@23.0.0:8)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	... 9 more
+08-03 13:28:46.352 31379 31379 W PumpMonitor: Caused by: java.io.IOException: SERVICE_NOT_AVAILABLE
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.GmsRpc.handleResponse(com.google.firebase:firebase-messaging@@23.0.0:7)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.GmsRpc.lambda$extractResponseWhenComplete$0$com-google-firebase-messaging-GmsRpc(com.google.firebase:firebase-messaging@@23.0.0:1)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.GmsRpc$$ExternalSyntheticLambda0.then(com.google.firebase:firebase-messaging@@23.0.0:2)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzd.run(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:5)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.firebase.messaging.GmsRpc$$ExternalSyntheticLambda1.execute(com.google.firebase:firebase-messaging@@23.0.0:0)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzc.onComplete(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:6)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzr.zza(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:19)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzu.setResult(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:86)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzd.run(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:15)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.cloudmessaging.zzz.execute(com.google.android.gms:play-services-cloud-messaging@@17.0.0:0)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzc.onComplete(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:6)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzr.zza(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:19)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.zzu.setResult(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:86)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.tasks.TaskCompletionSource.setResult(dex-id-f73e6e9934c2a482ef32e63c5d6ca56464de0f5c:8)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.cloudmessaging.zzp.zzd(com.google.android.gms:play-services-cloud-messaging@@17.0.0:3)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.cloudmessaging.zzr.zza(com.google.android.gms:play-services-cloud-messaging@@17.0.0:2)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.google.android.gms.cloudmessaging.zzf.handleMessage(com.google.android.gms:play-services-cloud-messaging@@17.0.0:14)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at android.os.Looper.loopOnce(Looper.java:274)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at android.os.Looper.loop(Looper.java:369)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at android.app.ActivityThread.main(ActivityThread.java:10090)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at java.lang.reflect.Method.invoke(Native Method)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:616)
+08-03 13:28:46.352 31379 31379 W PumpMonitor: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1137)
+08-03 13:28:46.500 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:46.501 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:46.625 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:46.625 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:46.801 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:46.802 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:46.946 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:46.947 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.092 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.092 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.214 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.215 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.383 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.385 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.542 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.544 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.694 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.697 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.844 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.847 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:47.995 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:47.998 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:48.137 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:48.139 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:48.293 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:48.296 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:48.452 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:48.454 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:48.614 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:48.618 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:48.764 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:48.766 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:48.895 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:48.898 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.044 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.047 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.186 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.188 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.315 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.316 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.446 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.448 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.608 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.611 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.752 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.754 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:49.897 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:49.899 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.037 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.040 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.182 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.184 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.322 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.325 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.482 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.484 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.626 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.628 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.765 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.792 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:50.946 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:50.948 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.101 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.102 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.246 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.248 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.385 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.387 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.539 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.541 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.662 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.666 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.802 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.803 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:51.933 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:51.935 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.063 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.064 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.196 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.197 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.362 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.364 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.493 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.495 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.643 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.644 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.776 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.778 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:52.948 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:52.949 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.074 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.077 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.225 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.227 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.374 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.376 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.504 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.505 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.665 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.667 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.826 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.827 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:53.965 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:53.967 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:54.104 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:54.105 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:54.260 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:54.263 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:54.444 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:54.446 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:54.604 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:54.606 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:54.753 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:54.756 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:54.893 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:54.895 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.044 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.046 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.193 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.194 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.337 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.338 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.494 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.496 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.633 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.635 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.773 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.775 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:55.925 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:28:55.928 31379  6257 D PumpMonitor: AndroidHttp.fetchPost: https://heovcenter2.gov.taipei/cia/WebLayout/GetAutoPumpWaterMins
+08-03 13:28:56.077 31379  6257 D PumpMonitor: HTTP POST 狀態碼: 200
+08-03 13:29:05.564 31379  6257 D PumpMonitor: AndroidHttp.fetch: https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+08-03 13:29:05.775 31379  6257 D PumpMonitor: HTTP 狀態碼: 200
+08-03 13:29:05.811 31379  6257 D PumpMonitor: AndroidHttp.fetch: https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo
+08-03 13:29:05.977 31379  6257 D PumpMonitor: HTTP 狀態碼: 200
+08-03 13:29:06.025 31379  6257 D PumpMonitor: 設定已同步至背景服務（間隔 120 秒）
+08-03 13:29:06.030 31379  6257 D PumpMonitor: 設定已同步至背景服務（間隔 120 秒）
+08-03 13:29:06.038 31379 31379 D PumpMonitor: 設定已變更，等待 FCM 觸發
+08-03 13:29:06.050 31379 31379 D PumpMonitor: 已請求通知權限
+08-03 13:29:06.053 31379 31379 D PumpMonitor: 設定已變更，等待 FCM 觸發
+08-03 13:29:06.054 31379 31379 D PumpMonitor: 已請求通知權限
+08-03 13:29:06.080 31379 31379 D PumpMonitor: 服務啟動（action=com.pumpmonitor.START）
+08-03 13:29:06.082 31379 31379 D PumpMonitor: 服務啟動（action=com.pumpmonitor.START）
+08-03 13:29:07.955 31379  6257 D PumpMonitor: 設定已同步至背景服務（間隔 120 秒）
+08-03 13:29:07.964 31379 31379 D PumpMonitor: 設定已變更，等待 FCM 觸發

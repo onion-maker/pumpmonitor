@@ -1,0 +1,16 @@
+--------- beginning of main
+E/chromium( 1589): [ERROR:android_webview/browser/aw_browser_terminator.cc:175] Renderer process (13055) crash detected (code -1).
+W/chromium( 8483): [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+W/chromium( 8483): [WARNING:content/child/runtime_features.cc:541] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+W/chromium( 8483): [WARNING:content/child/runtime_features.cc:566] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+W/chromium( 8483): [WARNING:content/child/runtime_features.cc:587] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+I/chromium( 8483): [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:724] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+I/chromium( 8483): 
+I/chromium( 6000): [0803/190738.181801:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+W/chromium( 6000): [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 28514161
+W/chromium( 9332): [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+W/chromium( 9332): [WARNING:content/child/runtime_features.cc:541] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+W/chromium( 9332): [WARNING:content/child/runtime_features.cc:566] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+W/chromium( 9332): [WARNING:content/child/runtime_features.cc:587] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+I/chromium( 9332): [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:724] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+I/chromium( 9332): 

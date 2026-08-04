@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "884616750724",
+    "project_id": "pumpmonitor-eb2c8",
+    "storage_bucket": "pumpmonitor-eb2c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884616750724:android:315e9cada7df81ae2a44d1",
+        "android_client_info": {
+          "package_name": "com.pumpmonitor.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALW023LATQsf2y14Se_dct5bFXOvonbGc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

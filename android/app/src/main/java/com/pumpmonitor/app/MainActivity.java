@@ -7,11 +7,13 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.BridgeActivity;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONObject;
 
@@ -50,6 +52,9 @@ public class MainActivity extends BridgeActivity {
                 Log.e(TAG, "註冊橋接失敗", e);
             }
         });
+
+        // 初始化 FCM token
+        initFcm();
     }
 
     @Override
@@ -57,6 +62,30 @@ public class MainActivity extends BridgeActivity {
         // 不在此停止 Service，讓背景服務獨立持續運作
         // 使用者登出時從前端呼叫 stopBackgroundService() 才會停止
         super.onDestroy();
+    }
+
+    // ═══════════════════════════════════════════
+    //  FCM 初始化 + Token 回傳
+    // ═══════════════════════════════════════════
+
+    /** 初始化 FCM token 取得 */
+    private void initFcm() {
+        FirebaseMessaging.getInstance().getToken()
+            .addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.w(TAG, "FCM getToken 失敗", task.getException());
+                    return;
+                }
+                String token = task.getResult();
+                Log.d(TAG, "FCM token: " + token);
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("token", token);
+                    callJs("window.__fcmToken__ && window.__fcmToken__(" + JSONObject.quote(obj.toString()) + ")");
+                } catch (Exception e) {
+                    Log.e(TAG, "FCM JSON error", e);
+                }
+            });
     }
 
     // ═══════════════════════════════════════════
@@ -130,6 +159,8 @@ public class MainActivity extends BridgeActivity {
                 conn.setReadTimeout(15000);
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setRequestProperty("Accept", "application/json");
+                conn.setRequestProperty("Origin", "https://heovcenter.gov.taipei");
+                conn.setRequestProperty("Referer", "https://heovcenter.gov.taipei/cia/page/project/pump/AutoPumpChartTableMap.html");
                 conn.setDoOutput(true);
 
                 OutputStream os = conn.getOutputStream();
@@ -315,6 +346,18 @@ public class MainActivity extends BridgeActivity {
             } catch (Exception e) {
                 Log.e(TAG, "getOperationLogs 失敗", e);
                 return "{}";
+            }
+        }
+
+        /** 取得潮汐方向變化紀錄 */
+        @JavascriptInterface
+        public String getTideOperationLogs() {
+            try {
+                org.json.JSONArray logs = PumpMonitorService.getTideOperationLogs(MainActivity.this);
+                return logs.toString();
+            } catch (Exception e) {
+                Log.e(TAG, "getTideOperationLogs 失敗", e);
+                return "[]";
             }
         }
 

@@ -1,0 +1,18 @@
+--------- beginning of main
+I/chromium( 6000): [0803/190738.181801:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+W/chromium( 6000): [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 28514161
+W/chromium( 9332): [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+W/chromium( 9332): [WARNING:content/child/runtime_features.cc:541] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+W/chromium( 9332): [WARNING:content/child/runtime_features.cc:566] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+W/chromium( 9332): [WARNING:content/child/runtime_features.cc:587] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+I/chromium( 9332): [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:724] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+I/chromium( 9332): 
+I/chromium( 9491): [0803/191158.601402:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+I/chromium( 9491): [0803/191158.604436:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+W/chromium( 9491): [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 20971520
+W/chromium(13768): [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+W/chromium(13768): [WARNING:content/child/runtime_features.cc:541] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+W/chromium(13768): [WARNING:content/child/runtime_features.cc:566] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+W/chromium(13768): [WARNING:content/child/runtime_features.cc:587] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+I/chromium(13768): [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:724] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+I/chromium(13768): 

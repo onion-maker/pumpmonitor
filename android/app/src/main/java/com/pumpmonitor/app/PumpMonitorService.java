@@ -166,6 +166,7 @@ public class PumpMonitorService extends Service {
     // 存儲操作紀錄的 key
     private static final String PUMP_LOGS_KEY = "pump_operation_logs";
     private static final String GATE_LOGS_KEY = "gate_operation_logs";
+    private static final String TIDE_LOGS_KEY = "tide_operation_logs";
 
     /** 取得抽水機操作紀錄 */
     public static JSONArray getPumpOperationLogs(Context context) {
@@ -250,6 +251,71 @@ public class PumpMonitorService extends Service {
             prefs.edit().putString(GATE_LOGS_KEY, arr.toString()).apply();
         } catch (Exception e) {
             Log.e(TAG, "logGateOperation 失敗", e);
+        }
+    }
+
+    // 改用 instance context 的方式：直接寫入 SharedPreferences
+    private void saveTideOperationLog(String stationNo, String from, String to, long timestamp) {
+        try {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            String existing = prefs.getString(TIDE_LOGS_KEY, "[]");
+            JSONArray arr = new JSONArray(existing);
+            JSONObject entry = new JSONObject();
+            entry.put("timestamp", timestamp);
+            entry.put("stationNo", stationNo);
+            entry.put("from", from);
+            entry.put("to", to);
+            arr.put(entry);
+            // 只保留最後 500 筆
+            while (arr.length() > 500) arr.remove(0);
+            prefs.edit().putString(TIDE_LOGS_KEY, arr.toString()).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "saveTideOperationLog 失敗", e);
+        }
+    }
+
+    /** 取得潮汐方向變化紀錄（靜態方法，供 MainActivity bridge 呼叫） */
+    public static JSONArray getTideOperationLogs(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(TIDE_LOGS_KEY, "[]");
+        try {
+            return new JSONArray(json);
+        } catch (JSONException e) {
+            return new JSONArray();
+        }
+    }
+
+    /** 回掃潮汐 records 找方向轉折點的時間戳 */
+    private long findTideReversalTime(JSONArray records, String newDir) {
+        if (records == null || records.length() < 2) return System.currentTimeMillis();
+        try {
+            for (int i = records.length() - 1; i >= 1; i--) {
+                JSONObject a = records.getJSONObject(i - 1);
+                JSONObject b = records.getJSONObject(i);
+                if (a.isNull("level_out") || b.isNull("level_out")) continue;
+                double lo_a = a.getDouble("level_out");
+                double lo_b = b.getDouble("level_out");
+                if (newDir.equals("rising") && lo_b <= lo_a) {
+                    return rectimeToMs(b.optString("rectime", ""));
+                }
+                if (newDir.equals("falling") && lo_b >= lo_a) {
+                    return rectimeToMs(b.optString("rectime", ""));
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "findTideReversalTime 失敗", e);
+        }
+        return System.currentTimeMillis();
+    }
+
+    /** rectime 字串 (YYYYMMDDHHmmss) 轉 epoch ms */
+    private long rectimeToMs(String rectime) {
+        try {
+            if (rectime == null || rectime.length() < 14) return System.currentTimeMillis();
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMddHHmmss", Locale.TAIWAN);
+            return fmt.parse(rectime).getTime();
+        } catch (Exception e) {
+            return System.currentTimeMillis();
         }
     }
 
@@ -395,36 +461,25 @@ public class PumpMonitorService extends Service {
 
         String action = intent != null ? intent.getAction() : "";
 
+        // 只保留 FCM 觸發與手動檢查，移除自動輪詢
         if (action.equals("com.pumpmonitor.CHECK")) {
-            // 定時檢查觸發（setAlarmClock 是單次鬧鐘，檢查完重新排程）
+            // FCM check-alarm 觸發
             new Thread(this::doCheck).start();
-            scheduleNextCheck(this);
         } else if (action.equals("com.pumpmonitor.RELOAD")) {
-            // 間隔變更 → 取消舊排程 + 重設新排程 + 立即檢查
-            cancelAlarms(this);
-            new Thread(this::doCheck).start();
-            scheduleNextCheck(this);
-            scheduleHeartbeat(this);
-        } else if (action.equals("com.pumpmonitor.HEARTBEAT")) {
-            // 心跳 → 執行檢查 → 再排程心跳
-            new Thread(this::doCheck).start();
-            scheduleHeartbeat(this);
+            // 設定變更 → 重新讀設定
+            Log.d(TAG, "設定已變更，等待 FCM 觸發");
         } else if (action.equals("com.pumpmonitor.DISMISS_ALARM")) {
-            // 前端警報確認 → 停止背景警報音 + 進入冷卻（避免下輪檢查又重響）
+            // 前端警報確認 → 停止背景警報音 + 進入冷卻
             stopAlarmSound();
             alarmDismissedMs = System.currentTimeMillis();
         } else if (action.equals("com.pumpmonitor.UPDATE_CHECK")) {
-            // 定時更新檢查
+            // 手動更新檢查
             doUpdateCheck();
         } else {
-            // 首次啟動 → 立即檢查 + 排程三者
-            new Thread(this::doCheck).start();
-            scheduleNextCheck(this);
-            scheduleHeartbeat(this);
-            scheduleUpdateCheck(this);
+            // 首次啟動：僅建立通知，不自動檢查（由 server/FCM 觸發）
+            Log.d(TAG, "服務啟動（action=" + action + "）");
         }
 
-        Log.d(TAG, "服務啟動（action=" + action + "）");
         return START_STICKY;
     }
 
@@ -447,224 +502,9 @@ public class PumpMonitorService extends Service {
     // ═══════════ 以下是檢查邏輯 ═══════════
 
     private void doCheck() {
-        Calendar cal = Calendar.getInstance();
-        String timeStr = new SimpleDateFormat("HH:mm:ss", Locale.TAIWAN).format(cal.getTime());
-        Log.d(TAG, "檢查 [" + timeStr + "]");
-
-        try {
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            String levelsJson = prefs.getString("stationAlarmLevels", "{}");
-            String selectedJson = prefs.getString("selectedStations", "[]");
-            String prevPumpJson = prefs.getString("previousPumpStates", "{}");
-            String gateSwitchesJson = prefs.getString("stationGateAlarmSwitches", "{}");
-            String tideSwitchesJson = prefs.getString("stationTideAlarmSwitches", "{}");
-            JSONObject alarmLevels = new JSONObject(levelsJson);
-            JSONArray selected = new JSONArray(selectedJson);
-            JSONObject prevPumpStates = new JSONObject(prevPumpJson);
-            JSONObject gateAlarmSwitches = new JSONObject(gateSwitchesJson);
-            JSONObject tideAlarmSwitches = new JSONObject(tideSwitchesJson);
-
-            JSONArray primary = fetchApiAsArray(API_URL);
-            JSONArray backup = fetchApiAsArray(API_URL_BACKUP);
-
-            if (primary == null && backup == null) {
-                Log.e(TAG, "兩個 API 都無法連線");
-                return;
-            }
-
-            JSONObject merged = new JSONObject();
-            mergeArray(merged, primary);
-            mergeArray(merged, backup);
-
-            // ── 讀取潮向歷史 ──
-            String tideDirJson = prefs.getString("tideDirections", "{}");
-            JSONObject prevTideDir = new JSONObject(tideDirJson);
-            JSONObject newTideDir = new JSONObject();
-
-            StringBuilder alarmMsg = new StringBuilder();
-            int alarmCount = 0;
-            JSONObject newPumpStates = new JSONObject();
-
-            for (int i = 0; i < merged.length(); i++) {
-                String stationNo = merged.names().getString(i);
-                JSONObject station = merged.getJSONObject(stationNo);
-                if (!contains(selected, stationNo)) continue;
-
-                double alarmLevel = 1.0;
-                if (alarmLevels.has(stationNo)) alarmLevel = alarmLevels.getDouble(stationNo);
-
-                if (!station.isNull("level_in")) {
-                    double levelIn = station.getDouble("level_in");
-                    if (levelIn > alarmLevel) {
-                        if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 水位 ").append(String.format("%.2f", levelIn)).append("m");
-                        alarmCount++;
-                    }
-                }
-
-                JSONObject stationPump = new JSONObject();
-                JSONObject prevStation = prevPumpStates.optJSONObject(stationNo);
-                if (prevStation == null) prevStation = new JSONObject();
-
-                for (int p = 1; p <= 16; p++) {
-                    String key = "pumb" + String.format("%02d", p);
-                    if (station.isNull(key)) continue;
-                    String curr = station.getString(key);
-                    stationPump.put(key, curr);
-                    String prev = prevStation.optString(key, "");
-
-                    boolean prevWasRunning = prev.equals("1") || prev.equals("2") || prev.equals("3");
-                    boolean nowRunning = curr.equals("1") || curr.equals("2") || curr.equals("3");
-
-                    if (prev.equals("0") && nowRunning) {
-                        if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" #").append(p).append(" 抽水機啟動");
-                        alarmCount++;
-                    } else if (prevWasRunning && curr.equals("0")) {
-                        if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" #").append(p).append(" 抽水機停止");
-                        alarmCount++;
-                    }
-                }
-
-                // ── 閘門警報檢查 ──
-                if (gateAlarmSwitches.has(stationNo) && !station.isNull("level_in") && !station.isNull("level_out")) {
-                    JSONObject gs = gateAlarmSwitches.getJSONObject(stationNo);
-                    double levelIn = station.getDouble("level_in");
-                    double levelOut = station.getDouble("level_out");
-
-                    boolean innerHighAlarm = gs.optBoolean("innerHighAlarm", false);
-
-                    boolean allClosed = false;
-                    boolean anyNotClosed = false;
-                    int doorCount = 0;
-                    for (int d = 1; d <= 16; d++) {
-                        String doorKey = "door" + String.format("%02d", d);
-                        if (!station.isNull(doorKey)) {
-                            doorCount++;
-                            String dv = station.getString(doorKey);
-                            if (!dv.equals("1")) anyNotClosed = true;
-                        }
-                    }
-                    allClosed = doorCount > 0 && !anyNotClosed;
-
-                    if (innerHighAlarm && levelIn > levelOut && allClosed) {
-                        if (alarmCount > 0) alarmMsg.append("\n");
-                        alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 內高外低閘門全閉");
-                        alarmCount++;
-                    }
-                }
-
-                newPumpStates.put(stationNo, stationPump);
-            }
-
-            // ── 儲存 pump states ──
-            prefs.edit()
-                .putString("previousPumpStates", newPumpStates.toString())
-                .apply();
-
-            // ── 潮汐方向判斷（新生 112 決定，建國 110 共用；中山 108 獨立） ──
-            JSONObject tideRecords = fetchTideRecords();
-            if (tideRecords != null) {
-                // 先決定潮汐方向
-                String xinshengTide = detectTide(tideRecords.optJSONArray("112"), prevTideDir.optString("112", "slack"));
-                newTideDir.put("112", xinshengTide);
-                newTideDir.put("110", xinshengTide);
-                newTideDir.put("108", detectTide(tideRecords.optJSONArray("108"), prevTideDir.optString("108", "slack")));
-
-                // 閘門啟閉警報（各站用自己的水位 & 閘門）
-                for (String stationNo : TIDE_STATIONS) {
-                    if (!contains(selected, stationNo)) continue;
-                    if (!tideAlarmSwitches.has(stationNo)) continue;
-                    JSONObject ts = tideAlarmSwitches.optJSONObject(stationNo);
-                    if (ts == null || !ts.optBoolean("tideAlarm", false)) continue;
-
-                    JSONArray records = tideRecords.optJSONArray(stationNo);
-                    if (records == null || records.length() < 3) continue;
-
-
-                    int rlen = records.length();
-                    JSONObject newest = records.getJSONObject(rlen - 1);
-                    JSONObject prev  = records.getJSONObject(rlen - 2);
-                    JSONObject prev2 = records.getJSONObject(rlen - 3);
-
-                    double ni_lo = newest.optDouble("level_out", 0);
-                    double ni_li = newest.optDouble("level_in", 0);
-                    double pi_lo = prev.optDouble("level_out", 0);
-                    double pi_li = prev.optDouble("level_in", 0);
-                    double pi2_lo = prev2.optDouble("level_out", 0);
-                    double tailAvg = (pi_lo + ni_lo) / 2.0;
-                    double headAvg = (pi2_lo + pi_lo) / 2.0;
-
-                    String[] doorCols = TIDE_DOOR_COLS.get(stationNo);
-
-                    if (tailAvg < headAvg) {
-                        if (ni_lo < ni_li && pi_lo >= pi_li && doorCols != null) {
-                            boolean allClosed = true;
-                            for (String d : doorCols) {
-                                if (!newest.optString(d, "").equals("1")) { allClosed = false; break; }
-                            }
-                            if (allClosed) {
-                                if (alarmCount > 0) alarmMsg.append("\n");
-                                alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 退潮請開閘門");
-                                alarmCount++;
-                            }
-                        }
-                    }
-                    if (tailAvg > headAvg && doorCols != null) {
-                        boolean anyOpen = false;
-                        for (String d : doorCols) {
-                            if (newest.optString(d, "").equals("2")) { anyOpen = true; break; }
-                        }
-                        if (anyOpen) {
-                            if (alarmCount > 0) alarmMsg.append("\n");
-                            alarmMsg.append(STATION_NAMES.getOrDefault(stationNo, stationNo)).append(" 漲潮請關閘門");
-                            alarmCount++;
-                        }
-                    }
-                }
-
-                prefs.edit().putString("tideDirections", newTideDir.toString()).apply();
-            }
-
-            // ── 監控暫停：清空警報、停止音效、不觸發任何通知 ──
-            boolean monitoringEnabled = prefs.getBoolean("monitoringEnabled", true);
-            if (!monitoringEnabled) {
-                lastAlarmMessage = "";
-                alarmDismissedMs = 0;
-                stopAlarmSound();
-                alarmCount = 0;
-            }
-
-            if (alarmCount > 0) {
-                String msg = alarmMsg.toString();
-                boolean sameAlarm = msg.equals(lastAlarmMessage);
-
-                if (!sameAlarm) {
-                    // 警報訊息變了 → 退出冷卻（代表條件有變化）
-                    alarmDismissedMs = 0;
-                    lastAlarmMessage = msg;
-                    sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
-                } else {
-                    // 同一條警報：冷卻期內只更新通知（不響音），冷卻期外才恢復響音
-                    boolean inCooldown = (System.currentTimeMillis() - alarmDismissedMs) < ALARM_COOLDOWN_MS;
-                    if (inCooldown) {
-                        // 只更新通知，不響音
-                        sendSilentNotification(alarmCount + " 個站點觸發警報", msg);
-                    } else {
-                        // 冷卻結束，恢復正常警報
-                        sendAlarmNotification(alarmCount + " 個站點觸發警報", msg);
-                    }
-                }
-            } else {
-                lastAlarmMessage = "";
-                alarmDismissedMs = 0;
-                stopAlarmSound();
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "檢查錯誤", e);
-        }
+        // This is now a fallback only - server handles primary polling
+        // For now, just receive FCM and display the notification that server sent
+        Log.d(TAG, "doCheck 被 FCM 觸發 - server 為主，此為備援");
     }
 
     // ═══════════ HTTP 工具 ═══════════

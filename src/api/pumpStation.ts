@@ -1,5 +1,5 @@
 import type { PumpStationData, RawStationData, PumpStatus, DoorStatus, ApiResponse } from '../types';
-import { STATION_NAMES, VALID_STATIONS, PUMP_FIELDS, DOOR_FIELDS, TIDE_STATIONS } from '../config/stations';
+import { STATION_NAMES, VALID_STATIONS, PUMP_FIELDS, DOOR_FIELDS } from '../config/stations';
 
 const API_URL = 'https://heovcenter.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo';
 const API_URL_BACKUP = 'https://heovcenter2.gov.taipei/cia/WebLayout/GetLastestAutoPumpPGInfo';
@@ -216,10 +216,12 @@ async function fetchRawTide(
     }
     try {
       const jsonStr = bridge.fetchPost(apiUrl, body);
-      if (!jsonStr) return null;
+      if (!jsonStr) { console.warn(`[Tide Debug] fetchRawTide: bridge returned falsy for ${stationno}`); return null; }
       const json: TideApiResponse = JSON.parse(jsonStr);
+      console.log(`[Tide Debug] fetchRawTide: ${stationno} — got ${json.d?.length ?? 0} records from ${apiUrl}`);
       return json.d || null;
-    } catch {
+    } catch (e) {
+      console.error(`[Tide Debug] fetchRawTide: bridge FAILED for ${stationno}`, e);
       return null;
     }
   }
@@ -236,11 +238,20 @@ async function fetchRawTide(
   }
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     const response = await fetch(actualUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Origin': 'https://heovcenter.gov.taipei',
+        'Referer': 'https://heovcenter.gov.taipei/cia/page/project/pump/AutoPumpChartTableMap.html',
+      },
       body,
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (!response.ok) return null;
     const json: TideApiResponse = await response.json();
     return json.d || null;
@@ -267,24 +278,16 @@ export async function fetchTideRecords(hoursBack: number = 2): Promise<Record<st
   const sBgnDate = fmt(sBgn);
   const sEndDate = fmt(sEnd);
 
-  // 三個站點，兩個 API → 6 個請求
-  const results = await Promise.all(
-    TIDE_STATIONS.flatMap((no) => [
-      fetchRawTide(TIDE_API_URL, sBgnDate, sEndDate, no),
-      fetchRawTide(TIDE_API_URL_BACKUP, sBgnDate, sEndDate, no),
-    ]),
-  );
+  console.log(`[Tide Debug] fetchTideRecords: hoursBack=${hoursBack}, sBgn=${sBgnDate}, sEnd=${sEndDate}`);
 
-  // 依 stationno 分組合併（雙 API 結果取 rectime 較新）
-  // results 順序：112主, 112備, 110主, 110備, 108主, 108備
+  // 只抓 112（新生站），110 共用方向，108 獨立用主 API 的 level_out
   const out: Record<string, TideRecord[]> = {};
 
-  for (let i = 0; i < TIDE_STATIONS.length; i++) {
-    const no = TIDE_STATIONS[i];
-    const primary = results[i * 2];
-    const backup = results[i * 2 + 1];
+  try {
+    const primary = await fetchRawTide(TIDE_API_URL, sBgnDate, sEndDate, '112');
+    const backup = await fetchRawTide(TIDE_API_URL_BACKUP, sBgnDate, sEndDate, '112');
 
-    // 合併 + 排序
+    // 合併 112 主備 API 資料，取 rectime 較新者
     const map = new Map<string, TideRecord>();
     const addRecords = (list: RawStationData[] | null) => {
       if (!list) return;
@@ -316,10 +319,17 @@ export async function fetchTideRecords(hoursBack: number = 2): Promise<Record<st
     addRecords(backup);
 
     const records = Array.from(map.values()).sort((a, b) => a.rectime.localeCompare(b.rectime));
-    if (records.length > 0) out[no] = records;
-  }
+    const validCount = records.filter(r => r.level_out !== null).length;
+    console.log(`[Tide Debug] fetchTideRecords: station 112 — ${records.length} records (${validCount} with level_out) from primary=${primary?.length ?? 'null'} + backup=${backup?.length ?? 'null'}`);
 
-  return out;
+    if (records.length > 0) out['112'] = records;
+    else console.warn('[Tide Debug] fetchTideRecords: 112 無資料');
+
+    return out;
+  } catch (e) {
+    console.error('[Tide Debug] fetchTideRecords FAILED:', e);
+    return out;
+  }
 }
 /**
  * 取得單一站點近 N 小時的水位歷史紀錄（陣列）

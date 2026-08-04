@@ -5,10 +5,10 @@ import { saveCachedStationData } from '../store/useStore';
 import type { TideRecord } from '../api/pumpStation';
 import { POLL_INTERVAL_MS } from '../config/stations';
 
-const TIDE_CHECK_INTERVAL_MS = 90 * 1000; // 90 秒（原 10 分鐘過長，錯過漲潮變化）
 const HISTORY_FETCH_INTERVAL_MS = 5 * 60 * 1000; // 每 5 分鐘更新一次歷史水位
 
 export function usePumpData() {
+  console.log('[Tide Debug] usePumpData MOUNTED');
   const page = useStore((s) => s.page);
   const setStationData = useStore((s) => s.setStationData);
   const setWaterLevelHistories = useStore((s) => s.setWaterLevelHistories);
@@ -95,15 +95,24 @@ export function usePumpData() {
         })();
       }
 
-      // 潮汐檢查（背景非同步，不阻塞首頁載入）
+      // 潮汐檢查（背景非同步，不阻塞首頁載入） — 每次輪詢都執行
+      console.log('[Tide Debug] fetchData: about to fetch tide records');
       const state = useStore.getState();
-      if (Date.now() - state.lastTideCheckTime >= TIDE_CHECK_INTERVAL_MS) {
-        const hasPrevDir = Object.keys(state.tideDirection).length > 0;
-        const hoursBack = hasPrevDir ? 3 : 12;
-        fetchTideRecords(hoursBack).then(tideRecords => {
-          if (mountedRef.current) updateTide(tideRecords);
-        }).catch(() => {});
-      }
+      const hasPrevDir = Object.keys(state.tideDirection).length > 0;
+      const hoursBack = hasPrevDir ? 3 : 12;
+      console.log(`[Tide Debug] fetchData: hasPrevDir=${hasPrevDir}, hoursBack=${hoursBack}`);
+      // 給 fetchTideRecords 加 30 秒超時，避免它卡住整個流程
+      Promise.race([
+        fetchTideRecords(hoursBack),
+        new Promise<Record<string, TideRecord[]>>((_, reject) =>
+          setTimeout(() => reject(new Error('fetchTideRecords timeout after 30s')), 30000)
+        ),
+      ]).then(tideRecords => {
+        console.log(`[Tide Debug] fetchData: fetchTideRecords resolved, keys=${Object.keys(tideRecords).join(',')}`);
+        if (mountedRef.current) updateTide(tideRecords);
+      }).catch(err => {
+        console.error('[Tide Debug] fetchData: fetchTideRecords FAILED:', err);
+      });
 
       // Pump 歷史檢查（背景補救，不阻塞主流程）
       (async () => {
